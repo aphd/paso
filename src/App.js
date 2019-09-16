@@ -1,8 +1,11 @@
 import React from 'react';
 import logo from './logo.svg';
 import './App.css';
+import parse from 'solidity-parser-antlr/dist';
 
 function App() {
+  
+window.parse = parse;
   return (
     <div className="App">
       <header className="App-header">
