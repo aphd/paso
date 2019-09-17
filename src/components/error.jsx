@@ -6,11 +6,9 @@ class Error extends Component {
         try {
             const { column, line, message } = this.props.errors[0];
             return (
-                <React.Fragment>
-                    <table className="table table-hover">
-                        <tbody>{json2html(this.props.errors[0])}</tbody>
-                    </table>
-                </React.Fragment>
+                <table className="table table-hover">
+                    <tbody>{json2html(this.props.errors[0])}</tbody>
+                </table>
             );
         } catch {
             return <React.Fragment></React.Fragment>;

@@ -6,22 +6,19 @@ class Metrics extends Component {
         try {
             const { Version, LOC, types } = this.props.metric;
             return (
-                <React.Fragment>
-                    <div className="alert alert-primary" role="alert"></div>
-                    <table className="table table-hover">
-                        <tbody>
-                            <tr>
-                                <th>Version</th>
-                                <td>{Version || "Undefined"}</td>
-                            </tr>
-                            <tr>
-                                <th>Loc</th>
-                                <td>{LOC}</td>
-                            </tr>
-                            {json2html(types)}
-                        </tbody>
-                    </table>
-                </React.Fragment>
+                <table className="table table-hover">
+                    <tbody>
+                        <tr>
+                            <th>Version</th>
+                            <td>{Version || "Undefined"}</td>
+                        </tr>
+                        <tr>
+                            <th>Loc</th>
+                            <td>{LOC}</td>
+                        </tr>
+                        {json2html(types)}
+                    </tbody>
+                </table>
             );
         } catch {
             return <React.Fragment></React.Fragment>;
