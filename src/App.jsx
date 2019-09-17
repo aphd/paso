@@ -14,7 +14,7 @@ class App extends Component {
         try {
             this.setState({ metric: parseSol(sc_code) });
         } catch (error) {
-            this.setState({ metric: "Parser Error" });
+            window.alert("Error in parsing the solidity file");
         }
     };
     render = () => {
