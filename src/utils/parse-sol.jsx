@@ -2,6 +2,9 @@ import parse from "solidity-parser-antlr/dist";
 
 export function parseSol(code) {
     const root = parse.parse(code, { loc: true });
+    window.code = code;
+    window.root = root;
+    window.parse = parse;
     const types = root.children
         .slice(1)
         .map(v => v.subNodes.map(w => w.type))
