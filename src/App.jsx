@@ -3,6 +3,7 @@ import "./App.css";
 import { Helmet } from "react-helmet";
 import Form from "./components/form";
 import Metrics from "./components/metrics";
+import Error from "./components/error";
 import { parseSol } from "./utils/parse-sol";
 
 class App extends Component {
@@ -12,9 +13,15 @@ class App extends Component {
     }
     handleFormSubmit = sc_code => {
         try {
-            this.setState({ metric: parseSol(sc_code) });
+            this.setState({
+                metric: parseSol(sc_code),
+                errors: null
+            });
         } catch (error) {
-            window.alert("Error in parsing the solidity file");
+            this.setState({
+                metric: null,
+                errors: error.errors
+            });
         }
     };
     render = () => {
@@ -25,6 +32,7 @@ class App extends Component {
                 </Helmet>
                 <Form onFormSubmit={this.handleFormSubmit} />
                 <Metrics metric={this.state.metric} />
+                <Error errors={this.state.errors} />
             </main>
         );
     };
