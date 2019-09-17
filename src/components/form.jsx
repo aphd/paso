@@ -10,10 +10,10 @@ class Form extends Component {
             code: code
         };
     }
-    handleClick() {
+    handleClick = () => {
         const sc_code = document.getElementById("sc_code").value;
         console.log(parseSol(sc_code));
-    }
+    };
     render() {
         return (
             <form>
