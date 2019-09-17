@@ -1,19 +1,7 @@
 import React, { Component } from "react";
-import { parseSol } from "../utils/parse-sol";
 import { code } from "../fixtures/simple.sol.jsx";
 
 class Form extends Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            name: this.props.value,
-            code: code
-        };
-    }
-    handleClick = () => {
-        const sc_code = document.getElementById("sc_code").value;
-        console.log(parseSol(sc_code));
-    };
     render() {
         return (
             <form>
@@ -25,13 +13,17 @@ class Form extends Component {
                         className="form-control"
                         id="sc_code"
                         rows="10"
-                        defaultValue={this.state.code}
+                        defaultValue={code}
                     ></textarea>
                 </div>
                 <button
                     type="button"
                     className="btn btn-primary mb-2"
-                    onClick={e => this.handleClick()}
+                    onClick={() =>
+                        this.props.onFormSubmit(
+                            document.getElementById("sc_code").value
+                        )
+                    }
                 >
                     Submit
                 </button>
