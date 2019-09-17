@@ -11,8 +11,11 @@ class App extends Component {
         this.state = {};
     }
     handleFormSubmit = sc_code => {
-        this.setState({ metric: parseSol(sc_code) });
-        console.log(this);
+        try {
+            this.setState({ metric: parseSol(sc_code) });
+        } catch (error) {
+            this.setState({ metric: "Parser Error" });
+        }
     };
     render = () => {
         return (
