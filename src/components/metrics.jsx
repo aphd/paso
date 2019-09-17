@@ -9,11 +9,11 @@ class Metrics extends Component {
                 <table className="table table-hover">
                     <tbody>
                         <tr>
-                            <th>Version</th>
+                            <th>Version Pragma</th>
                             <td>{Version || "Undefined"}</td>
                         </tr>
                         <tr>
-                            <th>Loc</th>
+                            <th>Source lines of code</th>
                             <td>{LOC}</td>
                         </tr>
                         {json2html(types)}
