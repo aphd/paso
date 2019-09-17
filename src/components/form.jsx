@@ -12,7 +12,7 @@ class Form extends Component {
     }
     handleClick() {
         const sc_code = document.getElementById("sc_code").value;
-        parseSol(sc_code);
+        console.log(parseSol(sc_code));
     }
     render() {
         return (
