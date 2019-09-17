@@ -8,7 +8,8 @@ export function parseSol(code) {
         .flat();
     return {
         types: get_occurrences(types),
-        LOC: root.loc.end.line
+        LOC: root.loc.end.line,
+        Version: root.children[0].value
     };
 }
 
