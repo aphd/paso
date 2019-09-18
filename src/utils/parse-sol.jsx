@@ -4,11 +4,8 @@ export function parseSol(code) {
     const root = parse.parse(code, { loc: true });
     const children = root.children;
     let version = root.children[0].value;
-    if (version) children.splice(0, 1);
-
-    window.code = code;
     window.root = root;
-    window.parse = parse;
+    if (version) children.splice(0, 1);
 
     const types = children.map(v => v.subNodes.map(w => w.type)).flat();
     return {
