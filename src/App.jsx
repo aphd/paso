@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import "./App.css";
-import { Helmet } from "react-helmet";
+import { Helmet, HelmetProvider } from "react-helmet-async";
 import Form from "./components/form";
 import Metrics from "./components/metrics";
 import Error from "./components/error";
@@ -27,9 +27,11 @@ class App extends Component {
     render = () => {
         return (
             <main className="container">
-                <Helmet>
-                    <title>SOLPAR</title>
-                </Helmet>
+                <HelmetProvider>
+                    <Helmet>
+                        <title>SOLPAR</title>
+                    </Helmet>
+                </HelmetProvider>
                 <Form onFormSubmit={this.handleFormSubmit} />
                 <Metrics metric={this.state.metric} />
                 <Error errors={this.state.errors} />
