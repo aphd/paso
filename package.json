@@ -9,14 +9,14 @@
         "react-dom": "^16.9.0",
         "react-helmet": "^5.2.1",
         "react-scripts": "3.1.1",
+        "react-scripts-plugin-no-minify": "^0.4.0",
         "solidity-parser-antlr": "^0.4.11"
     },
     "scripts": {
         "start": "react-scripts start",
-        "build": "react-scripts build",
+        "build": "rm -rf docs; react-scripts build && mv build docs",
         "test": "react-scripts test",
-        "eject": "react-scripts eject",
-        "build": "rm -rf docs; react-scripts build && mv build docs"
+        "eject": "react-scripts eject"
     },
     "eslintConfig": {
         "extends": "react-app"
