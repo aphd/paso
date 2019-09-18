@@ -2,17 +2,19 @@ import parse from "solidity-parser-antlr/dist";
 
 export function parseSol(code) {
     const root = parse.parse(code, { loc: true });
+    const children = root.children;
+    let version = root.children[0].value;
+    if (version) children.splice(0, 1);
+
     window.code = code;
     window.root = root;
     window.parse = parse;
-    const types = root.children
-        .slice(1)
-        .map(v => v.subNodes.map(w => w.type))
-        .flat();
+
+    const types = children.map(v => v.subNodes.map(w => w.type)).flat();
     return {
         types: get_occurrences(types),
         LOC: root.loc.end.line,
-        Version: root.children[0].value
+        Version: version
     };
 }
 
