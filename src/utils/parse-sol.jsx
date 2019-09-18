@@ -1,22 +1,32 @@
 import parse from "solidity-parser-antlr/dist";
 
 export function parseSol(code) {
-    const root = parse.parse(code, { loc: true });
-    const children = root.children;
-    let version = root.children[0].value;
-    window.root = root;
-    if (version) children.splice(0, 1);
+    const ast_j = parse.parse(code, { loc: true });
+    const ast_s = JSON.stringify(ast_j);
+    window.ast_j = parse.parse(code, { loc: true });
 
-    const types = children.map(v => v.subNodes.map(w => w.type)).flat();
-    return {
-        types: get_occurrences(types),
-        LOC: root.loc.end.line,
-        Version: version
+    const metrics = {
+        mapping: '"type":"Mapping"',
+        functions: '"type":"FunctionDefinition"',
+        payable: '"stateMutability":"payable"'
     };
+
+    let result = {};
+
+    for (const metric in metrics) {
+        let reg = metrics[metric];
+        result[metric] = (ast_s.match(new RegExp(reg, "g")) || []).length;
+    }
+    result.loc = ast_j.loc.end.line;
+    result.version = get_version(ast_s);
+
+    console.log(result);
+    return result;
 }
 
-const get_occurrences = array => {
-    const tmp_o = {};
-    array.forEach(v => (tmp_o[v] ? tmp_o[v]++ : (tmp_o[v] = 1)));
-    return tmp_o;
+const get_version = ast_s => {
+    let version = ast_s.match(
+        /"name":"solidity","value":"\^(\d{1,}.\d{1,}.\d{1,})/
+    );
+    return version ? version[1] : version;
 };
