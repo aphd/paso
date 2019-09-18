@@ -6,14 +6,18 @@ export function parseSol(code) {
     window.ast_j = parse.parse(code, { loc: true });
 
     const metrics = {
-        mapping: '"type":"Mapping"',
-        functions: '"type":"FunctionDefinition"',
-        payable: '"stateMutability":"payable"'
+        mapping: '{"type":"Mapping"',
+        functions: '{"type":"FunctionDefinition"',
+        payable: '{"stateMutability":"payable"',
+        events: '{"type":"EventDefinition"',
+        modifiers: '{"type":"ModifierDefinition"',
+        contract: '{"type":"ContractDefinition"',
+        addresses: '{"type":"ElementaryTypeName","name":"address"'
     };
 
     let result = {};
     result.version = get_version(ast_s);
-    result.loc = ast_j.loc.end.line;
+    result.total_lines = ast_j.loc.end.line;
     for (const metric in metrics) {
         let reg = metrics[metric];
         result[metric] = (ast_s.match(new RegExp(reg, "g")) || []).length;
