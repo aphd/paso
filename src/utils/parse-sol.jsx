@@ -3,7 +3,8 @@ import parse from "solidity-parser-antlr/dist";
 export function parseSol(code) {
     const ast_j = parse.parse(code, { loc: true });
     const ast_s = JSON.stringify(ast_j);
-    window.ast_j = parse.parse(code, { loc: true });
+    window.ast_j = ast_j;
+    window._code = code;
 
     const metrics = {
         mapping: '{"type":"Mapping"',
