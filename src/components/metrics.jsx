@@ -4,20 +4,9 @@ import { json2html } from "../utils/json2html";
 class Metrics extends Component {
     render = () => {
         try {
-            const { Version, LOC, types } = this.props.metric;
             return (
                 <table className="table table-hover">
-                    <tbody>
-                        <tr>
-                            <th>Version Pragma</th>
-                            <td>{Version || "Undefined"}</td>
-                        </tr>
-                        <tr>
-                            <th>Source lines of code</th>
-                            <td>{LOC}</td>
-                        </tr>
-                        {json2html(types)}
-                    </tbody>
+                    <tbody>{json2html(this.props.metric)}</tbody>
                 </table>
             );
         } catch {

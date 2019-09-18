@@ -12,13 +12,12 @@ export function parseSol(code) {
     };
 
     let result = {};
-
+    result.version = get_version(ast_s);
+    result.loc = ast_j.loc.end.line;
     for (const metric in metrics) {
         let reg = metrics[metric];
         result[metric] = (ast_s.match(new RegExp(reg, "g")) || []).length;
     }
-    result.loc = ast_j.loc.end.line;
-    result.version = get_version(ast_s);
 
     console.log(result);
     return result;
