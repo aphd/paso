@@ -29,7 +29,7 @@ class App extends Component {
             <main className="container">
                 <HelmetProvider>
                     <Helmet>
-                        <title>SOLPAR</title>
+                        <title>SOL-PA</title>
                     </Helmet>
                 </HelmetProvider>
                 <Form onFormSubmit={this.handleFormSubmit} />

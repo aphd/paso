@@ -1,12 +1,11 @@
-export const code = `
+export const code = `pragma solidity ^0.4.10;
 
-pragma solidity ^0.4.10;
-contract C {
-    function() public payable { }
-    function() public payable { }
-}
-contract D {
-    function() public payable { }
-    function() public payable { }
-}
-`;
+contract SimpleAuction {
+    event HighestBidIncreased(address bidder, uint amount); // Event
+    address public minter;
+    mapping (address => uint) public balances;
+    modifier onlySeller() { }
+      function bid() public payable {
+        emit HighestBidIncreased(msg.sender, msg.value); // Triggering event
+    }
+}`;

@@ -7,13 +7,13 @@ export function parseSol(code) {
     window._code = code;
 
     const metrics = {
-        mapping: '{"type":"Mapping"',
-        functions: '{"type":"FunctionDefinition"',
-        payable: '{"stateMutability":"payable"',
-        events: '{"type":"EventDefinition"',
-        modifiers: '{"type":"ModifierDefinition"',
-        contract: '{"type":"ContractDefinition"',
-        addresses: '{"type":"ElementaryTypeName","name":"address"'
+        mapping: '"type":"Mapping"',
+        functions: '"type":"FunctionDefinition"',
+        payable: '"stateMutability":"payable"',
+        events: '"type":"EventDefinition"',
+        modifiers: '"type":"ModifierDefinition"',
+        contract: '"type":"ContractDefinition"',
+        addresses: '"type":"ElementaryTypeName","name":"address"'
     };
 
     let result = {};
@@ -32,5 +32,5 @@ const get_version = ast_s => {
     let version = ast_s.match(
         /"name":"solidity","value":"\^(\d{1,}.\d{1,}.\d{1,})/
     );
-    return version ? version[1] : version;
+    return version ? version[1] : "Not defined";
 };

@@ -9,7 +9,8 @@ class Metrics extends Component {
                     <tbody>{json2html(this.props.metric)}</tbody>
                 </table>
             );
-        } catch {
+        } catch (error) {
+            console.log(error);
             return <React.Fragment></React.Fragment>;
         }
     };

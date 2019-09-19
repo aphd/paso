@@ -6,9 +6,6 @@ class Form extends Component {
         return (
             <form>
                 <div className="form-group">
-                    <label htmlFor="exampleFormControlTextarea1">
-                        Insert the solidity code in this textarea
-                    </label>
                     <textarea
                         className="form-control"
                         id="sc_code"
