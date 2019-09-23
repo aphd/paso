@@ -12,8 +12,11 @@ export function parseSol(code) {
         payable: '"stateMutability":"payable"',
         events: '"type":"EventDefinition"',
         modifiers: '"type":"ModifierDefinition"',
-        contract: '"type":"ContractDefinition"',
-        addresses: '"type":"ElementaryTypeName","name":"address"'
+        contracts_definition: '"type":"ContractDefinition"',
+        addresses: '"type":"ElementaryTypeName","name":"address"',
+        contracts: '"kind":"contract"',
+        libraries: '"kind":"library"',
+        interfaces: '"kind":"interface"'
     };
 
     let result = {};
