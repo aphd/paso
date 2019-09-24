@@ -11,7 +11,8 @@
         "react-helmet-async": "^1.0.3",
         "react-scripts": "3.1.1",
         "react-scripts-plugin-no-minify": "^0.4.0",
-        "solidity-parser-antlr": "^0.4.11"
+        "solidity-parser-antlr": "^0.4.11",
+        "yargs": "^14.0.0"
     },
     "scripts": {
         "start": "react-scripts start",

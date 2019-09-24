@@ -1,0 +1,203 @@
+/**
+ *Submitted for verification at Etherscan.io on 2017-10-19
+*/
+
+/// price-feed.sol
+
+// Copyright (C) 2017  DappHub, LLC
+
+// Licensed under the Apache License, Version 2.0 (the "License").
+// You may not use this file except in compliance with the License.
+
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND (express or implied).
+
+pragma solidity ^0.4.17;
+
+contract DSAuthority {
+    function canCall(
+        address src, address dst, bytes4 sig
+    ) public view returns (bool);
+}
+
+contract DSAuthEvents {
+    event LogSetAuthority (address indexed authority);
+    event LogSetOwner     (address indexed owner);
+}
+
+contract DSAuth is DSAuthEvents {
+    DSAuthority  public  authority;
+    address      public  owner;
+
+    function DSAuth() public {
+        owner = msg.sender;
+        LogSetOwner(msg.sender);
+    }
+
+    function setOwner(address owner_)
+        public
+        auth
+    {
+        owner = owner_;
+        LogSetOwner(owner);
+    }
+
+    function setAuthority(DSAuthority authority_)
+        public
+        auth
+    {
+        authority = authority_;
+        LogSetAuthority(authority);
+    }
+
+    modifier auth {
+        require(isAuthorized(msg.sender, msg.sig));
+        _;
+    }
+
+    function isAuthorized(address src, bytes4 sig) internal view returns (bool) {
+        if (src == address(this)) {
+            return true;
+        } else if (src == owner) {
+            return true;
+        } else if (authority == DSAuthority(0)) {
+            return false;
+        } else {
+            return authority.canCall(src, this, sig);
+        }
+    }
+}
+
+contract DSNote {
+    event LogNote(
+        bytes4   indexed  sig,
+        address  indexed  guy,
+        bytes32  indexed  foo,
+        bytes32  indexed  bar,
+        uint              wad,
+        bytes             fax
+    ) anonymous;
+
+    modifier note {
+        bytes32 foo;
+        bytes32 bar;
+
+        assembly {
+            foo := calldataload(4)
+            bar := calldataload(36)
+        }
+
+        LogNote(msg.sig, msg.sender, foo, bar, msg.value, msg.data);
+
+        _;
+    }
+}
+
+contract DSMath {
+    function add(uint x, uint y) internal pure returns (uint z) {
+        require((z = x + y) >= x);
+    }
+    function sub(uint x, uint y) internal pure returns (uint z) {
+        require((z = x - y) <= x);
+    }
+    function mul(uint x, uint y) internal pure returns (uint z) {
+        require(y == 0 || (z = x * y) / y == x);
+    }
+
+    function min(uint x, uint y) internal pure returns (uint z) {
+        return x <= y ? x : y;
+    }
+    function max(uint x, uint y) internal pure returns (uint z) {
+        return x >= y ? x : y;
+    }
+    function imin(int x, int y) internal pure returns (int z) {
+        return x <= y ? x : y;
+    }
+    function imax(int x, int y) internal pure returns (int z) {
+        return x >= y ? x : y;
+    }
+
+    uint constant WAD = 10 ** 18;
+    uint constant RAY = 10 ** 27;
+
+    function wmul(uint x, uint y) internal pure returns (uint z) {
+        z = add(mul(x, y), WAD / 2) / WAD;
+    }
+    function rmul(uint x, uint y) internal pure returns (uint z) {
+        z = add(mul(x, y), RAY / 2) / RAY;
+    }
+    function wdiv(uint x, uint y) internal pure returns (uint z) {
+        z = add(mul(x, WAD), y / 2) / y;
+    }
+    function rdiv(uint x, uint y) internal pure returns (uint z) {
+        z = add(mul(x, RAY), y / 2) / y;
+    }
+
+    // This famous algorithm is called "exponentiation by squaring"
+    // and calculates x^n with x as fixed-point and n as regular unsigned.
+    //
+    // It's O(log n), instead of O(n) for naive repeated multiplication.
+    //
+    // These facts are why it works:
+    //
+    //  If n is even, then x^n = (x^2)^(n/2).
+    //  If n is odd,  then x^n = x * x^(n-1),
+    //   and applying the equation for even x gives
+    //    x^n = x * (x^2)^((n-1) / 2).
+    //
+    //  Also, EVM division is flooring and
+    //    floor[(n-1) / 2] = floor[n / 2].
+    //
+    function rpow(uint x, uint n) internal pure returns (uint z) {
+        z = n % 2 != 0 ? x : RAY;
+
+        for (n /= 2; n != 0; n /= 2) {
+            x = rmul(x, x);
+
+            if (n % 2 != 0) {
+                z = rmul(z, x);
+            }
+        }
+    }
+}
+
+contract DSThing is DSAuth, DSNote, DSMath {
+}
+
+contract PriceFeed is DSThing {
+
+    uint128 val;
+    uint32 public zzz;
+
+    function peek() public view
+        returns (bytes32,bool)
+    {
+        return (bytes32(val), now < zzz);
+    }
+
+    function read() public view
+        returns (bytes32)
+    {
+        assert(now < zzz);
+        return bytes32(val);
+    }
+
+    function post(uint128 val_, uint32 zzz_, address med_) public note auth
+    {
+        val = val_;
+        zzz = zzz_;
+        bool ret = med_.call(bytes4(keccak256("poke()")));
+        ret;
+    }
+
+    function void() public note auth
+    {
+        zzz = 0;
+    }
+
+}
+### ABI:
+[{"constant":false,"inputs":[{"name":"owner_","type":"address"}],"name":"setOwner","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"read","outputs":[{"name":"","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"peek","outputs":[{"name":"","type":"bytes32"},{"name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"val_","type":"uint128"},{"name":"zzz_","type":"uint32"},{"name":"med_","type":"address"}],"name":"post","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"authority_","type":"address"}],"name":"setAuthority","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"owner","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"zzz","outputs":[{"name":"","type":"uint32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[],"name":"void","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"authority","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"anonymous":true,"inputs":[{"indexed":true,"name":"sig","type":"bytes4"},{"indexed":true,"name":"guy","type":"address"},{"indexed":true,"name":"foo","type":"bytes32"},{"indexed":true,"name":"bar","type":"bytes32"},{"indexed":false,"name":"wad","type":"uint256"},{"indexed":false,"name":"fax","type":"bytes"}],"name":"LogNote","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"authority","type":"address"}],"name":"LogSetAuthority","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"owner","type":"address"}],"name":"LogSetOwner","type":"event"}]
+### byteCode:
+6060604090815260018054600160a060020a03191633600160a060020a0316908117909155907fce241d7ca1f669fee44b6fc00b8eba2df3bb514eed0f6f668f8f89096e81ed94905160405180910390a261068e8061005f6000396000f30060606040526004361061007f5763ffffffff60e060020a60003504166313af4035811461008457806357de26a4146100a557806359e02dd7146100ca5780635a686699146100f75780637a9e5e4b146101345780638da5cb5b14610153578063a4dff0a214610182578063ac4c25b2146101ae578063bf7e214f146101c1575b600080fd5b341561008f57600080fd5b6100a3600160a060020a03600435166101d4565b005b34156100b057600080fd5b6100b8610253565b60405190815260200160405180910390f35b34156100d557600080fd5b6100dd610294565b604051918252151560208201526040908101905180910390f35b341561010257600080fd5b6100a36fffffffffffffffffffffffffffffffff6004351663ffffffff60243516600160a060020a03604435166102cb565b341561013f57600080fd5b6100a3600160a060020a0360043516610415565b341561015e57600080fd5b610166610494565b604051600160a060020a03909116815260200160405180910390f35b341561018d57600080fd5b6101956104a3565b60405163ffffffff909116815260200160405180910390f35b34156101b957600080fd5b6100a36104c3565b34156101cc57600080fd5b61016661055b565b6101ea33600035600160e060020a03191661056a565b15156101f557600080fd5b6001805473ffffffffffffffffffffffffffffffffffffffff1916600160a060020a038381169190911791829055167fce241d7ca1f669fee44b6fc00b8eba2df3bb514eed0f6f668f8f89096e81ed9460405160405180910390a250565b600254600090700100000000000000000000000000000000900463ffffffff16421061027b57fe5b506002546fffffffffffffffffffffffffffffffff1690565b6002546fffffffffffffffffffffffffffffffff81169170010000000000000000000000000000000090910463ffffffff16421090565b60006004356024358082600160a060020a033316600160e060020a031986351634873660405183815260406020820181815290820183905260608201848480828437820191505094505050505060405180910390a461033633600035600160e060020a03191661056a565b151561034157600080fd5b600280546fffffffffffffffffffffffffffffffff19166fffffffffffffffffffffffffffffffff88161773ffffffff00000000000000000000000000000000191670010000000000000000000000000000000063ffffffff881602179055600160a060020a0384166040517f706f6b65282900000000000000000000000000000000000000000000000000008152600601604051809103902060e060020a90046040518163ffffffff1660e060020a02815260040160006040518083038160008761646e5a03f150505050505050505050565b61042b33600035600160e060020a03191661056a565b151561043657600080fd5b6000805473ffffffffffffffffffffffffffffffffffffffff1916600160a060020a038381169190911791829055167f1abebea81bfa2637f28358c371278fb15ede7ea8dd28d2e03b112ff6d936ada460405160405180910390a250565b600154600160a060020a031681565b600254700100000000000000000000000000000000900463ffffffff1681565b600435602435808233600160a060020a031660008035600160e060020a0319169034903660405183815260406020820181815290820183905260608201848480828437820191505094505050505060405180910390a461052f33600035600160e060020a03191661056a565b151561053a57600080fd5b50506002805473ffffffff0000000000000000000000000000000019169055565b600054600160a060020a031681565b600030600160a060020a031683600160a060020a0316141561058e5750600161065c565b600154600160a060020a03848116911614156105ac5750600161065c565b600054600160a060020a031615156105c65750600061065c565b60008054600160a060020a03169063b7009613908590309086906040516020015260405160e060020a63ffffffff8616028152600160a060020a039384166004820152919092166024820152600160e060020a03199091166044820152606401602060405180830381600087803b151561063f57600080fd5b6102c65a03f1151561065057600080fd5b50505060405180519150505b929150505600a165627a7a723058207e8b261b5f4aca277f59fcd343a4d96b18b0857d17b441e0967d7e7dc14958bf0029

@@ -1,27 +1,29 @@
 import {Reader} from "./reader.mjs";
 import {Writer} from "./writer.mjs";
+import args from "yargs";
 
 class Client {
 
-    constructor (par) {
-        this.dir = par.dir;
-        this.output = par.output;
+    constructor (dir, output) {
+        this.dir = dir;
         this.fns = this.read();
-        this.write()
+        this.write(output)
     }
 
     read() {
         return new Reader(this.dir).files;
     }
 
-    write() {
-        let fns = this.fns.map(fn => `${this.dir}${fn.slice(0,4)}/${fn}`).slice(1, 10);
-        const w = new Writer(fns, this.output);
+    write(output) {
+        let fns = this.fns.map(fn => `${this.dir}${fn.slice(0,4)}/${fn}`);
+        const w = new Writer(fns, output);
         w.write_csv();
     }
 }
 
-new Client({
-    dir: "/Users/antonio/github/aphd/solidity-metrics/examples/_html_files_14890/",
-    output: "/tmp/_metrics.csv"
-});
+const {argv} = args;
+if ( typeof argv.d !== 'undefined' && typeof argv.o !== 'undefined' ){
+    new Client( argv.d, argv.o);
+} else {
+    console.log('Error: no parameter named "--d" and "--o"\nExample:\nnode --experimental-modules src/services/client.mjs --d=src/fixtures/smart-contracts/ --o /tmp/metrics.csv');
+}

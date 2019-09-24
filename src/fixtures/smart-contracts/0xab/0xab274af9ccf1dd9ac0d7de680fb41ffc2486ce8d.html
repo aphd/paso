@@ -1,0 +1,250 @@
+/**
+ *Submitted for verification at Etherscan.io on 2018-08-23
+*/
+
+pragma solidity ^0.4.24;
+
+contract CompanyShare {
+    using SafeMath for *;
+
+    mapping (address => uint256) public pIDxAddr_;          // (addr => pID) returns player id by address
+    mapping (uint256 => CompanySharedatasets.Player) public team_;          // (team => fees) fee distribution by team
+
+    /**
+     * @dev prevents contracts from interacting with fomo3d
+     */
+    modifier isHuman() {
+        address _addr = msg.sender;
+        uint256 _codeLength;
+
+        assembly {_codeLength := extcodesize(_addr)}
+        require(_codeLength == 0, "sorry humans only");
+        _;
+    }
+
+    constructor()
+        public
+    {
+        address first 	= 0xc1cac10cbe165706ce5c4fe5fad076394e8f6394;
+        address second 	= 0x70AAbFDcf6b98F571E0bEbC4eb777F7CaaA42429;
+        address third 	= 0x9a099cf4d575f9152ab98b0f566c4e255d08c7a3;
+        address fourth 	= 0xAdD148Cc4F7B1b7520325a7C5934C002420Ab3d5;
+
+        //creatTeam
+        team_[1] = CompanySharedatasets.Player(first,0, 500);
+        pIDxAddr_[first] = 1;
+        team_[2] = CompanySharedatasets.Player(second,0, 250);
+        pIDxAddr_[second] = 2;
+        team_[3] = CompanySharedatasets.Player(third,0, 125);
+        pIDxAddr_[third] = 3;
+        team_[4] = CompanySharedatasets.Player(fourth,0, 125);
+        pIDxAddr_[fourth] = 4;
+	}
+
+    /**
+     * @dev emergency buy uses last stored affiliate ID and team snek
+     */
+    function()
+        public
+        payable
+    {
+        uint256 _eth = msg.value;
+        //giveTeam Gen
+        giveGen(_eth);
+    }
+
+    function deposit()
+        public
+        payable
+        returns(bool)
+    {
+        uint256 _eth = msg.value;
+        //giveTeam Gen
+        giveGen(_eth);
+        return true;
+    }
+
+	function giveGen(uint256 _eth)
+		private
+		returns(uint256)
+    {
+        uint256 _genFirst = _eth.mul(team_[1].percent) /1000;
+        uint256 _genSecond = _eth.mul(team_[2].percent) /1000;
+        uint256 _genThird = _eth.mul(team_[3].percent) /1000;
+        uint256 _genFourth = _eth.sub(_genFirst).sub(_genSecond).sub(_genThird);
+        //give gen
+        team_[1].gen = _genFirst.add(team_[1].gen);
+        team_[2].gen = _genSecond.add(team_[2].gen);
+        team_[3].gen = _genThird.add(team_[3].gen);
+        team_[4].gen = _genFourth.add(team_[4].gen);
+    }
+
+        /**
+     * @dev withdraws all of your earnings.
+     * -functionhash- 0x3ccfd60b
+     */
+    function withdraw()
+        isHuman()
+        public
+    {
+        // fetch player ID
+        uint256 _pID = pIDxAddr_[msg.sender];
+        require(_pID != 0, "sorry not team");
+        // setup temp var for player eth
+        uint256 _eth;
+        // get their earnings
+        _eth = withdrawEarnings(_pID);
+        team_[_pID].addr.transfer(_eth);
+    }
+
+        /**
+     * @dev adds up unmasked earnings, & vault earnings, sets them all to 0
+     * @return earnings in wei format
+     */
+    function withdrawEarnings(uint256 _pID)
+        private
+        returns(uint256)
+    {
+
+        // from vaults
+        uint256 _earnings = team_[_pID].gen;
+        if (_earnings > 0)
+        {
+            team_[_pID].gen = 0;
+        }
+
+        return(_earnings);
+    }
+
+    function getGen()
+		public
+		view
+		returns(uint256)
+    {
+        uint256 _pID = pIDxAddr_[msg.sender];
+        require(_pID != 0, "sorry not in team");
+        uint256 _earnings = team_[_pID].gen;
+        return _earnings;
+    } 
+}
+
+
+//==============================================================================
+//   __|_ _    __|_ _  .
+//  _\ | | |_|(_ | _\  .
+//==============================================================================
+library CompanySharedatasets {
+    //compressedData key
+    struct Player {
+        address addr;   // player address
+        uint256 gen;    // general vault
+        uint256 percent;    // gen percent vault
+    }
+}
+
+/**
+ * @title SafeMath v0.1.9
+ * @dev Math operations with safety checks that throw on error
+ * change notes:  original SafeMath library from OpenZeppelin modified by Inventor
+ * - added sqrt
+ * - added sq
+ * - added pwr
+ * - changed asserts to requires with error log outputs
+ * - removed div, its useless
+ */
+library SafeMath {
+
+    /**
+    * @dev Multiplies two numbers, throws on overflow.
+    */
+    function mul(uint256 a, uint256 b)
+        internal
+        pure
+        returns (uint256 c)
+    {
+        if (a == 0) {
+            return 0;
+        }
+        c = a * b;
+        require(c / a == b, "SafeMath mul failed");
+        return c;
+    }
+
+    /**
+    * @dev Subtracts two numbers, throws on overflow (i.e. if subtrahend is greater than minuend).
+    */
+    function sub(uint256 a, uint256 b)
+        internal
+        pure
+        returns (uint256)
+    {
+        require(b <= a, "SafeMath sub failed");
+        return a - b;
+    }
+
+    /**
+    * @dev Adds two numbers, throws on overflow.
+    */
+    function add(uint256 a, uint256 b)
+        internal
+        pure
+        returns (uint256 c)
+    {
+        c = a + b;
+        require(c >= a, "SafeMath add failed");
+        return c;
+    }
+
+    /**
+     * @dev gives square root of given x.
+     */
+    function sqrt(uint256 x)
+        internal
+        pure
+        returns (uint256 y)
+    {
+        uint256 z = ((add(x,1)) / 2);
+        y = x;
+        while (z < y)
+        {
+            y = z;
+            z = ((add((x / z),z)) / 2);
+        }
+    }
+
+    /**
+     * @dev gives square. multiplies x by x
+     */
+    function sq(uint256 x)
+        internal
+        pure
+        returns (uint256)
+    {
+        return (mul(x,x));
+    }
+
+    /**
+     * @dev x to the power of y
+     */
+    function pwr(uint256 x, uint256 y)
+        internal
+        pure
+        returns (uint256)
+    {
+        if (x==0)
+            return (0);
+        else if (y==0)
+            return (1);
+        else
+        {
+            uint256 z = x;
+            for (uint256 i=1; i < y; i++)
+                z = mul(z,x);
+            return (z);
+        }
+    }
+}
+### ABI:
+[{"constant":true,"inputs":[{"name":"","type":"address"}],"name":"pIDxAddr_","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[],"name":"withdraw","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"","type":"uint256"}],"name":"team_","outputs":[{"name":"addr","type":"address"},{"name":"gen","type":"uint256"},{"name":"percent","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"getGen","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[],"name":"deposit","outputs":[{"name":"","type":"bool"}],"payable":true,"stateMutability":"payable","type":"function"},{"inputs":[],"payable":false,"stateMutability":"nonpayable","type":"constructor"},{"payable":true,"stateMutability":"payable","type":"fallback"}]
+### byteCode:
+608060405234801561001057600080fd5b50604080516060818101835273c1cac10cbe165706ce5c4fe5fad076394e8f63948252600060208084018281526101f4858701908152600180855280845295517fcc69885fda6bcc1a4ace058b4a62bf5e179ea78fd58a1ccd71c22cc9b688792f8054600160a060020a03928316600160a060020a03199182161790915592517fcc69885fda6bcc1a4ace058b4a62bf5e179ea78fd58a1ccd71c22cc9b68879305590517fcc69885fda6bcc1a4ace058b4a62bf5e179ea78fd58a1ccd71c22cc9b6887931557f59e85c9e70cb09987853dd369efd9c0bb3060612cc669789d3e9cea7a1c09371869055865180860188527370aabfdcf6b98f571e0bebc4eb777f7caaa42429815280840185815260fa828a01908152600280885289875292517fd9d16d34ffb15ba3a3d852f0d403e2ce1d691fb54de27ac87cd2f993f3ec330f805491861691871691909117905590517fd9d16d34ffb15ba3a3d852f0d403e2ce1d691fb54de27ac87cd2f993f3ec331055517fd9d16d34ffb15ba3a3d852f0d403e2ce1d691fb54de27ac87cd2f993f3ec3311557f5f88e51cb7489032651a62ba2d09c7d04499eba01db65c6bfd015d2629050a545586518086018852739a099cf4d575f9152ab98b0f566c4e255d08c7a38152808401858152607d828a0181815260038089528a885293517f7dfe757ecd65cbd7922a9c0161e935dd7fdbcc0e999689c7d31633896b1fc60b805491871691881691909117905591517f7dfe757ecd65cbd7922a9c0161e935dd7fdbcc0e999689c7d31633896b1fc60c5590517f7dfe757ecd65cbd7922a9c0161e935dd7fdbcc0e999689c7d31633896b1fc60d557f05bcc499d8398e716ae863e3cf6e09c25b65affb32bcae9965ec912aba6926c4919091558751958601885273add148cc4f7b1b7520325a7c5934c002420ab3d5808752868501868152988701918252600480875297855295517fedc95719e9a3b28dd8e80877cb5880a9be7de1a13fc8b05e7999683b6b567643805491909316931692909217905594517fedc95719e9a3b28dd8e80877cb5880a9be7de1a13fc8b05e7999683b6b5676445593517fedc95719e9a3b28dd8e80877cb5880a9be7de1a13fc8b05e7999683b6b567645559081529091527f6d2d2e11da864666d52300b01ebc181fb9644e696f30b0eb7cec143b63f6f4ea556107998061037d6000396000f30060806040526004361061006c5763ffffffff7c010000000000000000000000000000000000000000000000000000000060003504166310f01eba811461007a5780633ccfd60b146100ba5780636e7d3025146100d1578063a5ae65ba1461011e578063d0e30db014610133575b346100768161014f565b5050005b34801561008657600080fd5b506100a873ffffffffffffffffffffffffffffffffffffffff600435166103fa565b60408051918252519081900360200190f35b3480156100c657600080fd5b506100cf61040c565b005b3480156100dd57600080fd5b506100e9600435610534565b6040805173ffffffffffffffffffffffffffffffffffffffff9094168452602084019290925282820152519081900360600190f35b34801561012a57600080fd5b506100a861056d565b61013b6105ee565b604080519115158252519081900360200190f35b600160008181526020919091527fcc69885fda6bcc1a4ace058b4a62bf5e179ea78fd58a1ccd71c22cc9b68879315481908190819081906103e89061019b90889063ffffffff61060316565b8115156101a457fe5b600260005260016020527fd9d16d34ffb15ba3a3d852f0d403e2ce1d691fb54de27ac87cd2f993f3ec33115491900494506103e8906101ea90889063ffffffff61060316565b8115156101f357fe5b600360005260016020527f7dfe757ecd65cbd7922a9c0161e935dd7fdbcc0e999689c7d31633896b1fc60d5491900493506103e89061023990889063ffffffff61060316565b81151561024257fe5b0491506102678261025b85818a8963ffffffff61068016565b9063ffffffff61068016565b600160008190526020527fcc69885fda6bcc1a4ace058b4a62bf5e179ea78fd58a1ccd71c22cc9b6887930549091506102a790859063ffffffff6106e016565b60016020527fcc69885fda6bcc1a4ace058b4a62bf5e179ea78fd58a1ccd71c22cc9b68879305560026000527fd9d16d34ffb15ba3a3d852f0d403e2ce1d691fb54de27ac87cd2f993f3ec33105461030690849063ffffffff6106e016565b60016020527fd9d16d34ffb15ba3a3d852f0d403e2ce1d691fb54de27ac87cd2f993f3ec33105560036000527f7dfe757ecd65cbd7922a9c0161e935dd7fdbcc0e999689c7d31633896b1fc60c5461036590839063ffffffff6106e016565b60016020527f7dfe757ecd65cbd7922a9c0161e935dd7fdbcc0e999689c7d31633896b1fc60c5560046000527fedc95719e9a3b28dd8e80877cb5880a9be7de1a13fc8b05e7999683b6b567644546103c490829063ffffffff6106e016565b600460005260016020527fedc95719e9a3b28dd8e80877cb5880a9be7de1a13fc8b05e7999683b6b567644555092949350505050565b60006020819052908152604090205481565b60008033803b8015610468576040805160e560020a62461bcd02815260206004820152601160248201527f736f7272792068756d616e73206f6e6c79000000000000000000000000000000604482015290519081900360640190fd5b3360009081526020819052604090205493508315156104d1576040805160e560020a62461bcd02815260206004820152600e60248201527f736f727279206e6f74207465616d000000000000000000000000000000000000604482015290519081900360640190fd5b6104da8461073b565b60008581526001602052604080822054905192955073ffffffffffffffffffffffffffffffffffffffff169185156108fc0291869190818181858888f1935050505015801561052d573d6000803e3d6000fd5b5050505050565b600160208190526000918252604090912080549181015460029091015473ffffffffffffffffffffffffffffffffffffffff9092169183565b33600090815260208190526040812054818115156105d5576040805160e560020a62461bcd02815260206004820152601160248201527f736f727279206e6f7420696e207465616d000000000000000000000000000000604482015290519081900360640190fd5b5060009081526001602081905260409091200154919050565b6000346105fa8161014f565b50600191505090565b60008215156106145750600061067a565b5081810281838281151561062457fe5b041461067a576040805160e560020a62461bcd02815260206004820152601360248201527f536166654d617468206d756c206661696c656400000000000000000000000000604482015290519081900360640190fd5b92915050565b6000828211156106da576040805160e560020a62461bcd02815260206004820152601360248201527f536166654d61746820737562206661696c656400000000000000000000000000604482015290519081900360640190fd5b50900390565b8181018281101561067a576040805160e560020a62461bcd02815260206004820152601360248201527f536166654d61746820616464206661696c656400000000000000000000000000604482015290519081900360640190fd5b6000818152600160208190526040822001548181111561067a57600083815260016020819052604082200155929150505600a165627a7a723058200a9e166f898453020e5bbf56b0bb91cca60ed02da7c84c7aa57e0e01c78ae2160029

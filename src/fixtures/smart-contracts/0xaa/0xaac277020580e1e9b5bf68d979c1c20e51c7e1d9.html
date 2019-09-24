@@ -1,0 +1,980 @@
+/**
+ *Submitted for verification at Etherscan.io on 2018-03-06
+*/
+
+// Base Minting Contract
+contract CardMintingFacilitator {
+    CardConfig schema = CardConfig(0x08584271df3d0249c2c06ac1bc1237a1dd30cb9a); 
+    EtherGenCore storageContract = EtherGenCore(0x677aa1dc08b9429c595efd4425b2d218cc22fd6e);
+    address public owner = 0x08F4aE96b647B30177cc15B21195960625BA4163;
+    
+    function generateRandomCard(uint32 randomSeed) internal constant returns (uint8[14]) {
+        uint8[14] memory cardDetails;
+       
+        randomSeed = uint32(sha3(block.blockhash(block.number), randomSeed));
+        cardDetails[0] = schema.getType(randomSeed);
+
+        if (cardDetails[0] == uint8(CardConfig.Type.Monster)) {
+            generateRandomMonster(cardDetails, randomSeed);
+        } else {
+            generateRandomSpell(cardDetails, randomSeed);
+        }
+        
+        randomSeed = uint32(sha3(block.blockhash(block.number), randomSeed));
+        if (randomSeed % 200 == 13) { // Lucky number 13
+            cardDetails[12] = 1; // Secret golden attribute
+        }
+        
+        return cardDetails;
+    }
+    
+    function generateRandomMonster(uint8[14] cardDetails, uint32 randomSeed) internal constant {
+        uint24 totalCost;
+        
+        randomSeed = uint32(sha3(block.blockhash(block.number), randomSeed));
+        cardDetails[1] = schema.getRace(randomSeed);
+        totalCost += schema.getCostForRace(cardDetails[1]);
+
+        randomSeed = uint32(sha3(block.blockhash(block.number), randomSeed));
+        cardDetails[2] = schema.getTrait(randomSeed);
+        totalCost += schema.getCostForTrait(cardDetails[2]);
+
+        uint8 newMutation;
+        uint24 newMutationCost;
+        randomSeed = uint32(sha3(block.blockhash(block.number), randomSeed));
+        
+        uint8 numMutations = uint8(randomSeed % 12); // 0 = 0 mutations, 1 = 1 mutation, 2-5 = 2 mutations, 6-11 = 3 mutations 
+        if (numMutations > 5) {
+            numMutations = 3;
+        } else if (numMutations > 2) {
+            numMutations = 2;
+        }
+        
+        for (uint8 i = 0; i < numMutations; i++) {
+            randomSeed = uint32(sha3(block.blockhash(block.number), randomSeed));
+            if (bool(randomSeed % 3 == 0)) { // 0: Race; 1-2: Neutral
+                randomSeed = uint32(sha3(block.blockhash(block.number), randomSeed));
+
+                // Horribly add new mutations (rather than looping for a fresh one) this is cheaper
+                (newMutationCost, newMutation) = schema.getMutationForRace(CardConfig.Race(cardDetails[1]), randomSeed);
+                if (totalCost + newMutationCost < 290000) {
+                    if (cardDetails[6] == 0) {
+                        cardDetails[6] = newMutation;
+                        totalCost += newMutationCost;
+                    } else if (cardDetails[6] > 0 && cardDetails[7] == 0 && cardDetails[6] != newMutation) {
+                        cardDetails[7] = newMutation;
+                        totalCost += newMutationCost;
+                    } else if  (cardDetails[6] > 0 && cardDetails[7] > 0 && cardDetails[8] == 0 && cardDetails[6] != newMutation && cardDetails[7] != newMutation) {
+                        cardDetails[8] = newMutation;
+                        totalCost += newMutationCost;
+                    }
+                }
+            } else {
+                randomSeed = uint32(sha3(block.blockhash(block.number), randomSeed));
+
+                // Horribly add new mutations (rather than looping for a fresh one) this is cheaper
+                (newMutationCost, newMutation) = schema.getNeutralMutation(randomSeed);
+                if (totalCost + newMutationCost < 290000) {
+                    if (cardDetails[9] == 0) {
+                        cardDetails[9] = newMutation;
+                        totalCost += newMutationCost;
+                    } else if (cardDetails[9] > 0 && cardDetails[10] == 0 && cardDetails[9] != newMutation) {
+                        cardDetails[10] = newMutation;
+                        totalCost += newMutationCost;
+                    } else if (cardDetails[9] > 0 && cardDetails[10] > 0 && cardDetails[11] == 0 && cardDetails[9] != newMutation && cardDetails[10] != newMutation) {
+                        cardDetails[11] = newMutation;
+                        totalCost += newMutationCost;
+                    }
+                }
+            }
+        }
+
+        // For attack & health distribution
+        randomSeed = uint32(sha3(block.blockhash(block.number), randomSeed));
+        uint24 powerCost = schema.getCostForHealth(1) + uint24(randomSeed % (301000 - (totalCost + schema.getCostForHealth(1)))); // % upto 300999 will allow 30 cost cards
+
+        if (totalCost + powerCost < 100000) { // Cards should cost at least 10 crystals (10*10000 exponant)
+            powerCost = 100000 - totalCost;
+        }
+        
+        randomSeed = uint32(sha3(block.blockhash(block.number), randomSeed));
+        cardDetails[5] = 1 + uint8(schema.getHealthForCost(randomSeed % powerCost)); // should be (1 + powerCost - schema.getCostForHealth(1))
+        totalCost += schema.getCostForHealth(cardDetails[5]);
+        
+        powerCost = powerCost - schema.getCostForHealth(cardDetails[5]); // Power left for attack
+        cardDetails[4] = uint8(schema.getAttackForCost(powerCost));
+        totalCost += schema.getCostForAttack(cardDetails[4]);
+       
+        // Remove exponent to get total card cost [10-30]
+        cardDetails[3] = uint8(totalCost / 10000);
+    }
+    
+    
+    function generateRandomSpell(uint8[14] cardDetails, uint32 randomSeed) internal constant {
+        uint24 totalCost;
+        
+        uint8 newAbility;
+        uint24 newAbilityCost;
+        randomSeed = uint32(sha3(block.blockhash(block.number), randomSeed));
+        
+        uint8 numAbilities = uint8(randomSeed % 16); // 0 = 1 ability, 1-8 = 2 abilities, 9-15 = 3 abilities 
+        if (numAbilities > 8) {
+            numAbilities = 3;
+        } else if (numAbilities > 0) {
+            numAbilities = 2;
+        } else {
+            numAbilities = 1;
+        }
+        
+        for (uint8 i = 0; i < numAbilities; i++) {
+            randomSeed = uint32(sha3(block.blockhash(block.number), randomSeed));
+
+            // Horribly add new spell abilities (rather than looping for a fresh one) this is cheaper
+            (newAbilityCost, newAbility) = schema.getSpellAbility(randomSeed);
+            if (totalCost + newAbilityCost <= 300000) {
+                if (cardDetails[9] == 0) {
+                    cardDetails[9] = newAbility;
+                    totalCost += newAbilityCost;
+                } else if (cardDetails[9] > 0 && cardDetails[10] == 0 && cardDetails[9] != newAbility) {
+                    cardDetails[10] = newAbility;
+                    totalCost += newAbilityCost;
+                } else if (cardDetails[9] > 0 && cardDetails[10] > 0 && cardDetails[11] == 0 && cardDetails[9] != newAbility && cardDetails[10] != newAbility) {
+                    cardDetails[11] = newAbility;
+                    totalCost += newAbilityCost;
+                }
+            }
+        }
+        
+        // Remove exponent to get total card cost [10-30]
+        cardDetails[3] = uint8(totalCost / 10000);
+    }
+    
+    
+    function generateCostFromAttributes(uint8[14] cardDetails) internal constant returns (uint8 cost) {
+        uint24 exponentCost = 0;
+        if (cardDetails[0] == 1) { // Spell
+            exponentCost += schema.getSpellAbilityCost(cardDetails[9]);
+            exponentCost += schema.getSpellAbilityCost(cardDetails[10]);
+            exponentCost += schema.getSpellAbilityCost(cardDetails[11]);
+        } else {
+            exponentCost += schema.getCostForRace(cardDetails[1]);
+            exponentCost += schema.getCostForTrait(cardDetails[2]);
+            exponentCost += schema.getCostForAttack(cardDetails[4]);
+            exponentCost += schema.getCostForHealth(cardDetails[5]);
+            exponentCost += schema.getRaceMutationCost(CardConfig.Race(cardDetails[1]), cardDetails[6]);
+            exponentCost += schema.getRaceMutationCost(CardConfig.Race(cardDetails[1]), cardDetails[7]);
+            exponentCost += schema.getRaceMutationCost(CardConfig.Race(cardDetails[1]), cardDetails[8]);
+            exponentCost += schema.getNeutralMutationCost(cardDetails[9]);
+            exponentCost += schema.getNeutralMutationCost(cardDetails[10]);
+            exponentCost += schema.getNeutralMutationCost(cardDetails[11]);
+        }
+        return uint8(exponentCost / 10000); // Everything is factor 10000 for ease of autonomous Workshop cost-tuning
+    }
+    
+    // Allows future extensibility (New card mutations + Workshop updates)
+    function upgradeCardConfig(address newCardConfig) external {
+        require(msg.sender == owner);
+        schema = CardConfig(newCardConfig);
+    }
+    
+    function updateStorageContract(address newStorage) external {
+        require(msg.sender == owner);
+        storageContract = EtherGenCore(newStorage);
+    }
+    
+    function updateOwner(address newOwner) external {
+        require(msg.sender == owner);
+        owner = newOwner;
+    }
+}
+
+
+contract LimitedEditionSeedCardsDistributor is CardMintingFacilitator {
+    
+    // To kickstart marketplace 100,000 cards will be listed over time (starting at four per hour) 
+    // this is a tiny fraction of the rough 4,000,000,000 possible cards, we anticipate these to be
+    // VERY limited edition in future (as Workshop will autonomously adjust crystal costs for popular card-combinations)
+    // so may become impossible to craft some cards in this batch... Gift to our early adopters!
+    uint24 constant mintingLimit = 100000;
+    uint128 constant startingPriceMultiplier = 250 szabo; // Crystal cost * 250 szabo (aka 2500-7500 szabo)
+    uint128 constant endPriceMultiplier = 100 szabo; // (aka 1000-3000 szabo) ~$2 bargain!
+   
+    uint24 public cardsMinted = 0;
+    uint64[] private mintedCardIds;
+    uint128 private nextMarketListingTimeStamp;
+    
+    MappedMarketplace marketplaceContract = MappedMarketplace(0xc3d2736b3e4f0f78457d75b3b5f0191a14e8bd57);
+    
+    function mintNextCard() external {
+        require(cardsMinted < mintingLimit);
+        uint8[14] memory newCard = generateRandomCard(uint32(storageContract.totalSupply() * now));
+        cardsMinted++;
+        storageContract.mintCard(address(this), newCard);
+        mintedCardIds.push(uint64(storageContract.totalSupply() - 1));
+    }
+    
+    function listNextFourCards(uint128 nextDrop) external {
+        // Lists four cards on market (starting rate 4 cards per hour, fluctuating on demand)
+        // Until all 100,000 Rare Limited Edition have been listed.
+        // We estimate just 60-90 days before no more cards, forever (Excluding Workshop/Fusing of Cards)
+        require(msg.sender == owner);
+        require(mintedCardIds.length > 3);
+        require(nextDrop > nextMarketListingTimeStamp);
+        
+        listSingleCard();
+        listSingleCard();
+        listSingleCard();
+        listSingleCard();
+        
+        // Update timestamp for next batch
+        nextMarketListingTimeStamp = nextDrop;
+    }
+    
+    function listSingleCard() internal {
+        uint64 cardId = mintedCardIds[mintedCardIds.length - 1];
+        uint8[14] memory cardInfo = storageContract.getCard(cardId);
+        
+        uint128 startPrice = cardInfo[3] * startingPriceMultiplier;
+        uint128 endPrice = cardInfo[3] * endPriceMultiplier;
+        marketplaceContract.listCard(cardId, startPrice, endPrice, 24 hours);
+        
+        delete mintedCardIds[mintedCardIds.length - 1];
+        mintedCardIds.length--;
+    }
+    
+    function getNextDropTime() constant external returns (uint128) {
+        return nextMarketListingTimeStamp;
+    }
+    
+    function() public payable { }
+    
+    function withdrawBalance() external {
+        require(msg.sender == owner);
+        owner.transfer(this.balance);
+    }
+
+    function updateMarketContract(address newMarketplace) external {
+        require(msg.sender == owner);
+        marketplaceContract = MappedMarketplace(newMarketplace);
+    }
+    
+}
+
+// Interface for contracts conforming to ERC-721: Non-Fungible Tokens
+contract ERC721 {
+
+    // Required methods
+    function totalSupply() public view returns (uint256 cards);
+    function balanceOf(address player) public view returns (uint256 balance);
+    function ownerOf(uint256 cardId) external view returns (address owner);
+    function approve(address to, uint256 cardId) external;
+    function transfer(address to, uint256 cardId) external;
+    function transferFrom(address from, address to, uint256 cardId) external;
+
+    // Events
+    event Transfer(address from, address to, uint256 cardId);
+    event Approval(address owner, address approved, uint256 cardId);
+
+    // Name and symbol of the non fungible token, as defined in ERC721.
+    string public constant name = "EtherGen";
+    string public constant symbol = "ETG";
+
+    // Optional methods
+    function tokensOfOwner(address player) external view returns (uint64[] cardIds);
+}
+
+
+contract PlayersCollectionStorage {
+    
+    mapping(address => PlayersCollection) internal playersCollections;
+    mapping(uint64 => Card) internal cardIdMapping;
+
+    struct PlayersCollection {
+        uint64[] cardIds;
+        bool referalCardsUnlocked;
+    }
+
+    struct Card {
+        uint64 id;
+        uint64 collectionPointer; // Index in player's collection
+        address owner;
+        
+        uint8 cardType;
+        uint8 race;
+        uint8 trait;
+
+        uint8 cost; // [10-30]
+        uint8 attack; // [0-99]
+        uint8 health; // [1-99]
+
+        uint8 raceMutation0; // Super ugly but dynamic length arrays are currently a no-go across contracts
+        uint8 raceMutation1; // + very expensive gas since cards are in nested structs (collection of cards)
+        uint8 raceMutation2;
+
+        uint8 neutralMutation0;
+        uint8 neutralMutation1;
+        uint8 neutralMutation2;
+
+        /**
+         * Initally referal (free) cards will be untradable (to stop abuse) however EtherGenCore has
+         * unlockUntradeableCards() to make them tradeable -triggered once player hits certain battle/game milestone
+         */
+        bool isReferalReward;
+        bool isGolden; // Top secret Q2 animated art
+    }
+    
+    function getPlayersCollection(address player) public constant returns (uint64[], uint8[14][]) {
+        uint8[14][] memory cardDetails = new uint8[14][](playersCollections[player].cardIds.length);
+        uint64[] memory cardIds = new uint64[](playersCollections[player].cardIds.length);
+
+        for (uint32 i = 0; i < playersCollections[player].cardIds.length; i++) {
+            Card memory card = cardIdMapping[playersCollections[player].cardIds[i]];
+            cardDetails[i][0] = card.cardType;
+            cardDetails[i][1] = card.race;
+            cardDetails[i][2] = card.trait;
+            cardDetails[i][3] = card.cost;
+            cardDetails[i][4] = card.attack;
+            cardDetails[i][5] = card.health;
+            cardDetails[i][6] = card.raceMutation0;
+            cardDetails[i][7] = card.raceMutation1;
+            cardDetails[i][8] = card.raceMutation2;
+            cardDetails[i][9] = card.neutralMutation0;
+            cardDetails[i][10] = card.neutralMutation1;
+            cardDetails[i][11] = card.neutralMutation2;
+
+            cardDetails[i][12] = card.isGolden ? 1 : 0; // Not ideal but web3.js didn't like returning multiple 2d arrays
+            cardDetails[i][13] = isCardTradeable(card) ? 1 : 0;
+            
+            cardIds[i] = card.id;
+        }
+        return (cardIds, cardDetails);
+    }
+    
+    function getCard(uint64 cardId) public constant returns (uint8[14]) {
+        Card memory card = cardIdMapping[cardId];
+        return ([card.cardType, card.race, card.trait, card.cost, card.attack, card.health,
+                 card.raceMutation0, card.raceMutation1, card.raceMutation2,
+                 card.neutralMutation0, card.neutralMutation1, card.neutralMutation2,
+                 card.isGolden ? 1 : 0, 
+                 isCardTradeable(card) ? 1 : 0]);
+    }
+    
+    function isCardTradeable(Card card) internal constant returns(bool) {
+        return (playersCollections[card.owner].referalCardsUnlocked || !card.isReferalReward);
+    }
+    
+    function isCardTradeable(uint64 cardId) external constant returns(bool) {
+        return isCardTradeable(cardIdMapping[cardId]);
+    }
+}
+
+
+
+
+contract EtherGenCore is PlayersCollectionStorage, ERC721 {
+    
+    mapping(address => bool) private privilegedTransferModules; // Marketplace ( + future features)
+    mapping(address => bool) private privilegedMintingModules; // Referals, Fusing, Workshop etc. ( + future features)
+    
+    mapping(uint64 => address) private cardIdApproveds; // Approval list (ERC721 transfers)
+    uint64 private totalCardSupply; // Also used for cardId incrementation
+    
+    TransferRestrictionVerifier transferRestrictionVerifier = TransferRestrictionVerifier(0xd9861d9a6111bfbb9235a71151f654d0fe7ed954); 
+    address public owner = 0x08F4aE96b647B30177cc15B21195960625BA4163;
+    bool public paused = false;
+    
+    function totalSupply() public view returns (uint256 cards) {
+        return totalCardSupply;
+    }
+    
+    function ownerOf(uint256 cardId) external view returns (address cardOwner) {
+        return cardIdMapping[uint64(cardId)].owner;
+    }
+    
+    function balanceOf(address player) public view returns (uint256 balance) {
+        return playersCollections[player].cardIds.length;
+    }
+    
+    function tokensOfOwner(address player) external view returns (uint64[] cardIds) {
+        return playersCollections[player].cardIds;
+    }
+    
+    function transfer(address newOwner, uint256 cardId) external {
+        uint64 castCardId = uint64(cardId);
+        require(cardIdMapping[castCardId].owner == msg.sender);
+        require(isCardTradeable(cardIdMapping[castCardId]));
+        require(transferRestrictionVerifier.isAvailableForTransfer(castCardId));
+        require(!paused);
+        
+        removeCardOwner(castCardId);
+        assignCardOwner(newOwner, castCardId);
+        Transfer(msg.sender, newOwner, castCardId); // Emit Event
+    }
+    
+    function transferFrom(address currentOwner, address newOwner, uint256 cardId) external {
+        uint64 castCardId = uint64(cardId);
+        require(cardIdMapping[castCardId].owner == currentOwner);
+        require(isApprovedTransferer(msg.sender, castCardId));
+        require(isCardTradeable(cardIdMapping[castCardId]));
+        require(transferRestrictionVerifier.isAvailableForTransfer(castCardId));
+        require(!paused);
+        
+        removeCardOwner(castCardId);
+        assignCardOwner(newOwner, castCardId);
+        Transfer(currentOwner, newOwner, castCardId); // Emit Event
+    }
+    
+    function approve(address approved, uint256 cardId) external {
+        uint64 castCardId = uint64(cardId);
+        require(cardIdMapping[castCardId].owner == msg.sender);
+        
+        cardIdApproveds[castCardId] = approved; // Register approval (replacing previous)
+        Approval(msg.sender, approved, castCardId); // Emit Event
+    }
+    
+    function isApprovedTransferer(address approvee, uint64 cardId) internal constant returns (bool) {
+        // Will only return true if approvee (msg.sender) is a privileged transfer address (Marketplace) or santioned by card's owner using ERC721's approve()
+        return privilegedTransferModules[approvee] || cardIdApproveds[cardId] == approvee;
+    }
+    
+    function removeCardOwner(uint64 cardId) internal {
+        address cardOwner = cardIdMapping[cardId].owner;
+
+        if (playersCollections[cardOwner].cardIds.length > 1) {
+            uint64 rowToDelete = cardIdMapping[cardId].collectionPointer;
+            uint64 cardIdToMove = playersCollections[cardOwner].cardIds[playersCollections[cardOwner].cardIds.length - 1];
+            playersCollections[cardOwner].cardIds[rowToDelete] = cardIdToMove;
+            cardIdMapping[cardIdToMove].collectionPointer = rowToDelete;
+        }
+        
+        playersCollections[cardOwner].cardIds.length--;
+        cardIdMapping[cardId].owner = 0;
+    }
+    
+    function assignCardOwner(address newOwner, uint64 cardId) internal {
+        if (newOwner != address(0)) {
+            cardIdMapping[cardId].owner = newOwner;
+            cardIdMapping[cardId].collectionPointer = uint64(playersCollections[newOwner].cardIds.push(cardId) - 1);
+        }
+    }
+    
+    function mintCard(address recipient, uint8[14] cardDetails) external {
+        require(privilegedMintingModules[msg.sender]);
+        require(!paused);
+        
+        Card memory card;
+        card.owner = recipient;
+        
+        card.cardType = cardDetails[0];
+        card.race = cardDetails[1];
+        card.trait = cardDetails[2];
+        card.cost = cardDetails[3];
+        card.attack = cardDetails[4];
+        card.health = cardDetails[5];
+        card.raceMutation0 = cardDetails[6];
+        card.raceMutation1 = cardDetails[7];
+        card.raceMutation2 = cardDetails[8];
+        card.neutralMutation0 = cardDetails[9];
+        card.neutralMutation1 = cardDetails[10];
+        card.neutralMutation2 = cardDetails[11];
+        card.isGolden = cardDetails[12] == 1;
+        card.isReferalReward = cardDetails[13] == 1;
+        
+        card.id = totalCardSupply;
+        totalCardSupply++;
+
+        cardIdMapping[card.id] = card;
+        cardIdMapping[card.id].collectionPointer = uint64(playersCollections[recipient].cardIds.push(card.id) - 1);
+    }
+    
+    // Management functions to facilitate future contract extensibility, unlocking of (untradable) referal bonus cards and contract ownership
+    
+    function unlockUntradeableCards(address player) external {
+        require(privilegedTransferModules[msg.sender]);
+        playersCollections[player].referalCardsUnlocked = true;
+    }
+    
+    function manageApprovedTransferModule(address moduleAddress, bool isApproved) external {
+        require(msg.sender == owner);
+        privilegedTransferModules[moduleAddress] = isApproved; 
+    }
+    
+     function manageApprovedMintingModule(address moduleAddress, bool isApproved) external {
+        require(msg.sender == owner);
+        privilegedMintingModules[moduleAddress] = isApproved; 
+    }
+    
+    function updateTransferRestrictionVerifier(address newTransferRestrictionVerifier) external {
+        require(msg.sender == owner);
+        transferRestrictionVerifier = TransferRestrictionVerifier(newTransferRestrictionVerifier);
+    }
+    
+    function setPaused(bool shouldPause) external {
+        require(msg.sender == owner);
+        paused = shouldPause;
+    }
+    
+    function updateOwner(address newOwner) external {
+        require(msg.sender == owner);
+        owner = newOwner;
+    }
+    
+}
+
+
+
+
+contract CardConfig {
+    enum Type {Monster, Spell} // More could come!
+
+    enum Race {Dragon, Spiderling, Demon, Humanoid, Beast, Undead, Elemental, Vampire, Serpent, Mech, Golem, Parasite}
+    uint16 constant numRaces = 12;
+
+    enum Trait {Normal, Fire, Poison, Lightning, Ice, Divine, Shadow, Arcane, Cursed, Void}
+    uint16 constant numTraits = 10;
+
+    function getType(uint32 randomSeed) public constant returns (uint8) {
+        if (randomSeed % 5 > 0) { // 80% chance for monster (spells are less fun so make up for it in rarity)
+            return uint8(Type.Monster);
+        } else {
+            return uint8(Type.Spell);
+        }
+    }
+    
+    function getRace(uint32 randomSeed) public constant returns (uint8) {
+        return uint8(Race(randomSeed % numRaces));
+    }
+
+    function getTrait(uint32 randomSeed) public constant returns (uint8) {
+        return uint8(Trait(randomSeed % numTraits));
+    }
+
+    SpellAbilities spellAbilities = new SpellAbilities();
+    SharedNeutralMutations neutralMutations = new SharedNeutralMutations();
+    DragonMutations dragonMutations = new DragonMutations();
+    SpiderlingMutations spiderlingMutations = new SpiderlingMutations();
+    DemonMutations demonMutations = new DemonMutations();
+    HumanoidMutations humanoidMutations = new HumanoidMutations();
+    BeastMutations beastMutations = new BeastMutations();
+    UndeadMutations undeadMutations = new UndeadMutations();
+    ElementalMutations elementalMutations = new ElementalMutations();
+    VampireMutations vampireMutations = new VampireMutations();
+    SerpentMutations serpentMutations = new SerpentMutations();
+    MechMutations mechMutations = new MechMutations();
+    GolemMutations golemMutations = new GolemMutations();
+    ParasiteMutations parasiteMutations = new ParasiteMutations();
+    
+
+    // The powerful schema that will allow the Workshop (crystal) prices to fluctuate based on performance, keeping the game fresh & evolve over time!
+    
+    function getCostForRace(uint8 race) public constant returns (uint8 cost) {
+        return 0; // born equal (under current config)
+    }
+    
+    function getCostForTrait(uint8 trait) public constant returns (uint24 cost) {
+        if (trait == uint8(CardConfig.Trait.Normal)) {
+            return 0;
+        }
+        return 40000;
+    }
+    
+    function getSpellAbility(uint32 randomSeed) public constant returns (uint24 cost, uint8 spell) {
+        spell = uint8(spellAbilities.getSpell(randomSeed)) + 1;
+        return (getSpellAbilityCost(spell), spell);
+    }
+    
+    function getSpellAbilityCost(uint8 spell) public constant returns (uint24 cost) {
+        return 100000;
+    }
+
+    function getNeutralMutation(uint32 randomSeed) public constant returns (uint24 cost, uint8 mutation) {
+        mutation = uint8(neutralMutations.getMutation(randomSeed)) + 1;
+        return (getNeutralMutationCost(mutation), mutation);
+    }
+    
+    function getNeutralMutationCost(uint8 mutation) public constant returns (uint24 cost) {
+        if (mutation == 0) {
+            return 0;   
+        }
+        return 40000;
+    }
+
+    function getMutationForRace(Race race, uint32 randomSeed) public constant returns (uint24 cost, uint8 mutation) {
+        if (race == Race.Dragon) {
+            mutation = uint8(dragonMutations.getRaceMutation(randomSeed)) + 1;
+        } else if (race == Race.Spiderling) {
+            mutation = uint8(spiderlingMutations.getRaceMutation(randomSeed)) + 1;
+        } else if (race == Race.Demon) {
+            mutation = uint8(demonMutations.getRaceMutation(randomSeed)) + 1;
+        } else if (race == Race.Humanoid) {
+            mutation = uint8(humanoidMutations.getRaceMutation(randomSeed)) + 1;
+        } else if (race == Race.Beast) {
+            mutation = uint8(beastMutations.getRaceMutation(randomSeed)) + 1;
+        } else if (race == Race.Undead) {
+            mutation = uint8(undeadMutations.getRaceMutation(randomSeed)) + 1;
+        } else if (race == Race.Elemental) {
+            mutation = uint8(elementalMutations.getRaceMutation(randomSeed)) + 1;
+        } else if (race == Race.Vampire) {
+            mutation = uint8(vampireMutations.getRaceMutation(randomSeed)) + 1;
+        } else if (race == Race.Serpent) {
+            mutation = uint8(serpentMutations.getRaceMutation(randomSeed)) + 1;
+        } else if (race == Race.Mech) {
+            mutation = uint8(mechMutations.getRaceMutation(randomSeed)) + 1;
+        } else if (race == Race.Golem) {
+            mutation = uint8(golemMutations.getRaceMutation(randomSeed)) + 1;
+        } else if (race == Race.Parasite) {
+            mutation = uint8(parasiteMutations.getRaceMutation(randomSeed)) + 1;
+        }
+        return (getRaceMutationCost(race, mutation), mutation);
+    }
+    
+    function getRaceMutationCost(Race race, uint8 mutation) public constant returns (uint24 cost) {
+        if (mutation == 0) {
+            return 0;   
+        }
+        return 40000;
+    }
+    
+    function getCostForHealth(uint8 health) public constant returns (uint24 cost) {
+        return health * uint24(2000);
+    }
+    
+    function getHealthForCost(uint32 cost) public constant returns (uint32 health) {
+        health = cost / 2000;
+        if (health > 98) { // 1+[0-98] (gotta have [1-99] health)
+            health = 98;
+        }
+        return health;
+    }
+    
+    function getCostForAttack(uint8 attack) public constant returns (uint24 cost) {
+        return attack * uint24(2000);
+    }
+    
+    function getAttackForCost(uint32 cost) public constant returns (uint32 attack) {
+       attack = cost / 2000;
+        if (attack > 99) {
+            attack = 99;
+        }
+        return attack;
+    }
+    
+}
+
+contract SpellAbilities {
+    enum Spells {LavaBlast, FlameNova, Purify, IceBlast, FlashFrost, SnowStorm, FrostFlurry, ChargeFoward, DeepFreeze, ThawTarget,
+                 FlashOfLight, LightBeacon, BlackHole, Earthquake, EnchantArmor, EnchantWeapon, CallReinforcements, ParalysisPotion,
+                 InflictFear, ArcaneVision, KillShot, DragonsBreath, GlacialShard, BlackArrow, DivineKnowledge, LightningVortex,
+                 SolarFlare, PrimalBurst, RagingStorm, GiantCyclone, UnleashDarkness, ChargedOrb, UnholyMight, PowerShield, HallowedMist,
+                 EmbraceLight, AcidRain, BoneFlurry, Rejuvenation, DeathGrip, SummonSwarm, MagicalCharm, EnchantedSilence, SolemnStrike,
+                 ImpendingDoom, SpreadingFlames, ShadowLance, HauntedCurse, LightningShock, PowerSurge}
+    uint16 constant numSpells = 50;
+
+    function getSpell(uint32 randomSeed) public constant returns (Spells spell) {
+        return Spells(randomSeed % numSpells);
+    }
+}
+
+
+contract SharedNeutralMutations {
+    enum Mutations {Frontline, CallReinforcements, ArmorPiercing, Battlecry, HealAlly, LevelUp, SecondWind, ChargingStrike, SpellShield, AugmentMagic, CrystalSiphon, 
+                    ManipulateCrystals, DeadlyDemise, FlameResistance, IceResistance, LightningResistance, PoisonResistance, CurseResistance, DragonSlayer, SpiderlingSlayer,
+                    VampireSlayer, DemonSlayer, HumanoidSlayer, BeastSlayer, UndeadSlayer, SerpentSlayer, MechSlayer, GolemSlayer, ElementalSlayer, ParasiteSlayer}
+    uint16 constant numMutations = 30;
+
+    function getMutation(uint32 randomSeed) public constant returns (Mutations mutation) {
+        return Mutations(randomSeed % numMutations);
+    }
+}
+
+
+contract DragonMutations {
+    enum RaceMutations {FireBreath, HornedTail, BloodMagic, BarbedScales, WingedFlight, EggSpawn, Chronoshift, PhoenixFeathers}
+    uint16 constant numMutations = 8;
+
+    function getRaceMutation(uint32 randomSeed) public constant returns (RaceMutations mutation) {
+        return RaceMutations(randomSeed % numMutations);
+    }
+}
+
+contract SpiderlingMutations {
+    enum RaceMutations {CripplingBite, BurrowTrap, SkitteringFrenzy, EggSpawn, CritterRush, WebCocoon, SummonBroodmother, TremorSense}
+    uint16 constant numMutations = 8;
+
+    function getRaceMutation(uint32 randomSeed) public constant returns (RaceMutations mutation) {
+        return RaceMutations(randomSeed % numMutations);
+    }
+}
+
+contract VampireMutations {
+    enum RaceMutations {Bloodlink, LifeLeech, Bloodlust, DiamondSkin, TwilightVision, Regeneration, PiercingFangs, Shadowstrike}
+    uint16 constant numMutations = 8;
+
+    function getRaceMutation(uint32 randomSeed) public constant returns (RaceMutations mutation) {
+        return RaceMutations(randomSeed % numMutations);
+    }
+}
+
+contract DemonMutations {
+    enum RaceMutations {PyreScales, ShadowRealm, MenacingGaze, Hellfire, RaiseAsh, TailLash, ReapSouls, BladedTalons}
+    uint16 constant numMutations = 8;
+
+    function getRaceMutation(uint32 randomSeed) public constant returns (RaceMutations mutation) {
+        return RaceMutations(randomSeed % numMutations);
+    }
+}
+
+contract HumanoidMutations {
+    enum RaceMutations {Garrison, Entrench, Flagbearer, LegionCommander, ScoutAhead, Vengeance, EnchantedBlade, HorseRider}
+    uint16 constant numMutations = 8;
+
+    function getRaceMutation(uint32 randomSeed) public constant returns (RaceMutations mutation) {
+        return RaceMutations(randomSeed % numMutations);
+    }
+}
+
+contract BeastMutations {
+    enum RaceMutations {FeralRoar, FelineClaws, PrimitiveTusks, ArcticFur, PackHunter, FeignDeath, RavenousBite, NightProwl}
+    uint16 constant numMutations = 8;
+
+    function getRaceMutation(uint32 randomSeed) public constant returns (RaceMutations mutation) {
+        return RaceMutations(randomSeed % numMutations);
+    }
+}
+
+contract UndeadMutations {
+    enum RaceMutations {Reconstruct, AnimateDead, Pestilence, CrystalSkull, PsychicScreech, RavageSwipe, SpiritForm, BoneSpikes}
+    uint16 constant numMutations = 8;
+
+    function getRaceMutation(uint32 randomSeed) public constant returns (RaceMutations mutation) {
+        return RaceMutations(randomSeed % numMutations);
+    }
+}
+
+contract SerpentMutations {
+    enum RaceMutations {Constrict, BurrowingStrike, PetrifyingGaze, EggSpawn, ShedScales, StoneBasilisk, EngulfPrey, SprayVenom}
+    uint16 constant numMutations = 8;
+
+    function getRaceMutation(uint32 randomSeed) public constant returns (RaceMutations mutation) {
+        return RaceMutations(randomSeed % numMutations);
+    }
+}
+
+contract MechMutations {
+    enum RaceMutations {WhirlingBlade, RocketBoosters, SelfDestruct, EMPScramble, SpareParts, Deconstruct, TwinCannons, PowerShield}
+    uint16 constant numMutations = 8;
+
+    function getRaceMutation(uint32 randomSeed) public constant returns (RaceMutations mutation) {
+        return RaceMutations(randomSeed % numMutations);
+    }
+}
+
+contract GolemMutations {
+    enum RaceMutations {StoneSentinel, ShatteringSmash, AnimateMud, MoltenCore, TremorGround, VineSprouts, ElementalRoar, FossilArmy}
+    uint16 constant numMutations = 8;
+
+    function getRaceMutation(uint32 randomSeed) public constant returns (RaceMutations mutation) {
+        return RaceMutations(randomSeed % numMutations);
+    }
+}
+
+contract ElementalMutations {
+    enum RaceMutations {Sandstorm, SolarFlare, ElectricSurge, AquaRush, SpiritChannel, PhaseShift, CosmicAura, NaturesWrath}
+    uint16 constant numMutations = 8;
+
+    function getRaceMutation(uint32 randomSeed) public constant returns (RaceMutations mutation) {
+        return RaceMutations(randomSeed % numMutations);
+    }
+}
+
+contract ParasiteMutations {
+    enum RaceMutations {Infestation, BloodLeech, Corruption, ProtectiveShell, TailSwipe, ExposeWound, StingingTentacles, EruptiveGut}
+    uint16 constant numMutations = 8;
+
+    function getRaceMutation(uint32 randomSeed) public constant returns (RaceMutations mutation) {
+        return RaceMutations(randomSeed % numMutations);
+    }
+}
+
+// Pulling checks like this into secondary contract allows for more extensibility in future (LoanMarketplace and so forth.)
+contract TransferRestrictionVerifier {
+    MappedMarketplace marketplaceContract = MappedMarketplace(0xc3d2736b3e4f0f78457d75b3b5f0191a14e8bd57);
+    
+    function isAvailableForTransfer(uint64 cardId) external constant returns(bool) {
+        return !marketplaceContract.isListed(cardId);
+    }
+}
+
+contract MappedMarketplace {
+    EtherGenCore storageContract; // Main card storage and ERC721 transfer functionality
+    TransferRestrictionVerifier transferRestrictionVerifier; // Allows future stuff (loan marketplace etc.) to restrict listing same card twice
+    
+    uint24 private constant removalDuration = 14 days; // Listings can be pruned from market after 14 days
+    uint8 private constant marketCut = 100; // 1% (not 100% as it is divided)
+    address public owner = 0x08F4aE96b647B30177cc15B21195960625BA4163;
+    bool public paused = false;
+
+    mapping(uint64 => Listing) private listings;
+    mapping(address => bool) private whitelistedContracts;
+    uint64[] private listedCardIds;
+
+    struct Listing {
+        uint64 listingPointer; // Index in the Market's listings
+        
+        uint64 cardId;
+        uint64 listTime; // Seconds
+        uint128 startPrice;
+        uint128 endPrice;
+        uint24 priceChangeDuration; // Seconds
+    }
+    
+    function isListed(uint64 cardId) public constant returns(bool) {
+        if (listedCardIds.length == 0) return false;
+        return (listings[cardId].listTime > 0);
+    }
+    
+    function getMarketSize() external constant returns(uint) {
+        return listedCardIds.length;
+    }
+    
+    function listCard(uint64 cardId, uint128 startPrice, uint128 endPrice, uint24 priceChangeDuration) external {
+        require(storageContract.ownerOf(cardId) == msg.sender);
+        require(storageContract.isCardTradeable(cardId));
+        require(transferRestrictionVerifier.isAvailableForTransfer(cardId));
+        require(isWhitelisted(msg.sender));
+        require(!paused);
+        require(startPrice > 99 szabo && startPrice <= 10 ether);
+        require(endPrice > 99 szabo && endPrice <= 10 ether);
+        require(priceChangeDuration > 21599 && priceChangeDuration < 259201); // 6-72 Hours
+       
+        listings[cardId] = Listing(0, cardId, uint64(now), startPrice, endPrice, priceChangeDuration);
+        listings[cardId].listingPointer = uint64(listedCardIds.push(cardId) - 1);
+    }
+    
+    
+    function purchaseCard(uint64 cardId) payable external {
+        require(isListed(cardId));
+        require(!paused);
+
+        uint256 price = getCurrentPrice(listings[cardId].startPrice, listings[cardId].endPrice, listings[cardId].priceChangeDuration, (uint64(now) - listings[cardId].listTime));
+        require(msg.value >= price);
+        
+        address seller = storageContract.ownerOf(cardId);
+        uint256 sellerProceeds = price - (price / marketCut); // 1% cut
+        
+        removeListingInternal(cardId);
+        seller.transfer(sellerProceeds);
+        
+        uint256 bidExcess = msg.value - price;
+        if (bidExcess > 1 szabo) { // Little point otherwise they'll just pay more in gas
+            msg.sender.transfer(bidExcess);
+        }
+        
+        storageContract.transferFrom(seller, msg.sender, cardId);
+    }
+    
+    function getCurrentPrice(uint128 startPrice, uint128 endPrice, uint24 priceChangeDuration, uint64 secondsSinceListing) public constant returns (uint256) {
+        if (secondsSinceListing >= priceChangeDuration) {
+            return endPrice;
+        } else {
+            int256 totalPriceChange = int256(endPrice) - int256(startPrice); // Can be negative
+            int256 currentPriceChange = totalPriceChange * int256(secondsSinceListing) / int256(priceChangeDuration);
+            return uint256(int256(startPrice) + currentPriceChange);
+        }
+    }
+    
+    function removeListing(uint64 cardId) external {
+        require(isListed(cardId));
+        require(!paused);
+        require(storageContract.ownerOf(cardId) == msg.sender || (now - listings[cardId].listTime) > removalDuration);
+        removeListingInternal(cardId);
+    }
+    
+    function removeListingInternal(uint64 cardId) internal {
+        if (listedCardIds.length > 1) {
+            uint64 rowToDelete = listings[cardId].listingPointer;
+            uint64 keyToMove = listedCardIds[listedCardIds.length - 1];
+            
+            listedCardIds[rowToDelete] = keyToMove;
+            listings[keyToMove].listingPointer = rowToDelete;
+        }
+        
+        listedCardIds.length--;
+        delete listings[cardId];
+    }
+    
+    
+    function getListings() external constant returns (uint64[], address[], uint64[], uint128[], uint128[], uint24[], uint8[14][]) {
+        uint64[] memory cardIds = new uint64[](listedCardIds.length); // Not ideal but web3.js didn't like returning multiple 2d arrays
+        address[] memory cardOwners = new address[](listedCardIds.length);
+        uint64[] memory listTimes = new uint64[](listedCardIds.length);
+        uint128[] memory startPrices = new uint128[](listedCardIds.length);
+        uint128[] memory endPrices = new uint128[](listedCardIds.length);
+        uint24[] memory priceChangeDurations = new uint24[](listedCardIds.length);
+        uint8[14][] memory cardDetails = new uint8[14][](listedCardIds.length);
+        
+        for (uint64 i = 0; i < listedCardIds.length; i++) {
+            Listing memory listing = listings[listedCardIds[i]];
+            cardDetails[i] = storageContract.getCard(listing.cardId);
+            cardOwners[i] = storageContract.ownerOf(listing.cardId);
+            cardIds[i] = listing.cardId;
+            listTimes[i] = listing.listTime;
+            startPrices[i] = listing.startPrice;
+            endPrices[i] = listing.endPrice;
+            priceChangeDurations[i] = listing.priceChangeDuration;
+        }
+        return (cardIds, cardOwners, listTimes, startPrices, endPrices, priceChangeDurations, cardDetails);
+    }
+    
+    function getListingAtPosition(uint64 i) external constant returns (uint128[5]) {
+        Listing memory listing = listings[listedCardIds[i]];
+        return ([listing.cardId, listing.listTime, listing.startPrice, listing.endPrice, listing.priceChangeDuration]);
+    }
+    
+    function getListing(uint64 cardId) external constant returns (uint128[5]) {
+        Listing memory listing = listings[cardId];
+        return ([listing.cardId, listing.listTime, listing.startPrice, listing.endPrice, listing.priceChangeDuration]);
+    }
+    
+    // Contracts can't list cards without contacting us (wallet addresses are unaffected)
+    function isWhitelisted(address seller) internal constant returns (bool) {
+        uint size;
+        assembly { size := extcodesize(seller) }
+        return size == 0 || whitelistedContracts[seller];
+    }
+    
+    function whitelistContract(address seller, bool whitelisted) external {
+        require(msg.sender == owner);
+        whitelistedContracts[seller] = whitelisted;
+    }
+    
+    function updateStorageContract(address newStorage) external {
+        require(msg.sender == owner);
+        storageContract = EtherGenCore(newStorage);
+    }
+    
+    function updateTransferRestrictionVerifier(address newTransferRestrictionVerifier) external {
+        require(msg.sender == owner);
+        transferRestrictionVerifier = TransferRestrictionVerifier(newTransferRestrictionVerifier);
+    }
+    
+    function setPaused(bool shouldPause) external {
+        require(msg.sender == owner);
+        paused = shouldPause;
+    }
+    
+    function updateOwner(address newOwner) external {
+        require(msg.sender == owner);
+        owner = newOwner;
+    }
+    
+    function withdrawBalance() external {
+        require(msg.sender == owner);
+        owner.transfer(this.balance);
+    }
+
+}
+### ABI:
+[{"constant":false,"inputs":[{"name":"newMarketplace","type":"address"}],"name":"updateMarketContract","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"nextDrop","type":"uint128"}],"name":"listNextFourCards","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"cardsMinted","outputs":[{"name":"","type":"uint24"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[],"name":"withdrawBalance","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"newCardConfig","type":"address"}],"name":"upgradeCardConfig","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"newOwner","type":"address"}],"name":"updateOwner","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"owner","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"getNextDropTime","outputs":[{"name":"","type":"uint128"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"newStorage","type":"address"}],"name":"updateStorageContract","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[],"name":"mintNextCard","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"payable":true,"stateMutability":"payable","type":"fallback"}]
+### byteCode:
+606060405260008054600160a060020a03199081167308584271df3d0249c2c06ac1bc1237a1dd30cb9a1790915560018054821673677aa1dc08b9429c595efd4425b2d218cc22fd6e1790556002805460a060020a62ffffff02199083167308f4ae96b647b30177cc15b21195960625ba4163171690556005805490911673c3d2736b3e4f0f78457d75b3b5f0191a14e8bd5717905534156100a057600080fd5b6116c9806100af6000396000f30060606040526004361061008a5763ffffffff60e060020a60003504166313c13d6b811461008c5780633345b65f146100ab5780634104df21146100d35780635fd8c710146100fe57806371b80b8f14610111578063880cdc31146101305780638da5cb5b1461014f5780638f5ab9471461017e5780638fb6d997146101b6578063e3906b3d146101d5575b005b341561009757600080fd5b61008a600160a060020a03600435166101e8565b34156100b657600080fd5b61008a6fffffffffffffffffffffffffffffffff60043516610232565b34156100de57600080fd5b6100e66102d3565b60405162ffffff909116815260200160405180910390f35b341561010957600080fd5b61008a6102f6565b341561011c57600080fd5b61008a600160a060020a036004351661034c565b341561013b57600080fd5b61008a600160a060020a0360043516610396565b341561015a57600080fd5b6101626103e0565b604051600160a060020a03909116815260200160405180910390f35b341561018957600080fd5b6101916103ef565b6040516fffffffffffffffffffffffffffffffff909116815260200160405180910390f35b34156101c157600080fd5b61008a600160a060020a0360043516610408565b34156101e057600080fd5b61008a610452565b60025433600160a060020a0390811691161461020357600080fd5b6005805473ffffffffffffffffffffffffffffffffffffffff1916600160a060020a0392909216919091179055565b60025433600160a060020a0390811691161461024d57600080fd5b600380541161025b57600080fd5b6004546fffffffffffffffffffffffffffffffff9081169082161161027f57600080fd5b6102876106aa565b61028f6106aa565b6102976106aa565b61029f6106aa565b600480546fffffffffffffffffffffffffffffffff19166fffffffffffffffffffffffffffffffff92909216919091179055565b60025474010000000000000000000000000000000000000000900462ffffff1681565b60025433600160a060020a0390811691161461031157600080fd5b600254600160a060020a039081169030163180156108fc0290604051600060405180830381858888f19350505050151561034a57600080fd5b565b60025433600160a060020a0390811691161461036757600080fd5b6000805473ffffffffffffffffffffffffffffffffffffffff1916600160a060020a0392909216919091179055565b60025433600160a060020a039081169116146103b157600080fd5b6002805473ffffffffffffffffffffffffffffffffffffffff1916600160a060020a0392909216919091179055565b600254600160a060020a031681565b6004546fffffffffffffffffffffffffffffffff165b90565b60025433600160a060020a0390811691161461042357600080fd5b6001805473ffffffffffffffffffffffffffffffffffffffff1916600160a060020a0392909216919091179055565b61045a61161d565b600254620186a07401000000000000000000000000000000000000000090910462ffffff161061048957600080fd5b6001546104f8904290600160a060020a03166318160ddd6000604051602001526040518163ffffffff1660e060020a028152600401602060405180830381600087803b15156104d757600080fd5b6102c65a03f115156104e857600080fd5b5050506040518051905002610888565b60028054600162ffffff74010000000000000000000000000000000000000000808404821683019091160276ffffff0000000000000000000000000000000000000000199092169190911790915554909150600160a060020a031663fd6ba459308360405160e060020a63ffffffff8516028152600160a060020a0383166004820190815290602401826101c080838360005b838110156105a357808201518382015260200161058b565b5050505090500192505050600060405180830381600087803b15156105c757600080fd5b6102c65a03f115156105d857600080fd5b505050600380548060010182816105ef9190611646565b916000526020600020906004918282040191900660080260018060009054906101000a9004600160a060020a0316600160a060020a03166318160ddd6000604051602001526040518163ffffffff1660e060020a028152600401602060405180830381600087803b151561066257600080fd5b6102c65a03f1151561067357600080fd5b5050506040518051905003909190916101000a81548167ffffffffffffffff021916908367ffffffffffffffff1602179055505050565b60006106b461161d565b60038054600091829160001981019081106106cb57fe5b60009182526020822060048204015460015460039092166008026101000a900467ffffffffffffffff169550600160a060020a03169063cfbed7559086906040516101c0015260405160e060020a63ffffffff841602815267ffffffffffffffff90911660048201526024016101c060405180830381600087803b151561075157600080fd5b6102c65a03f1151561076257600080fd5b5050506040516101c08101604052925065e35fa931a000606084015160ff16029150655af3107a4000606084015160055460ff91909116919091029150600160a060020a0316632b0ff02d8584846201518060405160e060020a63ffffffff871602815267ffffffffffffffff90941660048501526fffffffffffffffffffffffffffffffff92831660248501529116604483015262ffffff166064820152608401600060405180830381600087803b151561081d57600080fd5b6102c65a03f1151561082e57600080fd5b505060038054909150600019810190811061084557fe5b600091825260209091206004820401805467ffffffffffffffff60086003948516026101000a0219169055805490610881906000198301611646565b5050505050565b61089061161d565b61089861161d565b43408360405191825263ffffffff1660e060020a02602082015260240160405190819003902060008054919450600160a060020a03909116906312cf8a109085906040516020015260405163ffffffff83811660e060020a028252919091166004820152602401602060405180830381600087803b151561091857600080fd5b6102c65a03f1151561092957600080fd5b505050604051805160ff168252506000815160ff1614156109535761094e81846109ac565b61095d565b61095d81846113e8565b43408360405191825263ffffffff1660e060020a026020820152602401604051908190039020925060c863ffffffff84160663ffffffff16600d14156109a65760016101808201525b92915050565b60008060008060008043408760405191825263ffffffff1660e060020a02602082015260240160405190819003902060008054919850600160a060020a0390911690633c3861b69089906040516020015260405163ffffffff83811660e060020a028252919091166004820152602401602060405180830381600087803b1515610a3557600080fd5b6102c65a03f11515610a4657600080fd5b505050604051805160ff1660208a01908152600054600160a060020a03169150632be2f085905160006040516020015260405160e060020a63ffffffff841602815260ff9091166004820152602401602060405180830381600087803b1515610aae57600080fd5b6102c65a03f11515610abf57600080fd5b5050506040518051905060ff168601955043408760405191825263ffffffff1660e060020a02602082015260240160405190819003902060008054919850600160a060020a039091169063edaebc209089906040516020015260405163ffffffff83811660e060020a028252919091166004820152602401602060405180830381600087803b1515610b5057600080fd5b6102c65a03f11515610b6157600080fd5b505050604051805160ff1660408a01908152600054600160a060020a03169150631c0019c4905160006040516020015260405160e060020a63ffffffff841602815260ff9091166004820152602401602060405180830381600087803b1515610bc957600080fd5b6102c65a03f11515610bda57600080fd5b505050604051805190508601955043408760405191825263ffffffff1660e060020a0260208201526024016040519081900390209650600c63ffffffff881606925060058360ff161115610c315760039250610c42565b60028360ff161115610c4257600292505b600091505b8260ff168260ff161015610feb5743408760405191825263ffffffff1660e060020a0260208201526024016040519081900390209650600363ffffffff88160663ffffffff1660001415610e5b5743408760405191825263ffffffff1660e060020a026020820152602401604051908190039020600054909750600160a060020a0316635acea28860208a015160ff16600b811115610ce257fe5b896000604051604001526040518363ffffffff1660e060020a0281526004018083600b811115610d0e57fe5b60ff16815263ffffffff90921660208301525060409081019150805180830381600087803b1515610d3e57600080fd5b6102c65a03f11515610d4f57600080fd5b505050604051805190602001805196509094505062046cd062ffffff878601161015610e565760c088015160ff161515610d9e57848860065b60ff909216602092909202015294830194610e56565b600060c089015160ff16118015610dba575060e088015160ff16155b8015610dd0575060ff851660c089015160ff1614155b15610dde5784886007610d88565b600060c089015160ff16118015610dfc5750600060e089015160ff16115b8015610e0e575061010088015160ff16155b8015610e24575060ff851660c089015160ff1614155b8015610e3a575060ff851660e089015160ff1614155b15610e5657848860085b60ff9092166020929092020152948301945b610fe0565b43408760405191825263ffffffff1660e060020a02602082015260240160405190819003902060008054919850600160a060020a039091169063c50bb4469089906040516040015260405163ffffffff83811660e060020a0282529190911660048201526024016040805180830381600087803b1515610eda57600080fd5b6102c65a03f11515610eeb57600080fd5b505050604051805190602001805196509094505062046cd062ffffff878601161015610fe05761012088015160ff161515610f295784886009610e44565b600061012089015160ff16118015610f47575061014088015160ff16155b8015610f5e575060ff851661012089015160ff1614155b15610f6c578488600a610e44565b600061012089015160ff16118015610f8c5750600061014089015160ff16115b8015610f9e575061016088015160ff16155b8015610fb5575060ff851661012089015160ff1614155b8015610fcc575060ff851661014089015160ff1614155b15610fe05760ff8516610160890152948301945b600190910190610c47565b43408760405191825263ffffffff1660e060020a02602082015260240160405190819003902060008054919850600160a060020a03909116906324417f39906001906040516020015260405160e060020a63ffffffff841602815260ff9091166004820152602401602060405180830381600087803b151561106c57600080fd5b6102c65a03f1151561107d57600080fd5b505050604051805190508601620497c80362ffffff168763ffffffff168115156110a357fe5b600080549290910691600160a060020a0316906324417f39906001906040516020015260405160e060020a63ffffffff841602815260ff9091166004820152602401602060405180830381600087803b15156110fe57600080fd5b6102c65a03f1151561110f57600080fd5b50505060405180519050019050620186a081870162ffffff1610156111375785620186a00390505b43408760405191825263ffffffff1660e060020a026020820152602401604051908190039020600054909750600160a060020a03166395dba6c962ffffff831663ffffffff8a1681151561118757fe5b0660006040516020015260405163ffffffff83811660e060020a028252919091166004820152602401602060405180830381600087803b15156111c957600080fd5b6102c65a03f115156111da57600080fd5b505050604051805160010160ff1660a08a01908152600054600160a060020a031691506324417f39905160006040516020015260405160e060020a63ffffffff841602815260ff9091166004820152602401602060405180830381600087803b151561124557600080fd5b6102c65a03f1151561125657600080fd5b5050506040518051600054970196600160a060020a031690506324417f3960a08a015160006040516020015260405160e060020a63ffffffff841602815260ff9091166004820152602401602060405180830381600087803b15156112ba57600080fd5b6102c65a03f115156112cb57600080fd5b5050506040518051600080549190930392600160a060020a039091169150632a1747109083906040516020015260405160e060020a63ffffffff841602815262ffffff9091166004820152602401602060405180830381600087803b151561133257600080fd5b6102c65a03f1151561134357600080fd5b505050604051805160ff1660808a01908152600054600160a060020a03169150633addedd3905160006040516020015260405160e060020a63ffffffff841602815260ff9091166004820152602401602060405180830381600087803b15156113ab57600080fd5b6102c65a03f115156113bc57600080fd5b5050506040518051612710970162ffffff169690960460ff166060989098019790975250505050505050565b600080600080600043408660405191825263ffffffff1660e060020a0260208201526024016040519081900390209550600f861691506008821115611430576003915061144a565b60008260ff161115611445576002915061144a565b600191505b5060005b8160ff168160ff1610156115fa5743408660405191825263ffffffff1660e060020a02602082015260240160405190819003902060008054919750600160a060020a039091169063eccaa8b59088906040516040015260405163ffffffff83811660e060020a0282529190911660048201526024016040805180830381600087803b15156114db57600080fd5b6102c65a03f115156114ec57600080fd5b5050506040518051906020018051955090935050620493e062ffffff86850116116115f25761012087015160ff16151561153b57838760095b60ff9092166020929092020152938201936115f2565b600061012088015160ff16118015611559575061014087015160ff16155b8015611570575060ff841661012088015160ff1614155b1561157e578387600a611525565b600061012088015160ff1611801561159e5750600061014088015160ff16115b80156115b0575061016087015160ff16155b80156115c7575060ff841661012088015160ff1614155b80156115de575060ff841661014088015160ff1614155b156115f25760ff8416610160880152938201935b60010161144e565b61271062ffffff86160487600360ff909216602092909202015250505050505050565b6101c0604051908101604052600e815b60008152600019909101906020018161162d5790505090565b81548183558181151161167a57600301600490048160030160049004836000526020600020918201910161167a919061167f565b505050565b61040591905b808211156116995760008155600101611685565b50905600a165627a7a723058202fd345d61a3f749850e5e1ae5c3020bb246a999c52da54a1b606b4ddca8b39ad0029
