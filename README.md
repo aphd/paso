@@ -1,10 +1,10 @@
-# Sopa
-A Solidity Parser Online
+# SoPa (SOlidity PArser)
+
+A Solidity Parser
 
 Requires Node >= v11.3.0
 
-## Usage
-
+### Usage
 
 **Fontend part**
 
