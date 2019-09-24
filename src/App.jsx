@@ -4,7 +4,7 @@ import { Helmet, HelmetProvider } from "react-helmet-async";
 import Form from "./components/form";
 import Metrics from "./components/metrics";
 import Error from "./components/error";
-import { parseSol } from "./utils/parse-sol";
+import { solParse } from "./utils/sol-parser";
 
 class App extends Component {
     constructor(props) {
@@ -14,7 +14,7 @@ class App extends Component {
     handleFormSubmit = sc_code => {
         try {
             this.setState({
-                metric: parseSol(sc_code),
+                metric: solParse(sc_code),
                 errors: null
             });
         } catch (error) {
