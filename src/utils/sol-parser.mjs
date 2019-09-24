@@ -1,11 +1,10 @@
 import parse from "solidity-parser-antlr/dist";
 
-export function parseSol(code) {
+export function solParse(code) {
     const ast_j = parse.parse(code, { loc: true });
     const ast_s = JSON.stringify(ast_j);
-    window.ast_j = ast_j;
-    window._code = code;
-
+    try {window.ast_j = ast_j;} catch {}
+    
     const metrics = {
         mapping: '"type":"Mapping"',
         functions: '"type":"FunctionDefinition"',
@@ -18,8 +17,8 @@ export function parseSol(code) {
         libraries: '"kind":"library"',
         interfaces: '"kind":"interface"'
     };
-
     let result = {};
+
     result.version = get_version(ast_s);
     result.total_lines = ast_j.loc.end.line;
     for (const metric in metrics) {
@@ -27,7 +26,6 @@ export function parseSol(code) {
         result[metric] = (ast_s.match(new RegExp(reg, "g")) || []).length;
     }
 
-    console.log(result);
     return result;
 }
 

@@ -5,7 +5,7 @@ class Metrics extends Component {
     render = () => {
         try {
             return (
-                <table className="table table-hover">
+                <table className="table table-hover table-sm table-bordered">
                     <tbody>{json2html(this.props.metric)}</tbody>
                 </table>
             );
