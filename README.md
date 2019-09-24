@@ -1,5 +1,20 @@
-## Sopa
+# Sopa
 A Solidity Parser Online
+
+Requires Node >= v11.3.0
+
+## Usage
+
+
+**Fontend part**
+
+[https://aphd.github.io/sopa/](https://aphd.github.io/sopa/)
+
+**Backend part**
+
+```bash
+node --experimental-modules src/services/client.mjs
+```
 
 ### References 
 1. This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
