@@ -17,8 +17,8 @@ export function solParse(code) {
         libraries: '"kind":"library"',
         interfaces: '"kind":"interface"'
     };
-
     let result = {};
+
     result.version = get_version(ast_s);
     result.total_lines = ast_j.loc.end.line;
     for (const metric in metrics) {
@@ -26,7 +26,6 @@ export function solParse(code) {
         result[metric] = (ast_s.match(new RegExp(reg, "g")) || []).length;
     }
 
-    console.log(result);
     return result;
 }
 
