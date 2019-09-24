@@ -5,6 +5,7 @@
     "homepage": ".",
     "dependencies": {
         "bootstrap": "^4.3.1",
+        "json2csv": "^4.5.3",
         "react": "^16.9.0",
         "react-dom": "^16.9.0",
         "react-helmet-async": "^1.0.3",
