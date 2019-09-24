@@ -9,7 +9,7 @@
 
 exports = module.exports = __webpack_require__(/*! ../node_modules/css-loader/dist/runtime/api.js */ "./node_modules/css-loader/dist/runtime/api.js")(false);
 // Module
-exports.push([module.i, ".App {\n    text-align: center;\n}\n\n.App-logo {\n    animation: App-logo-spin infinite 20s linear;\n    height: 40vmin;\n    pointer-events: none;\n}\n\n.App-header {\n    background-color: #282c34;\n    min-height: 100vh;\n    display: flex;\n    flex-direction: column;\n    align-items: center;\n    justify-content: center;\n    font-size: calc(10px + 2vmin);\n    color: white;\n}\n\n.App-link {\n    color: #61dafb;\n}\n\n@keyframes App-logo-spin {\n    from {\n        transform: rotate(0deg);\n    }\n    to {\n        transform: rotate(360deg);\n    }\n}\n.container {\n    padding-top: 20px;\n}\n", ""]);
+exports.push([module.i, ".App {\n    text-align: center;\n}\n\n.App-logo {\n    animation: App-logo-spin infinite 20s linear;\n    height: 40vmin;\n    pointer-events: none;\n}\n\n.App-header {\n    background-color: #282c34;\n    min-height: 100vh;\n    display: flex;\n    flex-direction: column;\n    align-items: center;\n    justify-content: center;\n    font-size: calc(10px + 2vmin);\n    color: white;\n}\n\n.App-link {\n    color: #61dafb;\n}\n\n@keyframes App-logo-spin {\n    from {\n        transform: rotate(0deg);\n    }\n    to {\n        transform: rotate(360deg);\n    }\n}\n.container {\n    padding-top: 20px;\n}\nth {\n    text-transform: capitalize;\n}\n", ""]);
 
 
 
@@ -94,8 +94,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _components_form__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./components/form */ "./src/components/form.jsx");
 /* harmony import */ var _components_metrics__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./components/metrics */ "./src/components/metrics.jsx");
 /* harmony import */ var _components_error__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./components/error */ "./src/components/error.jsx");
-/* harmony import */ var _utils_parse_sol__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./utils/parse-sol */ "./src/utils/parse-sol.jsx");
-var _jsxFileName = "/Users/antonio/github/aphd/solpar/src/App.jsx";
+/* harmony import */ var _utils_sol_parser__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./utils/sol-parser */ "./src/utils/sol-parser.mjs");
+var _jsxFileName = "/Users/antonio/github/aphd/sopa/src/App.jsx";
 
 
 
@@ -111,7 +111,7 @@ class App extends react__WEBPACK_IMPORTED_MODULE_0__["Component"] {
     this.handleFormSubmit = sc_code => {
       try {
         this.setState({
-          metric: Object(_utils_parse_sol__WEBPACK_IMPORTED_MODULE_6__["parseSol"])(sc_code),
+          metric: Object(_utils_sol_parser__WEBPACK_IMPORTED_MODULE_6__["solParse"])(sc_code),
           errors: null
         });
       } catch (error) {
@@ -193,7 +193,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _utils_json2html__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../utils/json2html */ "./src/utils/json2html.js");
-var _jsxFileName = "/Users/antonio/github/aphd/solpar/src/components/error.jsx";
+var _jsxFileName = "/Users/antonio/github/aphd/sopa/src/components/error.jsx";
 
 
 
@@ -247,7 +247,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _fixtures_simple_sol_jsx__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../fixtures/simple.sol.jsx */ "./src/fixtures/simple.sol.jsx");
-var _jsxFileName = "/Users/antonio/github/aphd/solpar/src/components/form.jsx";
+var _jsxFileName = "/Users/antonio/github/aphd/sopa/src/components/form.jsx";
 
 
 
@@ -306,7 +306,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _utils_json2html__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../utils/json2html */ "./src/utils/json2html.js");
-var _jsxFileName = "/Users/antonio/github/aphd/solpar/src/components/metrics.jsx";
+var _jsxFileName = "/Users/antonio/github/aphd/sopa/src/components/metrics.jsx";
 
 
 
@@ -317,7 +317,7 @@ class Metrics extends react__WEBPACK_IMPORTED_MODULE_0__["Component"] {
     this.render = () => {
       try {
         return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("table", {
-          className: "table table-hover",
+          className: "table table-hover table-sm table-bordered",
           __source: {
             fileName: _jsxFileName,
             lineNumber: 8
@@ -359,7 +359,7 @@ class Metrics extends react__WEBPACK_IMPORTED_MODULE_0__["Component"] {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "code", function() { return code; });
-const code = "pragma solidity ^0.4.10;\n\ncontract SimpleAuction {\n    event HighestBidIncreased(address bidder, uint amount); // Event\n    address public minter;\n    mapping (address => uint) public balances;\n    modifier onlySeller() { }\n      function bid() public payable {\n        emit HighestBidIncreased(msg.sender, msg.value); // Triggering event\n    }\n}";
+const code = "pragma solidity ^0.4.10;\n\ncontract SimpleAuction {\n    event HighestBidIncreased(address bidder, uint amount); // Event\n    address public minter;\n    mapping (address => uint) public balances;\n    modifier onlySeller() { }\n      function bid() public payable {\n        emit HighestBidIncreased(msg.sender, msg.value); // Triggering event\n    }\n}\n\ninterface Token {\n  function transfer(address recipient, uint amount) public;\n}\n\nlibrary Set {\n}";
 
 /***/ }),
 
@@ -429,7 +429,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var bootstrap_dist_css_bootstrap_min_css__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(bootstrap_dist_css_bootstrap_min_css__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var _App_jsx__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./App.jsx */ "./src/App.jsx");
 /* harmony import */ var _serviceWorker__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./serviceWorker */ "./src/serviceWorker.js");
-var _jsxFileName = "/Users/antonio/github/aphd/solpar/src/index.js";
+var _jsxFileName = "/Users/antonio/github/aphd/sopa/src/index.js";
 
 
 
@@ -559,7 +559,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "json2html", function() { return json2html; });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-var _jsxFileName = "/Users/antonio/github/aphd/solpar/src/utils/json2html.js";
+var _jsxFileName = "/Users/antonio/github/aphd/sopa/src/utils/json2html.js";
 
 function json2html(types) {
   const items = [];
@@ -589,34 +589,39 @@ function json2html(types) {
 
 /***/ }),
 
-/***/ "./src/utils/parse-sol.jsx":
-/*!*********************************!*\
-  !*** ./src/utils/parse-sol.jsx ***!
-  \*********************************/
-/*! exports provided: parseSol */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
+/***/ "./src/utils/sol-parser.mjs":
+/*!**********************************!*\
+  !*** ./src/utils/sol-parser.mjs ***!
+  \**********************************/
+/*! exports provided: solParse */
+/***/ (function(__webpack_module__, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "parseSol", function() { return parseSol; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "solParse", function() { return solParse; });
 /* harmony import */ var solidity_parser_antlr_dist__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! solidity-parser-antlr/dist */ "./node_modules/solidity-parser-antlr/dist/index.js");
-/* harmony import */ var solidity_parser_antlr_dist__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(solidity_parser_antlr_dist__WEBPACK_IMPORTED_MODULE_0__);
 
-function parseSol(code) {
-  const ast_j = solidity_parser_antlr_dist__WEBPACK_IMPORTED_MODULE_0___default.a.parse(code, {
+function solParse(code) {
+  const ast_j = solidity_parser_antlr_dist__WEBPACK_IMPORTED_MODULE_0__.parse(code, {
     loc: true
   });
   const ast_s = JSON.stringify(ast_j);
-  window.ast_j = ast_j;
-  window._code = code;
+
+  try {
+    window.ast_j = ast_j;
+  } catch {}
+
   const metrics = {
     mapping: '"type":"Mapping"',
     functions: '"type":"FunctionDefinition"',
     payable: '"stateMutability":"payable"',
     events: '"type":"EventDefinition"',
     modifiers: '"type":"ModifierDefinition"',
-    contract: '"type":"ContractDefinition"',
-    addresses: '"type":"ElementaryTypeName","name":"address"'
+    contracts_definition: '"type":"ContractDefinition"',
+    addresses: '"type":"ElementaryTypeName","name":"address"',
+    contracts: '"kind":"contract"',
+    libraries: '"kind":"library"',
+    interfaces: '"kind":"interface"'
   };
   let result = {};
   result.version = get_version(ast_s);
@@ -627,7 +632,6 @@ function parseSol(code) {
     result[metric] = (ast_s.match(new RegExp(reg, "g")) || []).length;
   }
 
-  console.log(result);
   return result;
 }
 
@@ -645,11 +649,11 @@ const get_version = ast_s => {
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(/*! /Users/antonio/github/aphd/solpar/node_modules/react-dev-utils/webpackHotDevClient.js */"./node_modules/react-dev-utils/webpackHotDevClient.js");
-module.exports = __webpack_require__(/*! /Users/antonio/github/aphd/solpar/src/index.js */"./src/index.js");
+__webpack_require__(/*! /Users/antonio/github/aphd/sopa/node_modules/react-dev-utils/webpackHotDevClient.js */"./node_modules/react-dev-utils/webpackHotDevClient.js");
+module.exports = __webpack_require__(/*! /Users/antonio/github/aphd/sopa/src/index.js */"./src/index.js");
 
 
 /***/ })
 
-},[[0,"runtime~main",1]]]);
+},[[0,"runtime~main",0]]]);
 //# sourceMappingURL=main.chunk.js.map

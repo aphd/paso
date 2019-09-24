@@ -1,4 +1,4 @@
-(window["webpackJsonpsolpar"] = window["webpackJsonpsolpar"] || []).push([[1],{
+(window["webpackJsonpsolpar"] = window["webpackJsonpsolpar"] || []).push([[0],{
 
 /***/ "./node_modules/ansi-styles/index.js":
 /*!*******************************************!*\
@@ -70746,4 +70746,4 @@ module.exports = function (module) {
 /***/ })
 
 }]);
-//# sourceMappingURL=1.chunk.js.map
+//# sourceMappingURL=0.chunk.js.map
