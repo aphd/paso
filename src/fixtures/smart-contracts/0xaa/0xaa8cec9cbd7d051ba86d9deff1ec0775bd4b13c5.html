@@ -1,0 +1,1136 @@
+/**
+ *Submitted for verification at Etherscan.io on 2018-06-10
+*/
+
+pragma solidity ^0.4.21;
+
+/*
+    Owned contract interface
+*/
+contract IOwned {
+    // this function isn't abstract since the compiler emits automatically generated getter functions as external
+    function owner() public view returns (address) {}
+
+    function transferOwnership(address _newOwner) public;
+    function acceptOwnership() public;
+}
+
+/*
+    ERC20 Standard Token interface
+*/
+contract IERC20Token {
+    // these functions aren't abstract since the compiler emits automatically generated getter functions as external
+    function name() public view returns (string) {}
+    function symbol() public view returns (string) {}
+    function decimals() public view returns (uint8) {}
+    function totalSupply() public view returns (uint256) {}
+    function balanceOf(address _owner) public view returns (uint256) { _owner; }
+    function allowance(address _owner, address _spender) public view returns (uint256) { _owner; _spender; }
+
+    function transfer(address _to, uint256 _value) public returns (bool success);
+    function transferFrom(address _from, address _to, uint256 _value) public returns (bool success);
+    function approve(address _spender, uint256 _value) public returns (bool success);
+}
+
+/*
+    Smart Token interface
+*/
+contract ISmartToken is IOwned, IERC20Token {
+    function disableTransfers(bool _disable) public;
+    function issue(address _to, uint256 _amount) public;
+    function destroy(address _from, uint256 _amount) public;
+}
+
+/*
+    Contract Registry interface
+*/
+contract IContractRegistry {
+    function getAddress(bytes32 _contractName) public view returns (address);
+}
+
+/*
+    Contract Features interface
+*/
+contract IContractFeatures {
+    function isSupported(address _contract, uint256 _features) public view returns (bool);
+    function enableFeatures(uint256 _features, bool _enable) public;
+}
+
+/*
+    Whitelist interface
+*/
+contract IWhitelist {
+    function isWhitelisted(address _address) public view returns (bool);
+}
+
+/*
+    Token Holder interface
+*/
+contract ITokenHolder is IOwned {
+    function withdrawTokens(IERC20Token _token, address _to, uint256 _amount) public;
+}
+
+/*
+    Bancor Formula interface
+*/
+contract IBancorFormula {
+    function calculatePurchaseReturn(uint256 _supply, uint256 _connectorBalance, uint32 _connectorWeight, uint256 _depositAmount) public view returns (uint256);
+    function calculateSaleReturn(uint256 _supply, uint256 _connectorBalance, uint32 _connectorWeight, uint256 _sellAmount) public view returns (uint256);
+    function calculateCrossConnectorReturn(uint256 _fromConnectorBalance, uint32 _fromConnectorWeight, uint256 _toConnectorBalance, uint32 _toConnectorWeight, uint256 _amount) public view returns (uint256);
+}
+
+/*
+    Bancor Converter interface
+*/
+contract IBancorConverter {
+    function getReturn(IERC20Token _fromToken, IERC20Token _toToken, uint256 _amount) public view returns (uint256);
+    function convert(IERC20Token _fromToken, IERC20Token _toToken, uint256 _amount, uint256 _minReturn) public returns (uint256);
+    function conversionWhitelist() public view returns (IWhitelist) {}
+    // deprecated, backward compatibility
+    function change(IERC20Token _fromToken, IERC20Token _toToken, uint256 _amount, uint256 _minReturn) public returns (uint256);
+}
+
+/*
+    Bancor Network interface
+*/
+contract IBancorNetwork {
+    function convert(IERC20Token[] _path, uint256 _amount, uint256 _minReturn) public payable returns (uint256);
+    function convertFor(IERC20Token[] _path, uint256 _amount, uint256 _minReturn, address _for) public payable returns (uint256);
+    function convertForPrioritized2(
+        IERC20Token[] _path,
+        uint256 _amount,
+        uint256 _minReturn,
+        address _for,
+        uint256 _block,
+        uint8 _v,
+        bytes32 _r,
+        bytes32 _s)
+        public payable returns (uint256);
+
+    // deprecated, backward compatibility
+    function convertForPrioritized(
+        IERC20Token[] _path,
+        uint256 _amount,
+        uint256 _minReturn,
+        address _for,
+        uint256 _block,
+        uint256 _nonce,
+        uint8 _v,
+        bytes32 _r,
+        bytes32 _s)
+        public payable returns (uint256);
+}
+
+/*
+    Utilities & Common Modifiers
+*/
+contract Utils {
+    /**
+        constructor
+    */
+    function Utils() public {
+    }
+
+    // verifies that an amount is greater than zero
+    modifier greaterThanZero(uint256 _amount) {
+        require(_amount > 0);
+        _;
+    }
+
+    // validates an address - currently only checks that it isn't null
+    modifier validAddress(address _address) {
+        require(_address != address(0));
+        _;
+    }
+
+    // verifies that the address is different than this contract address
+    modifier notThis(address _address) {
+        require(_address != address(this));
+        _;
+    }
+
+    // Overflow protected math functions
+
+    /**
+        @dev returns the sum of _x and _y, asserts if the calculation overflows
+
+        @param _x   value 1
+        @param _y   value 2
+
+        @return sum
+    */
+    function safeAdd(uint256 _x, uint256 _y) internal pure returns (uint256) {
+        uint256 z = _x + _y;
+        assert(z >= _x);
+        return z;
+    }
+
+    /**
+        @dev returns the difference of _x minus _y, asserts if the subtraction results in a negative number
+
+        @param _x   minuend
+        @param _y   subtrahend
+
+        @return difference
+    */
+    function safeSub(uint256 _x, uint256 _y) internal pure returns (uint256) {
+        assert(_x >= _y);
+        return _x - _y;
+    }
+
+    /**
+        @dev returns the product of multiplying _x by _y, asserts if the calculation overflows
+
+        @param _x   factor 1
+        @param _y   factor 2
+
+        @return product
+    */
+    function safeMul(uint256 _x, uint256 _y) internal pure returns (uint256) {
+        uint256 z = _x * _y;
+        assert(_x == 0 || z / _x == _y);
+        return z;
+    }
+}
+
+/*
+    Provides support and utilities for contract ownership
+*/
+contract Owned is IOwned {
+    address public owner;
+    address public newOwner;
+
+    event OwnerUpdate(address indexed _prevOwner, address indexed _newOwner);
+
+    /**
+        @dev constructor
+    */
+    function Owned() public {
+        owner = msg.sender;
+    }
+
+    // allows execution by the owner only
+    modifier ownerOnly {
+        assert(msg.sender == owner);
+        _;
+    }
+
+    /**
+        @dev allows transferring the contract ownership
+        the new owner still needs to accept the transfer
+        can only be called by the contract owner
+
+        @param _newOwner    new contract owner
+    */
+    function transferOwnership(address _newOwner) public ownerOnly {
+        require(_newOwner != owner);
+        newOwner = _newOwner;
+    }
+
+    /**
+        @dev used by a new owner to accept an ownership transfer
+    */
+    function acceptOwnership() public {
+        require(msg.sender == newOwner);
+        emit OwnerUpdate(owner, newOwner);
+        owner = newOwner;
+        newOwner = address(0);
+    }
+}
+
+/*
+    Provides support and utilities for contract management
+    Note that a managed contract must also have an owner
+*/
+contract Managed is Owned {
+    address public manager;
+    address public newManager;
+
+    event ManagerUpdate(address indexed _prevManager, address indexed _newManager);
+
+    /**
+        @dev constructor
+    */
+    function Managed() public {
+        manager = msg.sender;
+    }
+
+    // allows execution by the manager only
+    modifier managerOnly {
+        assert(msg.sender == manager);
+        _;
+    }
+
+    // allows execution by either the owner or the manager only
+    modifier ownerOrManagerOnly {
+        require(msg.sender == owner || msg.sender == manager);
+        _;
+    }
+
+    /**
+        @dev allows transferring the contract management
+        the new manager still needs to accept the transfer
+        can only be called by the contract manager
+
+        @param _newManager    new contract manager
+    */
+    function transferManagement(address _newManager) public ownerOrManagerOnly {
+        require(_newManager != manager);
+        newManager = _newManager;
+    }
+
+    /**
+        @dev used by a new manager to accept a management transfer
+    */
+    function acceptManagement() public {
+        require(msg.sender == newManager);
+        emit ManagerUpdate(manager, newManager);
+        manager = newManager;
+        newManager = address(0);
+    }
+}
+
+/**
+    Id definitions for bancor contracts
+
+    Can be used in conjunction with the contract registry to get contract addresses
+*/
+contract ContractIds {
+    // generic
+    bytes32 public constant CONTRACT_FEATURES = "ContractFeatures";
+
+    // bancor logic
+    bytes32 public constant BANCOR_NETWORK = "BancorNetwork";
+    bytes32 public constant BANCOR_FORMULA = "BancorFormula";
+    bytes32 public constant BANCOR_GAS_PRICE_LIMIT = "BancorGasPriceLimit";
+
+    bytes32 public constant BANCOR_CONVERTER_FACTORY = "BancorConverterFactory";
+    bytes32 public constant BANCOR_CONVERTER_UPGRADER = "BancorConverterUpgrader";
+
+    // tokens
+    bytes32 public constant BNT_TOKEN = "BNTToken";
+}
+
+/**
+    Id definitions for bancor contract features
+
+    Can be used to query the ContractFeatures contract to check whether a certain feature is supported by a contract
+*/
+contract FeatureIds {
+    // converter features
+    uint256 public constant CONVERTER_CONVERSION_WHITELIST = 1 << 0;
+}
+
+/*
+    We consider every contract to be a 'token holder' since it's currently not possible
+    for a contract to deny receiving tokens.
+
+    The TokenHolder's contract sole purpose is to provide a safety mechanism that allows
+    the owner to send tokens that were sent to the contract by mistake back to their sender.
+*/
+contract TokenHolder is ITokenHolder, Owned, Utils {
+    /**
+        @dev constructor
+    */
+    function TokenHolder() public {
+    }
+
+    /**
+        @dev withdraws tokens held by the contract and sends them to an account
+        can only be called by the owner
+
+        @param _token   ERC20 token contract address
+        @param _to      account to receive the new amount
+        @param _amount  amount to withdraw
+    */
+    function withdrawTokens(IERC20Token _token, address _to, uint256 _amount)
+        public
+        ownerOnly
+        validAddress(_token)
+        validAddress(_to)
+        notThis(_to)
+    {
+        assert(_token.transfer(_to, _amount));
+    }
+}
+
+/*
+    The smart token controller is an upgradable part of the smart token that allows
+    more functionality as well as fixes for bugs/exploits.
+    Once it accepts ownership of the token, it becomes the token's sole controller
+    that can execute any of its functions.
+
+    To upgrade the controller, ownership must be transferred to a new controller, along with
+    any relevant data.
+
+    The smart token must be set on construction and cannot be changed afterwards.
+    Wrappers are provided (as opposed to a single 'execute' function) for each of the token's functions, for easier access.
+
+    Note that the controller can transfer token ownership to a new controller that
+    doesn't allow executing any function on the token, for a trustless solution.
+    Doing that will also remove the owner's ability to upgrade the controller.
+*/
+contract SmartTokenController is TokenHolder {
+    ISmartToken public token;   // smart token
+
+    /**
+        @dev constructor
+    */
+    function SmartTokenController(ISmartToken _token)
+        public
+        validAddress(_token)
+    {
+        token = _token;
+    }
+
+    // ensures that the controller is the token's owner
+    modifier active() {
+        assert(token.owner() == address(this));
+        _;
+    }
+
+    // ensures that the controller is not the token's owner
+    modifier inactive() {
+        assert(token.owner() != address(this));
+        _;
+    }
+
+    /**
+        @dev allows transferring the token ownership
+        the new owner still need to accept the transfer
+        can only be called by the contract owner
+
+        @param _newOwner    new token owner
+    */
+    function transferTokenOwnership(address _newOwner) public ownerOnly {
+        token.transferOwnership(_newOwner);
+    }
+
+    /**
+        @dev used by a new owner to accept a token ownership transfer
+        can only be called by the contract owner
+    */
+    function acceptTokenOwnership() public ownerOnly {
+        token.acceptOwnership();
+    }
+
+    /**
+        @dev disables/enables token transfers
+        can only be called by the contract owner
+
+        @param _disable    true to disable transfers, false to enable them
+    */
+    function disableTokenTransfers(bool _disable) public ownerOnly {
+        token.disableTransfers(_disable);
+    }
+
+    /**
+        @dev withdraws tokens held by the controller and sends them to an account
+        can only be called by the owner
+
+        @param _token   ERC20 token contract address
+        @param _to      account to receive the new amount
+        @param _amount  amount to withdraw
+    */
+    function withdrawFromToken(
+        IERC20Token _token, 
+        address _to, 
+        uint256 _amount
+    ) 
+        public
+        ownerOnly
+    {
+        ITokenHolder(token).withdrawTokens(_token, _to, _amount);
+    }
+}
+
+/*
+    Bancor Converter v0.9
+
+    The Bancor version of the token converter, allows conversion between a smart token and other ERC20 tokens and between different ERC20 tokens and themselves.
+
+    ERC20 connector balance can be virtual, meaning that the calculations are based on the virtual balance instead of relying on
+    the actual connector balance. This is a security mechanism that prevents the need to keep a very large (and valuable) balance in a single contract.
+
+    The converter is upgradable (just like any SmartTokenController).
+
+    WARNING: It is NOT RECOMMENDED to use the converter with Smart Tokens that have less than 8 decimal digits
+             or with very small numbers because of precision loss
+
+    Open issues:
+    - Front-running attacks are currently mitigated by the following mechanisms:
+        - minimum return argument for each conversion provides a way to define a minimum/maximum price for the transaction
+        - gas price limit prevents users from having control over the order of execution
+        - gas price limit check can be skipped if the transaction comes from a trusted, whitelisted signer
+      Other potential solutions might include a commit/reveal based schemes
+    - Possibly add getters for the connector fields so that the client won't need to rely on the order in the struct
+*/
+contract BancorConverter is IBancorConverter, SmartTokenController, Managed, ContractIds, FeatureIds {
+    uint32 private constant MAX_WEIGHT = 1000000;
+    uint64 private constant MAX_CONVERSION_FEE = 1000000;
+
+    struct Connector {
+        uint256 virtualBalance;         // connector virtual balance
+        uint32 weight;                  // connector weight, represented in ppm, 1-1000000
+        bool isVirtualBalanceEnabled;   // true if virtual balance is enabled, false if not
+        bool isPurchaseEnabled;         // is purchase of the smart token enabled with the connector, can be set by the owner
+        bool isSet;                     // used to tell if the mapping element is defined
+    }
+
+    string public version = '0.9';
+    string public converterType = 'bancor';
+
+    IContractRegistry public registry;                  // contract registry contract
+    IWhitelist public conversionWhitelist;              // whitelist contract with list of addresses that are allowed to use the converter
+    IERC20Token[] public connectorTokens;               // ERC20 standard token addresses
+    IERC20Token[] public quickBuyPath;                  // conversion path that's used in order to buy the token with ETH
+    mapping (address => Connector) public connectors;   // connector token addresses -> connector data
+    uint32 private totalConnectorWeight = 0;            // used to efficiently prevent increasing the total connector weight above 100%
+    uint32 public maxConversionFee = 0;                 // maximum conversion fee for the lifetime of the contract,
+                                                        // represented in ppm, 0...1000000 (0 = no fee, 100 = 0.01%, 1000000 = 100%)
+    uint32 public conversionFee = 0;                    // current conversion fee, represented in ppm, 0...maxConversionFee
+    bool public conversionsEnabled = true;              // true if token conversions is enabled, false if not
+    IERC20Token[] private convertPath;
+
+    // triggered when a conversion between two tokens occurs
+    event Conversion(
+        address indexed _fromToken,
+        address indexed _toToken,
+        address indexed _trader,
+        uint256 _amount,
+        uint256 _return,
+        int256 _conversionFee
+    );
+    // triggered after a conversion with new price data
+    event PriceDataUpdate(
+        address indexed _connectorToken,
+        uint256 _tokenSupply,
+        uint256 _connectorBalance,
+        uint32 _connectorWeight
+    );
+    // triggered when the conversion fee is updated
+    event ConversionFeeUpdate(uint32 _prevFee, uint32 _newFee);
+
+    /**
+        @dev constructor
+
+        @param  _token              smart token governed by the converter
+        @param  _registry           address of a contract registry contract
+        @param  _maxConversionFee   maximum conversion fee, represented in ppm
+        @param  _connectorToken     optional, initial connector, allows defining the first connector at deployment time
+        @param  _connectorWeight    optional, weight for the initial connector
+    */
+    function BancorConverter(
+        ISmartToken _token,
+        IContractRegistry _registry,
+        uint32 _maxConversionFee,
+        IERC20Token _connectorToken,
+        uint32 _connectorWeight
+    )
+        public
+        SmartTokenController(_token)
+        validAddress(_registry)
+        validMaxConversionFee(_maxConversionFee)
+    {
+        registry = _registry;
+        IContractFeatures features = IContractFeatures(registry.getAddress(ContractIds.CONTRACT_FEATURES));
+
+        // initialize supported features
+        if (features != address(0))
+            features.enableFeatures(FeatureIds.CONVERTER_CONVERSION_WHITELIST, true);
+
+        maxConversionFee = _maxConversionFee;
+
+        if (_connectorToken != address(0))
+            addConnector(_connectorToken, _connectorWeight, false);
+    }
+
+    // validates a connector token address - verifies that the address belongs to one of the connector tokens
+    modifier validConnector(IERC20Token _address) {
+        require(connectors[_address].isSet);
+        _;
+    }
+
+    // validates a token address - verifies that the address belongs to one of the convertible tokens
+    modifier validToken(IERC20Token _address) {
+        require(_address == token || connectors[_address].isSet);
+        _;
+    }
+
+    // validates maximum conversion fee
+    modifier validMaxConversionFee(uint32 _conversionFee) {
+        require(_conversionFee >= 0 && _conversionFee <= MAX_CONVERSION_FEE);
+        _;
+    }
+
+    // validates conversion fee
+    modifier validConversionFee(uint32 _conversionFee) {
+        require(_conversionFee >= 0 && _conversionFee <= maxConversionFee);
+        _;
+    }
+
+    // validates connector weight range
+    modifier validConnectorWeight(uint32 _weight) {
+        require(_weight > 0 && _weight <= MAX_WEIGHT);
+        _;
+    }
+
+    // validates a conversion path - verifies that the number of elements is odd and that maximum number of 'hops' is 10
+    modifier validConversionPath(IERC20Token[] _path) {
+        require(_path.length > 2 && _path.length <= (1 + 2 * 10) && _path.length % 2 == 1);
+        _;
+    }
+
+    // allows execution only when conversions aren't disabled
+    modifier conversionsAllowed {
+        assert(conversionsEnabled);
+        _;
+    }
+
+    // allows execution by the BancorNetwork contract only
+    modifier bancorNetworkOnly {
+        IBancorNetwork bancorNetwork = IBancorNetwork(registry.getAddress(ContractIds.BANCOR_NETWORK));
+        require(msg.sender == address(bancorNetwork));
+        _;
+    }
+
+    /**
+        @dev returns the number of connector tokens defined
+
+        @return number of connector tokens
+    */
+    function connectorTokenCount() public view returns (uint16) {
+        return uint16(connectorTokens.length);
+    }
+
+    /*
+        @dev allows the owner to update the registry contract address
+
+        @param _registry    address of a bancor converter registry contract
+    */
+    function setRegistry(IContractRegistry _registry)
+        public
+        ownerOnly
+        validAddress(_registry)
+        notThis(_registry)
+    {
+        registry = _registry;
+    }
+
+    /*
+        @dev allows the owner to update & enable the conversion whitelist contract address
+        when set, only addresses that are whitelisted are actually allowed to use the converter
+        note that the whitelist check is actually done by the BancorNetwork contract
+
+        @param _whitelist    address of a whitelist contract
+    */
+    function setConversionWhitelist(IWhitelist _whitelist)
+        public
+        ownerOnly
+        notThis(_whitelist)
+    {
+        conversionWhitelist = _whitelist;
+    }
+
+    /*
+        @dev allows the manager to update the quick buy path
+
+        @param _path    new quick buy path, see conversion path format in the bancorNetwork contract
+    */
+    function setQuickBuyPath(IERC20Token[] _path)
+        public
+        ownerOnly
+        validConversionPath(_path)
+    {
+        quickBuyPath = _path;
+    }
+
+    /*
+        @dev allows the manager to clear the quick buy path
+    */
+    function clearQuickBuyPath() public ownerOnly {
+        quickBuyPath.length = 0;
+    }
+
+    /**
+        @dev returns the length of the quick buy path array
+
+        @return quick buy path length
+    */
+    function getQuickBuyPathLength() public view returns (uint256) {
+        return quickBuyPath.length;
+    }
+
+    /**
+        @dev disables the entire conversion functionality
+        this is a safety mechanism in case of a emergency
+        can only be called by the manager
+
+        @param _disable true to disable conversions, false to re-enable them
+    */
+    function disableConversions(bool _disable) public ownerOrManagerOnly {
+        conversionsEnabled = !_disable;
+    }
+
+    /**
+        @dev updates the current conversion fee
+        can only be called by the manager
+
+        @param _conversionFee new conversion fee, represented in ppm
+    */
+    function setConversionFee(uint32 _conversionFee)
+        public
+        ownerOrManagerOnly
+        validConversionFee(_conversionFee)
+    {
+        emit ConversionFeeUpdate(conversionFee, _conversionFee);
+        conversionFee = _conversionFee;
+    }
+
+    /*
+        @dev given a return amount, returns the amount minus the conversion fee
+
+        @param _amount      return amount
+        @param _magnitude   1 for standard conversion, 2 for cross connector conversion
+
+        @return return amount minus conversion fee
+    */
+    function getFinalAmount(uint256 _amount, uint8 _magnitude) public view returns (uint256) {
+        return safeMul(_amount, (MAX_CONVERSION_FEE - conversionFee) ** _magnitude) / MAX_CONVERSION_FEE ** _magnitude;
+    }
+
+    /**
+        @dev defines a new connector for the token
+        can only be called by the owner while the converter is inactive
+
+        @param _token                  address of the connector token
+        @param _weight                 constant connector weight, represented in ppm, 1-1000000
+        @param _enableVirtualBalance   true to enable virtual balance for the connector, false to disable it
+    */
+    function addConnector(IERC20Token _token, uint32 _weight, bool _enableVirtualBalance)
+        public
+        ownerOnly
+        inactive
+        validAddress(_token)
+        notThis(_token)
+        validConnectorWeight(_weight)
+    {
+        require(_token != token && !connectors[_token].isSet && totalConnectorWeight + _weight <= MAX_WEIGHT); // validate input
+
+        connectors[_token].virtualBalance = 0;
+        connectors[_token].weight = _weight;
+        connectors[_token].isVirtualBalanceEnabled = _enableVirtualBalance;
+        connectors[_token].isPurchaseEnabled = true;
+        connectors[_token].isSet = true;
+        connectorTokens.push(_token);
+        totalConnectorWeight += _weight;
+    }
+
+    /**
+        @dev updates one of the token connectors
+        can only be called by the owner
+
+        @param _connectorToken         address of the connector token
+        @param _weight                 constant connector weight, represented in ppm, 1-1000000
+        @param _enableVirtualBalance   true to enable virtual balance for the connector, false to disable it
+        @param _virtualBalance         new connector's virtual balance
+    */
+    function updateConnector(IERC20Token _connectorToken, uint32 _weight, bool _enableVirtualBalance, uint256 _virtualBalance)
+        public
+        ownerOnly
+        validConnector(_connectorToken)
+        validConnectorWeight(_weight)
+    {
+        Connector storage connector = connectors[_connectorToken];
+        require(totalConnectorWeight - connector.weight + _weight <= MAX_WEIGHT); // validate input
+
+        totalConnectorWeight = totalConnectorWeight - connector.weight + _weight;
+        connector.weight = _weight;
+        connector.isVirtualBalanceEnabled = _enableVirtualBalance;
+        connector.virtualBalance = _virtualBalance;
+    }
+
+    /**
+        @dev disables purchasing with the given connector token in case the connector token got compromised
+        can only be called by the owner
+        note that selling is still enabled regardless of this flag and it cannot be disabled by the owner
+
+        @param _connectorToken  connector token contract address
+        @param _disable         true to disable the token, false to re-enable it
+    */
+    function disableConnectorPurchases(IERC20Token _connectorToken, bool _disable)
+        public
+        ownerOnly
+        validConnector(_connectorToken)
+    {
+        connectors[_connectorToken].isPurchaseEnabled = !_disable;
+    }
+
+    /**
+        @dev returns the connector's virtual balance if one is defined, otherwise returns the actual balance
+
+        @param _connectorToken  connector token contract address
+
+        @return connector balance
+    */
+    function getConnectorBalance(IERC20Token _connectorToken)
+        public
+        view
+        validConnector(_connectorToken)
+        returns (uint256)
+    {
+        Connector storage connector = connectors[_connectorToken];
+        return connector.isVirtualBalanceEnabled ? connector.virtualBalance : _connectorToken.balanceOf(this);
+    }
+
+    /**
+        @dev returns the expected return for converting a specific amount of _fromToken to _toToken
+
+        @param _fromToken  ERC20 token to convert from
+        @param _toToken    ERC20 token to convert to
+        @param _amount     amount to convert, in fromToken
+
+        @return expected conversion return amount
+    */
+    function getReturn(IERC20Token _fromToken, IERC20Token _toToken, uint256 _amount) public view returns (uint256) {
+        require(_fromToken != _toToken); // validate input
+
+        // conversion between the token and one of its connectors
+        if (_toToken == token)
+            return getPurchaseReturn(_fromToken, _amount);
+        else if (_fromToken == token)
+            return getSaleReturn(_toToken, _amount);
+
+        // conversion between 2 connectors
+        return getCrossConnectorReturn(_fromToken, _toToken, _amount);
+    }
+
+    /**
+        @dev returns the expected return for buying the token for a connector token
+
+        @param _connectorToken  connector token contract address
+        @param _depositAmount   amount to deposit (in the connector token)
+
+        @return expected purchase return amount
+    */
+    function getPurchaseReturn(IERC20Token _connectorToken, uint256 _depositAmount)
+        public
+        view
+        active
+        validConnector(_connectorToken)
+        returns (uint256)
+    {
+        Connector storage connector = connectors[_connectorToken];
+        require(connector.isPurchaseEnabled); // validate input
+
+        uint256 tokenSupply = token.totalSupply();
+        uint256 connectorBalance = getConnectorBalance(_connectorToken);
+        IBancorFormula formula = IBancorFormula(registry.getAddress(ContractIds.BANCOR_FORMULA));
+        uint256 amount = formula.calculatePurchaseReturn(tokenSupply, connectorBalance, connector.weight, _depositAmount);
+
+        // return the amount minus the conversion fee
+        return getFinalAmount(amount, 1);
+    }
+
+    /**
+        @dev returns the expected return for selling the token for one of its connector tokens
+
+        @param _connectorToken  connector token contract address
+        @param _sellAmount      amount to sell (in the smart token)
+
+        @return expected sale return amount
+    */
+    function getSaleReturn(IERC20Token _connectorToken, uint256 _sellAmount)
+        public
+        view
+        active
+        validConnector(_connectorToken)
+        returns (uint256)
+    {
+        Connector storage connector = connectors[_connectorToken];
+        uint256 tokenSupply = token.totalSupply();
+        uint256 connectorBalance = getConnectorBalance(_connectorToken);
+        IBancorFormula formula = IBancorFormula(registry.getAddress(ContractIds.BANCOR_FORMULA));
+        uint256 amount = formula.calculateSaleReturn(tokenSupply, connectorBalance, connector.weight, _sellAmount);
+
+        // return the amount minus the conversion fee
+        return getFinalAmount(amount, 1);
+    }
+
+    /**
+        @dev returns the expected return for selling one of the connector tokens for another connector token
+
+        @param _fromConnectorToken  contract address of the connector token to convert from
+        @param _toConnectorToken    contract address of the connector token to convert to
+        @param _sellAmount          amount to sell (in the from connector token)
+
+        @return expected sale return amount (in the to connector token)
+    */
+    function getCrossConnectorReturn(IERC20Token _fromConnectorToken, IERC20Token _toConnectorToken, uint256 _sellAmount)
+        public
+        view
+        active
+        validConnector(_fromConnectorToken)
+        validConnector(_toConnectorToken)
+        returns (uint256)
+    {
+        Connector storage fromConnector = connectors[_fromConnectorToken];
+        Connector storage toConnector = connectors[_toConnectorToken];
+        require(toConnector.isPurchaseEnabled); // validate input
+
+        uint256 fromConnectorBalance = getConnectorBalance(_fromConnectorToken);
+        uint256 toConnectorBalance = getConnectorBalance(_toConnectorToken);
+
+        IBancorFormula formula = IBancorFormula(registry.getAddress(ContractIds.BANCOR_FORMULA));
+        uint256 amount = formula.calculateCrossConnectorReturn(fromConnectorBalance, fromConnector.weight, toConnectorBalance, toConnector.weight, _sellAmount);
+
+        // return the amount minus the conversion fee
+        // the fee is higher (magnitude = 2) since cross connector conversion equals 2 conversions (from / to the smart token)
+        return getFinalAmount(amount, 2);
+    }
+
+    /**
+        @dev converts a specific amount of _fromToken to _toToken
+
+        @param _fromToken  ERC20 token to convert from
+        @param _toToken    ERC20 token to convert to
+        @param _amount     amount to convert, in fromToken
+        @param _minReturn  if the conversion results in an amount smaller than the minimum return - it is cancelled, must be nonzero
+
+        @return conversion return amount
+    */
+    function convertInternal(IERC20Token _fromToken, IERC20Token _toToken, uint256 _amount, uint256 _minReturn)
+        public
+        bancorNetworkOnly
+        conversionsAllowed
+        greaterThanZero(_minReturn)
+        returns (uint256)
+    {
+        require(_fromToken != _toToken); // validate input
+
+        // conversion between the token and one of its connectors
+        if (_toToken == token)
+            return buy(_fromToken, _amount, _minReturn);
+        else if (_fromToken == token)
+            return sell(_toToken, _amount, _minReturn);
+
+        // conversion between 2 connectors
+        uint256 amount = getCrossConnectorReturn(_fromToken, _toToken, _amount);
+        // ensure the trade gives something in return and meets the minimum requested amount
+        require(amount != 0 && amount >= _minReturn);
+
+        // update the source token virtual balance if relevant
+        Connector storage fromConnector = connectors[_fromToken];
+        if (fromConnector.isVirtualBalanceEnabled)
+            fromConnector.virtualBalance = safeAdd(fromConnector.virtualBalance, _amount);
+
+        // update the target token virtual balance if relevant
+        Connector storage toConnector = connectors[_toToken];
+        if (toConnector.isVirtualBalanceEnabled)
+            toConnector.virtualBalance = safeSub(toConnector.virtualBalance, amount);
+
+        // ensure that the trade won't deplete the connector balance
+        uint256 toConnectorBalance = getConnectorBalance(_toToken);
+        assert(amount < toConnectorBalance);
+
+        // transfer funds from the caller in the from connector token
+        assert(_fromToken.transferFrom(msg.sender, this, _amount));
+        // transfer funds to the caller in the to connector token
+        // the transfer might fail if the actual connector balance is smaller than the virtual balance
+        assert(_toToken.transfer(msg.sender, amount));
+
+        // calculate conversion fee and dispatch the conversion event
+        // the fee is higher (magnitude = 2) since cross connector conversion equals 2 conversions (from / to the smart token)
+        uint256 feeAmount = safeSub(amount, getFinalAmount(amount, 2));
+        dispatchConversionEvent(_fromToken, _toToken, _amount, amount, feeAmount);
+
+        // dispatch price data updates for the smart token / both connectors
+        emit PriceDataUpdate(_fromToken, token.totalSupply(), getConnectorBalance(_fromToken), fromConnector.weight);
+        emit PriceDataUpdate(_toToken, token.totalSupply(), getConnectorBalance(_toToken), toConnector.weight);
+        return amount;
+    }
+
+    /**
+        @dev converts a specific amount of _fromToken to _toToken
+
+        @param _fromToken  ERC20 token to convert from
+        @param _toToken    ERC20 token to convert to
+        @param _amount     amount to convert, in fromToken
+        @param _minReturn  if the conversion results in an amount smaller than the minimum return - it is cancelled, must be nonzero
+
+        @return conversion return amount
+    */
+    function convert(IERC20Token _fromToken, IERC20Token _toToken, uint256 _amount, uint256 _minReturn) public returns (uint256) {
+        convertPath = [_fromToken, token, _toToken];
+        return quickConvert(convertPath, _amount, _minReturn);
+    }
+
+    /**
+        @dev buys the token by depositing one of its connector tokens
+
+        @param _connectorToken  connector token contract address
+        @param _depositAmount   amount to deposit (in the connector token)
+        @param _minReturn       if the conversion results in an amount smaller than the minimum return - it is cancelled, must be nonzero
+
+        @return buy return amount
+    */
+    function buy(IERC20Token _connectorToken, uint256 _depositAmount, uint256 _minReturn) internal returns (uint256) {
+        uint256 amount = getPurchaseReturn(_connectorToken, _depositAmount);
+        // ensure the trade gives something in return and meets the minimum requested amount
+        require(amount != 0 && amount >= _minReturn);
+
+        // update virtual balance if relevant
+        Connector storage connector = connectors[_connectorToken];
+        if (connector.isVirtualBalanceEnabled)
+            connector.virtualBalance = safeAdd(connector.virtualBalance, _depositAmount);
+
+        // transfer funds from the caller in the connector token
+        assert(_connectorToken.transferFrom(msg.sender, this, _depositAmount));
+        // issue new funds to the caller in the smart token
+        token.issue(msg.sender, amount);
+
+        // calculate conversion fee and dispatch the conversion event
+        uint256 feeAmount = safeSub(amount, getFinalAmount(amount, 1));
+        dispatchConversionEvent(_connectorToken, token, _depositAmount, amount, feeAmount);
+
+        // dispatch price data update for the smart token/connector
+        emit PriceDataUpdate(_connectorToken, token.totalSupply(), getConnectorBalance(_connectorToken), connector.weight);
+        return amount;
+    }
+
+    /**
+        @dev sells the token by withdrawing from one of its connector tokens
+
+        @param _connectorToken  connector token contract address
+        @param _sellAmount      amount to sell (in the smart token)
+        @param _minReturn       if the conversion results in an amount smaller the minimum return - it is cancelled, must be nonzero
+
+        @return sell return amount
+    */
+    function sell(IERC20Token _connectorToken, uint256 _sellAmount, uint256 _minReturn) internal returns (uint256) {
+        require(_sellAmount <= token.balanceOf(msg.sender)); // validate input
+
+        uint256 amount = getSaleReturn(_connectorToken, _sellAmount);
+        // ensure the trade gives something in return and meets the minimum requested amount
+        require(amount != 0 && amount >= _minReturn);
+
+        // ensure that the trade will only deplete the connector balance if the total supply is depleted as well
+        uint256 tokenSupply = token.totalSupply();
+        uint256 connectorBalance = getConnectorBalance(_connectorToken);
+        assert(amount < connectorBalance || (amount == connectorBalance && _sellAmount == tokenSupply));
+
+        // update virtual balance if relevant
+        Connector storage connector = connectors[_connectorToken];
+        if (connector.isVirtualBalanceEnabled)
+            connector.virtualBalance = safeSub(connector.virtualBalance, amount);
+
+        // destroy _sellAmount from the caller's balance in the smart token
+        token.destroy(msg.sender, _sellAmount);
+        // transfer funds to the caller in the connector token
+        // the transfer might fail if the actual connector balance is smaller than the virtual balance
+        assert(_connectorToken.transfer(msg.sender, amount));
+
+        // calculate conversion fee and dispatch the conversion event
+        uint256 feeAmount = safeSub(amount, getFinalAmount(amount, 1));
+        dispatchConversionEvent(token, _connectorToken, _sellAmount, amount, feeAmount);
+
+        // dispatch price data update for the smart token/connector
+        emit PriceDataUpdate(_connectorToken, token.totalSupply(), getConnectorBalance(_connectorToken), connector.weight);
+        return amount;
+    }
+
+    /**
+        @dev converts the token to any other token in the bancor network by following a predefined conversion path
+        note that when converting from an ERC20 token (as opposed to a smart token), allowance must be set beforehand
+
+        @param _path        conversion path, see conversion path format in the BancorNetwork contract
+        @param _amount      amount to convert from (in the initial source token)
+        @param _minReturn   if the conversion results in an amount smaller than the minimum return - it is cancelled, must be nonzero
+
+        @return tokens issued in return
+    */
+    function quickConvert(IERC20Token[] _path, uint256 _amount, uint256 _minReturn)
+        public
+        payable
+        validConversionPath(_path)
+        returns (uint256)
+    {
+        return quickConvertPrioritized(_path, _amount, _minReturn, 0x0, 0x0, 0x0, 0x0);
+    }
+
+    /**
+        @dev converts the token to any other token in the bancor network by following a predefined conversion path
+        note that when converting from an ERC20 token (as opposed to a smart token), allowance must be set beforehand
+
+        @param _path        conversion path, see conversion path format in the BancorNetwork contract
+        @param _amount      amount to convert from (in the initial source token)
+        @param _minReturn   if the conversion results in an amount smaller than the minimum return - it is cancelled, must be nonzero
+        @param _block       if the current block exceeded the given parameter - it is cancelled
+        @param _v           (signature[128:130]) associated with the signer address and helps validating if the signature is legit
+        @param _r           (signature[0:64]) associated with the signer address and helps validating if the signature is legit
+        @param _s           (signature[64:128]) associated with the signer address and helps validating if the signature is legit
+
+        @return tokens issued in return
+    */
+    function quickConvertPrioritized(IERC20Token[] _path, uint256 _amount, uint256 _minReturn, uint256 _block, uint8 _v, bytes32 _r, bytes32 _s)
+        public
+        payable
+        validConversionPath(_path)
+        returns (uint256)
+    {
+        IERC20Token fromToken = _path[0];
+        IBancorNetwork bancorNetwork = IBancorNetwork(registry.getAddress(ContractIds.BANCOR_NETWORK));
+
+        // we need to transfer the source tokens from the caller to the BancorNetwork contract,
+        // so it can execute the conversion on behalf of the caller
+        if (msg.value == 0) {
+            // not ETH, send the source tokens to the BancorNetwork contract
+            // if the token is the smart token, no allowance is required - destroy the tokens
+            // from the caller and issue them to the BancorNetwork contract
+            if (fromToken == token) {
+                token.destroy(msg.sender, _amount); // destroy _amount tokens from the caller's balance in the smart token
+                token.issue(bancorNetwork, _amount); // issue _amount new tokens to the BancorNetwork contract
+            } else {
+                // otherwise, we assume we already have allowance, transfer the tokens directly to the BancorNetwork contract
+                assert(fromToken.transferFrom(msg.sender, bancorNetwork, _amount));
+            }
+        }
+
+        // execute the conversion and pass on the ETH with the call
+        return bancorNetwork.convertForPrioritized2.value(msg.value)(_path, _amount, _minReturn, msg.sender, _block, _v, _r, _s);
+    }
+
+    // deprecated, backward compatibility
+    function change(IERC20Token _fromToken, IERC20Token _toToken, uint256 _amount, uint256 _minReturn) public returns (uint256) {
+        return convertInternal(_fromToken, _toToken, _amount, _minReturn);
+    }
+
+    /**
+        @dev helper, dispatches the Conversion event
+
+        @param _fromToken       ERC20 token to convert from
+        @param _toToken         ERC20 token to convert to
+        @param _amount          amount purchased/sold (in the source token)
+        @param _returnAmount    amount returned (in the target token)
+    */
+    function dispatchConversionEvent(IERC20Token _fromToken, IERC20Token _toToken, uint256 _amount, uint256 _returnAmount, uint256 _feeAmount) private {
+        // fee amount is converted to 255 bits -
+        // negative amount means the fee is taken from the source token, positive amount means its taken from the target token
+        // currently the fee is always taken from the target token
+        // since we convert it to a signed number, we first ensure that it's capped at 255 bits to prevent overflow
+        assert(_feeAmount <= 2 ** 255);
+        emit Conversion(_fromToken, _toToken, msg.sender, _amount, _returnAmount, int256(_feeAmount));
+    }
+
+    /**
+        @dev fallback, buys the smart token with ETH
+        note that the purchase will use the price at the time of the purchase
+    */
+    function() payable public {
+        quickConvert(quickBuyPath, msg.value, 1);
+    }
+}
+### ABI:
+[{"constant":true,"inputs":[],"name":"BANCOR_CONVERTER_UPGRADER","outputs":[{"name":"","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_connectorToken","type":"address"},{"name":"_weight","type":"uint32"},{"name":"_enableVirtualBalance","type":"bool"},{"name":"_virtualBalance","type":"uint256"}],"name":"updateConnector","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"","type":"address"}],"name":"connectors","outputs":[{"name":"virtualBalance","type":"uint256"},{"name":"weight","type":"uint32"},{"name":"isVirtualBalanceEnabled","type":"bool"},{"name":"isPurchaseEnabled","type":"bool"},{"name":"isSet","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"uint256"}],"name":"connectorTokens","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"BNT_TOKEN","outputs":[{"name":"","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_fromToken","type":"address"},{"name":"_toToken","type":"address"},{"name":"_amount","type":"uint256"}],"name":"getReturn","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_newOwner","type":"address"}],"name":"transferTokenOwnership","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_path","type":"address[]"},{"name":"_amount","type":"uint256"},{"name":"_minReturn","type":"uint256"},{"name":"_block","type":"uint256"},{"name":"_v","type":"uint8"},{"name":"_r","type":"bytes32"},{"name":"_s","type":"bytes32"}],"name":"quickConvertPrioritized","outputs":[{"name":"","type":"uint256"}],"payable":true,"stateMutability":"payable","type":"function"},{"constant":false,"inputs":[{"name":"_disable","type":"bool"}],"name":"disableConversions","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_fromToken","type":"address"},{"name":"_toToken","type":"address"},{"name":"_amount","type":"uint256"},{"name":"_minReturn","type":"uint256"}],"name":"convertInternal","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[],"name":"acceptTokenOwnership","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"_amount","type":"uint256"},{"name":"_magnitude","type":"uint8"}],"name":"getFinalAmount","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"converterType","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_token","type":"address"},{"name":"_weight","type":"uint32"},{"name":"_enableVirtualBalance","type":"bool"}],"name":"addConnector","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_token","type":"address"},{"name":"_to","type":"address"},{"name":"_amount","type":"uint256"}],"name":"withdrawFromToken","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"newManager","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"manager","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_whitelist","type":"address"}],"name":"setConversionWhitelist","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[],"name":"clearQuickBuyPath","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_connectorToken","type":"address"},{"name":"_disable","type":"bool"}],"name":"disableConnectorPurchases","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"version","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"conversionFee","outputs":[{"name":"","type":"uint32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"BANCOR_CONVERTER_FACTORY","outputs":[{"name":"","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_token","type":"address"},{"name":"_to","type":"address"},{"name":"_amount","type":"uint256"}],"name":"withdrawTokens","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_fromToken","type":"address"},{"name":"_toToken","type":"address"},{"name":"_amount","type":"uint256"},{"name":"_minReturn","type":"uint256"}],"name":"change","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"BANCOR_FORMULA","outputs":[{"name":"","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"connectorTokenCount","outputs":[{"name":"","type":"uint16"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_connectorToken","type":"address"},{"name":"_sellAmount","type":"uint256"}],"name":"getSaleReturn","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_fromToken","type":"address"},{"name":"_toToken","type":"address"},{"name":"_amount","type":"uint256"},{"name":"_minReturn","type":"uint256"}],"name":"convert","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[],"name":"acceptOwnership","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"registry","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"CONTRACT_FEATURES","outputs":[{"name":"","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_disable","type":"bool"}],"name":"disableTokenTransfers","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"owner","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_fromConnectorToken","type":"address"},{"name":"_toConnectorToken","type":"address"},{"name":"_sellAmount","type":"uint256"}],"name":"getCrossConnectorReturn","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"BANCOR_NETWORK","outputs":[{"name":"","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"BANCOR_GAS_PRICE_LIMIT","outputs":[{"name":"","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"CONVERTER_CONVERSION_WHITELIST","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"getQuickBuyPathLength","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"maxConversionFee","outputs":[{"name":"","type":"uint32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_connectorToken","type":"address"},{"name":"_depositAmount","type":"uint256"}],"name":"getPurchaseReturn","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_registry","type":"address"}],"name":"setRegistry","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"conversionsEnabled","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"conversionWhitelist","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[],"name":"acceptManagement","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_path","type":"address[]"}],"name":"setQuickBuyPath","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"newOwner","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_connectorToken","type":"address"}],"name":"getConnectorBalance","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_newManager","type":"address"}],"name":"transferManagement","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"","type":"uint256"}],"name":"quickBuyPath","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_conversionFee","type":"uint32"}],"name":"setConversionFee","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_path","type":"address[]"},{"name":"_amount","type":"uint256"},{"name":"_minReturn","type":"uint256"}],"name":"quickConvert","outputs":[{"name":"","type":"uint256"}],"payable":true,"stateMutability":"payable","type":"function"},{"constant":false,"inputs":[{"name":"_newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"token","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"inputs":[{"name":"_token","type":"address"},{"name":"_registry","type":"address"},{"name":"_maxConversionFee","type":"uint32"},{"name":"_connectorToken","type":"address"},{"name":"_connectorWeight","type":"uint32"}],"payable":false,"stateMutability":"nonpayable","type":"constructor"},{"payable":true,"stateMutability":"payable","type":"fallback"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_fromToken","type":"address"},{"indexed":true,"name":"_toToken","type":"address"},{"indexed":true,"name":"_trader","type":"address"},{"indexed":false,"name":"_amount","type":"uint256"},{"indexed":false,"name":"_return","type":"uint256"},{"indexed":false,"name":"_conversionFee","type":"int256"}],"name":"Conversion","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_connectorToken","type":"address"},{"indexed":false,"name":"_tokenSupply","type":"uint256"},{"indexed":false,"name":"_connectorBalance","type":"uint256"},{"indexed":false,"name":"_connectorWeight","type":"uint32"}],"name":"PriceDataUpdate","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"name":"_prevFee","type":"uint32"},{"indexed":false,"name":"_newFee","type":"uint32"}],"name":"ConversionFeeUpdate","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_prevManager","type":"address"},{"indexed":true,"name":"_newManager","type":"address"}],"name":"ManagerUpdate","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_prevOwner","type":"address"},{"indexed":true,"name":"_newOwner","type":"address"}],"name":"OwnerUpdate","type":"event"}]
+### byteCode:
+606060405260408051908101604052600381527f302e390000000000000000000000000000000000000000000000000000000000602082015260059080516200004d92916020019062000577565b506040805190810160405260068082527f62616e636f72000000000000000000000000000000000000000000000000000060208301529080516200009692916020019062000577565b50600c80546001606860020a0319166c010000000000000000000000001790553415620000c257600080fd5b60405160a08062003808833981016040528080519190602001805191906020018051919060200180519190602001805160008054600160a060020a03191633600160a060020a03908116919091178255919350915086908190811615156200012957600080fd5b5060028054600160a060020a0319908116600160a060020a0393841617909155600380549091163383161790558590811615156200016657600080fd5b8460008163ffffffff1610158015620001885750620f424063ffffffff821611155b15156200019457600080fd5b60078054600160a060020a031916600160a060020a038981169190911791829055166321f8a7217f436f6e74726163744665617475726573000000000000000000000000000000006040517c010000000000000000000000000000000000000000000000000000000063ffffffff84160281526004810191909152602401602060405180830381600087803b15156200022c57600080fd5b5af115156200023a57600080fd5b5050506040518051935050600160a060020a03831615620002d05782600160a060020a0316632c7077c06001806040517c010000000000000000000000000000000000000000000000000000000063ffffffff8516028152600481019290925215156024820152604401600060405180830381600087803b1515620002be57600080fd5b5af11515620002cc57600080fd5b5050505b600c805467ffffffff00000000191664010000000063ffffffff891602179055600160a060020a038516156200031c576200031c85856000640100000000620016db6200032a82021704565b505050505050505062000648565b60005433600160a060020a039081169116146200034357fe5b600254600160a060020a033081169116638da5cb5b6040518163ffffffff167c0100000000000000000000000000000000000000000000000000000000028152600401602060405180830381600087803b1515620003a057600080fd5b5af11515620003ae57600080fd5b50505060405180519050600160a060020a031614151515620003cc57fe5b82600160a060020a0381161515620003e357600080fd5b8330600160a060020a031681600160a060020a0316141515156200040657600080fd5b8360008163ffffffff16118015620004275750620f424063ffffffff821611155b15156200043357600080fd5b600254600160a060020a03878116911614801590620004785750600160a060020a0386166000908152600b60205260409020600101546601000000000000900460ff16155b8015620004975750600c54620f424063ffffffff918216870190911611155b1515620004a357600080fd5b600160a060020a0386166000908152600b602052604081209081556001908101805466010000000000006501000000000063ffffffff1990921663ffffffff8a161764ff000000001916640100000000891515021765ff000000000019169190911766ff00000000000019161790556009805490918101620005268382620005fc565b5060009182526020909120018054600160a060020a031916600160a060020a0397909716969096179095555050600c805463ffffffff19811663ffffffff9182169490940116929092179091555050565b828054600181600116156101000203166002900490600052602060002090601f016020900481019282601f10620005ba57805160ff1916838001178555620005ea565b82800160010185558215620005ea579182015b82811115620005ea578251825591602001919060010190620005cd565b50620005f892915062000628565b5090565b81548183558181151162000623576000838152602090206200062391810190830162000628565b505050565b6200064591905b80821115620005f857600081556001016200062f565b90565b6131b080620006586000396000f30060606040526004361061026e5763ffffffff60e060020a6000350416630c87355e81146102d75780630ca78923146102fc5780630e53aae91461032e57806319b64015146103895780631d000b61146103bb5780631e1401f8146103ce57806321e6b53d146103f65780632274256414610415578063228d2820146104795780632a2e2f0c1461049157806338a5e016146104bc5780633aa0145a146104cf5780633e8ff43f146104eb5780633f4d2fc21461057557806341a5b33d146105a257806342906029146105ca578063481c6a75146105dd5780634af80f0e146105f05780634e2280c41461060f578063514385be1461062257806354fd4d5014610646578063579cd3ca146106595780635a46f06c146106855780635e35359e146106985780635e5144eb146106c05780636d7bd3fc146106eb57806371f52bf3146106fe57806372b44b2c1461072857806375892cf11461074a57806379ba5097146107755780637b1039991461078857806383315b6e1461079b57806385d5e631146107ae5780638da5cb5b146107c65780638e3047e0146107d95780639232494e146108015780639249993a1461081457806392d1abb7146108275780639396a7f01461083a57806394c275ad1461084d578063a2c4c33614610860578063a91ee0dc14610882578063bf754558146108a1578063c45d3d92146108c8578063c8c2fe6c146108db578063d395ee0f146108ee578063d4ee1d901461093d578063d895951214610950578063e4edf8521461096f578063e7ee85a51461098e578063ecbca55d146109a4578063f0843ba9146109c0578063f2fde38b14610a0b578063fc0c546a14610a2a575b6102d4600a8054806020026020016040519081016040528092919081815260200182805480156102c757602002820191906000526020600020905b8154600160a060020a031681526001909101906020018083116102a9575b5050505050346001610a3d565b50005b34156102e257600080fd5b6102ea610a90565b60405190815260200160405180910390f35b341561030757600080fd5b61032c600160a060020a036004351663ffffffff602435166044351515606435610ab4565b005b341561033957600080fd5b61034d600160a060020a0360043516610bc8565b60405194855263ffffffff90931660208501529015156040808501919091529015156060840152901515608083015260a0909101905180910390f35b341561039457600080fd5b61039f600435610c0e565b604051600160a060020a03909116815260200160405180910390f35b34156103c657600080fd5b6102ea610c36565b34156103d957600080fd5b6102ea600160a060020a0360043581169060243516604435610c5a565b341561040157600080fd5b61032c600160a060020a0360043516610cd1565b6102ea600460248135818101908301358060208181020160405190810160405280939291908181526020018383602002808284375094965050843594602081013594506040810135935060ff60608201351692506080810135915060a00135610d4c565b341561048457600080fd5b61032c600435151561108b565b341561049c57600080fd5b6102ea600160a060020a03600435811690602435166044356064356110ee565b34156104c757600080fd5b61032c611578565b34156104da57600080fd5b6102ea60043560ff602435166115e1565b34156104f657600080fd5b6104fe61163d565b60405160208082528190810183818151815260200191508051906020019080838360005b8381101561053a578082015183820152602001610522565b50505050905090810190601f1680156105675780820380516001836020036101000a031916815260200191505b509250505060405180910390f35b341561058057600080fd5b61032c600160a060020a036004351663ffffffff6024351660443515156116db565b34156105ad57600080fd5b61032c600160a060020a036004358116906024351660443561190f565b34156105d557600080fd5b61039f61199f565b34156105e857600080fd5b61039f6119ae565b34156105fb57600080fd5b61032c600160a060020a03600435166119bd565b341561061a57600080fd5b61032c611a27565b341561062d57600080fd5b61032c600160a060020a03600435166024351515611a4f565b341561065157600080fd5b6104fe611ad8565b341561066457600080fd5b61066c611b43565b60405163ffffffff909116815260200160405180910390f35b341561069057600080fd5b6102ea611b5b565b34156106a357600080fd5b61032c600160a060020a0360043581169060243516604435611b7f565b34156106cb57600080fd5b6102ea600160a060020a0360043581169060243516604435606435611c58565b34156106f657600080fd5b6102ea611c66565b341561070957600080fd5b610711611c8a565b60405161ffff909116815260200160405180910390f35b341561073357600080fd5b6102ea600160a060020a0360043516602435611c91565b341561075557600080fd5b6102ea600160a060020a0360043581169060243516604435606435611ee8565b341561078057600080fd5b61032c611f88565b341561079357600080fd5b61039f612016565b34156107a657600080fd5b6102ea612025565b34156107b957600080fd5b61032c6004351515612049565b34156107d157600080fd5b61039f6120a9565b34156107e457600080fd5b6102ea600160a060020a03600435811690602435166044356120b8565b341561080c57600080fd5b6102ea61232e565b341561081f57600080fd5b6102ea612352565b341561083257600080fd5b6102ea612376565b341561084557600080fd5b6102ea61237b565b341561085857600080fd5b61066c612381565b341561086b57600080fd5b6102ea600160a060020a0360043516602435612395565b341561088d57600080fd5b61032c600160a060020a03600435166125da565b34156108ac57600080fd5b6108b461265b565b604051901515815260200160405180910390f35b34156108d357600080fd5b61039f612674565b34156108e657600080fd5b61032c612683565b34156108f957600080fd5b61032c600460248135818101908301358060208181020160405190810160405280939291908181526020018383602002808284375094965061271195505050505050565b341561094857600080fd5b61039f612774565b341561095b57600080fd5b6102ea600160a060020a0360043516612783565b341561097a57600080fd5b61032c600160a060020a036004351661285f565b341561099957600080fd5b61039f6004356128df565b34156109af57600080fd5b61032c63ffffffff600435166128ed565b6102ea600460248135818101908301358060208181020160405190810160405280939291908181526020018383602002808284375094965050843594602001359350610a3d92505050565b3415610a1657600080fd5b61032c600160a060020a03600435166129e3565b3415610a3557600080fd5b61039f612a45565b60008360028151118015610a5357506015815111155b8015610a6c575060028151811515610a6757fe5b066001145b1515610a7757600080fd5b610a878585856000808080610d4c565b95945050505050565b7f42616e636f72436f6e766572746572557067726164657200000000000000000081565b6000805433600160a060020a03908116911614610acd57fe5b600160a060020a0385166000908152600b602052604090206001015485906601000000000000900460ff161515610b0357600080fd5b8460008163ffffffff16118015610b235750620f424063ffffffff821611155b1515610b2e57600080fd5b600160a060020a0387166000908152600b602052604090206001810154600c54919450620f424063ffffffff918216928216929092038801161115610b7257600080fd5b5050600181018054600c805463ffffffff928316818416038801831663ffffffff199182161790915582549515156401000000000264ff0000000019929097169516949094179390931693909317909155905550565b600b602052600090815260409020805460019091015463ffffffff81169060ff640100000000820481169165010000000000810482169166010000000000009091041685565b6009805482908110610c1c57fe5b600091825260209091200154600160a060020a0316905081565b7f424e54546f6b656e00000000000000000000000000000000000000000000000081565b6000600160a060020a038481169084161415610c7557600080fd5b600254600160a060020a0384811691161415610c9c57610c958483612395565b9050610cca565b600254600160a060020a0385811691161415610cbc57610c958383611c91565b610cc78484846120b8565b90505b9392505050565b60005433600160a060020a03908116911614610ce957fe5b600254600160a060020a031663f2fde38b8260405160e060020a63ffffffff8416028152600160a060020a039091166004820152602401600060405180830381600087803b1515610d3957600080fd5b5af11515610d4657600080fd5b50505050565b60008060008960028151118015610d6557506015815111155b8015610d7e575060028151811515610d7957fe5b066001145b1515610d8957600080fd5b8a600081518110610d9657fe5b90602001906020020151600754909350600160a060020a03166321f8a7217f42616e636f724e6574776f726b0000000000000000000000000000000000000060405160e060020a63ffffffff84160281526004810191909152602401602060405180830381600087803b1515610e0b57600080fd5b5af11515610e1857600080fd5b5050506040518051925050341515610f9257600254600160a060020a0384811691161415610f1257600254600160a060020a031663a24835d1338c60405160e060020a63ffffffff8516028152600160a060020a0390921660048301526024820152604401600060405180830381600087803b1515610e9657600080fd5b5af11515610ea357600080fd5b5050600254600160a060020a0316905063867904b4838c60405160e060020a63ffffffff8516028152600160a060020a0390921660048301526024820152604401600060405180830381600087803b1515610efd57600080fd5b5af11515610f0a57600080fd5b505050610f92565b82600160a060020a03166323b872dd33848d60405160e060020a63ffffffff8616028152600160a060020a0393841660048201529190921660248201526044810191909152606401602060405180830381600087803b1515610f7357600080fd5b5af11515610f8057600080fd5b505050604051805190501515610f9257fe5b81600160a060020a0316636b08f2ef348d8d8d338e8e8e8e60405160e060020a63ffffffff8c160281526024810188905260448101879052600160a060020a03861660648201526084810185905260ff841660a482015260c4810183905260e4810182905261010060048201908152908190610104018a818151815260200191508051906020019060200280838360005b8381101561103b578082015183820152602001611023565b5050505090500199505050505050505050506020604051808303818588803b151561106557600080fd5b5af1151561107257600080fd5b5050505060405180519c9b505050505050505050505050565b60005433600160a060020a03908116911614806110b6575060035433600160a060020a039081169116145b15156110c157600080fd5b600c80546cff000000000000000000000000191691156c0100000000000000000000000002919091179055565b600754600090819081908190819081908190600160a060020a03166321f8a7217f42616e636f724e6574776f726b0000000000000000000000000000000000000060405160e060020a63ffffffff84160281526004810191909152602401602060405180830381600087803b151561116557600080fd5b5af1151561117257600080fd5b505050604051805191505033600160a060020a039081169082161461119657600080fd5b600c546c01000000000000000000000000900460ff1615156111b457fe5b87600081116111c257600080fd5b600160a060020a038c8116908c1614156111db57600080fd5b600254600160a060020a038c811691161415611203576111fc8c8b8b612a54565b9750611569565b600254600160a060020a038d811691161415611224576111fc8b8b8b612c95565b61122f8c8c8c6120b8565b965086158015906112405750888710155b151561124b57600080fd5b600160a060020a038c166000908152600b602052604090206001810154909650640100000000900460ff161561128a578554611287908b612fc6565b86555b600160a060020a038b166000908152600b602052604090206001810154909550640100000000900460ff16156112c95784546112c69088612fd5565b85555b6112d28b612783565b93508387106112dd57fe5b8b600160a060020a03166323b872dd33308d60405160e060020a63ffffffff8616028152600160a060020a0393841660048201529190921660248201526044810191909152606401602060405180830381600087803b151561133e57600080fd5b5af1151561134b57600080fd5b50505060405180519050151561135d57fe5b8a600160a060020a031663a9059cbb338960405160e060020a63ffffffff8516028152600160a060020a0390921660048301526024820152604401602060405180830381600087803b15156113b157600080fd5b5af115156113be57600080fd5b5050506040518051905015156113d057fe5b6113e4876113df8960026115e1565b612fd5565b92506113f38c8c8c8a87612fe7565b600254600160a060020a03808e16917f8a6a7f53b3c8fa1dc4b83e3f1be668c1b251ff8d44cdcb83eb3acec3fec6a78891166318160ddd6040518163ffffffff1660e060020a028152600401602060405180830381600087803b151561145857600080fd5b5af1151561146557600080fd5b505050604051805190506114788f612783565b60018a015463ffffffff16604051928352602083019190915263ffffffff166040808301919091526060909101905180910390a2600254600160a060020a03808d16917f8a6a7f53b3c8fa1dc4b83e3f1be668c1b251ff8d44cdcb83eb3acec3fec6a78891166318160ddd6040518163ffffffff1660e060020a028152600401602060405180830381600087803b151561151157600080fd5b5af1151561151e57600080fd5b505050604051805190506115318e612783565b600189015463ffffffff16604051928352602083019190915263ffffffff166040808301919091526060909101905180910390a28697505b50505050505050949350505050565b60005433600160a060020a0390811691161461159057fe5b600254600160a060020a03166379ba50976040518163ffffffff1660e060020a028152600401600060405180830381600087803b15156115cf57600080fd5b5af115156115dc57600080fd5b505050565b60008160ff16620f42400a67ffffffffffffffff1661162c848460ff16600c60089054906101000a900463ffffffff1663ffffffff16620f4240030a67ffffffffffffffff1661307d565b81151561163557fe5b049392505050565b60068054600181600116156101000203166002900480601f0160208091040260200160405190810160405280929190818152602001828054600181600116156101000203166002900480156116d35780601f106116a8576101008083540402835291602001916116d3565b820191906000526020600020905b8154815290600101906020018083116116b657829003601f168201915b505050505081565b60005433600160a060020a039081169116146116f357fe5b600254600160a060020a033081169116638da5cb5b6040518163ffffffff1660e060020a028152600401602060405180830381600087803b151561173657600080fd5b5af1151561174357600080fd5b50505060405180519050600160a060020a03161415151561176057fe5b82600160a060020a038116151561177657600080fd5b8330600160a060020a031681600160a060020a03161415151561179857600080fd5b8360008163ffffffff161180156117b85750620f424063ffffffff821611155b15156117c357600080fd5b600254600160a060020a038781169116148015906118075750600160a060020a0386166000908152600b60205260409020600101546601000000000000900460ff16155b80156118255750600c54620f424063ffffffff918216870190911611155b151561183057600080fd5b600160a060020a0386166000908152600b602052604081209081556001908101805466010000000000006501000000000063ffffffff1990921663ffffffff8a161764ff000000001916640100000000891515021765ff000000000019169190911766ff000000000000191617905560098054909181016118b183826130a1565b506000918252602090912001805473ffffffffffffffffffffffffffffffffffffffff1916600160a060020a0397909716969096179095555050600c805463ffffffff19811663ffffffff9182169490940116929092179091555050565b60005433600160a060020a0390811691161461192757fe5b600254600160a060020a0316635e35359e84848460405160e060020a63ffffffff8616028152600160a060020a0393841660048201529190921660248201526044810191909152606401600060405180830381600087803b151561198a57600080fd5b5af1151561199757600080fd5b505050505050565b600454600160a060020a031681565b600354600160a060020a031681565b60005433600160a060020a039081169116146119d557fe5b8030600160a060020a031681600160a060020a0316141515156119f757600080fd5b506008805473ffffffffffffffffffffffffffffffffffffffff1916600160a060020a0392909216919091179055565b60005433600160a060020a03908116911614611a3f57fe5b6000611a4c600a826130a1565b50565b60005433600160a060020a03908116911614611a6757fe5b600160a060020a0382166000908152600b602052604090206001015482906601000000000000900460ff161515611a9d57600080fd5b50600160a060020a03919091166000908152600b60205260409020600101805465ff0000000000191691156501000000000002919091179055565b60058054600181600116156101000203166002900480601f0160208091040260200160405190810160405280929190818152602001828054600181600116156101000203166002900480156116d35780601f106116a8576101008083540402835291602001916116d3565b600c5468010000000000000000900463ffffffff1681565b7f42616e636f72436f6e766572746572466163746f72790000000000000000000081565b60005433600160a060020a03908116911614611b9757fe5b82600160a060020a0381161515611bad57600080fd5b82600160a060020a0381161515611bc357600080fd5b8330600160a060020a031681600160a060020a031614151515611be557600080fd5b85600160a060020a031663a9059cbb868660405160e060020a63ffffffff8516028152600160a060020a0390921660048301526024820152604401602060405180830381600087803b1515611c3957600080fd5b5af11515611c4657600080fd5b50505060405180519050151561199757fe5b6000610a87858585856110ee565b7f42616e636f72466f726d756c610000000000000000000000000000000000000081565b6009545b90565b60025460009081908190819081908190600160a060020a033081169116638da5cb5b6040518163ffffffff1660e060020a028152600401602060405180830381600087803b1515611ce157600080fd5b5af11515611cee57600080fd5b50505060405180519050600160a060020a0316141515611d0a57fe5b600160a060020a0388166000908152600b602052604090206001015488906601000000000000900460ff161515611d4057600080fd5b600160a060020a03808a166000908152600b602052604090819020600254909850909116906318160ddd90518163ffffffff1660e060020a028152600401602060405180830381600087803b1515611d9757600080fd5b5af11515611da457600080fd5b505050604051805190509450611db989612783565b600754909450600160a060020a03166321f8a7217f42616e636f72466f726d756c610000000000000000000000000000000000000060405160e060020a63ffffffff84160281526004810191909152602401602060405180830381600087803b1515611e2457600080fd5b5af11515611e3157600080fd5b50505060405180516001880154909450600160a060020a03851691506349f9b0f7908790879063ffffffff168c6040518563ffffffff1660e060020a028152600401808581526020018481526020018363ffffffff1663ffffffff168152602001828152602001945050505050602060405180830381600087803b1515611eb757600080fd5b5af11515611ec457600080fd5b505050604051805190509150611edb8260016115e1565b9998505050505050505050565b600060606040519081016040908152600160a060020a03808816835260025481166020840152861690820152611f2290600d9060036130c5565b50610a87600d805480602002602001604051908101604052809291908181526020018280548015611f7c57602002820191906000526020600020905b8154600160a060020a03168152600190910190602001808311611f5e575b50505050508484610a3d565b60015433600160a060020a03908116911614611fa357600080fd5b600154600054600160a060020a0391821691167f343765429aea5a34b3ff6a3785a98a5abb2597aca87bfbb58632c173d585373a60405160405180910390a3600180546000805473ffffffffffffffffffffffffffffffffffffffff19908116600160a060020a03841617909155169055565b600754600160a060020a031681565b7f436f6e747261637446656174757265730000000000000000000000000000000081565b60005433600160a060020a0390811691161461206157fe5b600254600160a060020a0316631608f18f8260405160e060020a63ffffffff84160281529015156004820152602401600060405180830381600087803b1515610d3957600080fd5b600054600160a060020a031681565b600254600090819081908190819081908190600160a060020a033081169116638da5cb5b6040518163ffffffff1660e060020a028152600401602060405180830381600087803b151561210a57600080fd5b5af1151561211757600080fd5b50505060405180519050600160a060020a031614151561213357fe5b600160a060020a038a166000908152600b60205260409020600101548a906601000000000000900460ff16151561216957600080fd5b600160a060020a038a166000908152600b60205260409020600101548a906601000000000000900460ff16151561219f57600080fd5b600160a060020a038c81166000908152600b6020526040808220928e16825290206001810154919950975065010000000000900460ff1615156121e157600080fd5b6121ea8c612783565b95506121f58b612783565b600754909550600160a060020a03166321f8a7217f42616e636f72466f726d756c610000000000000000000000000000000000000060405160e060020a63ffffffff84160281526004810191909152602401602060405180830381600087803b151561226057600080fd5b5af1151561226d57600080fd5b50505060405180516001808b0154908a0154919650600160a060020a03871692506365098bb391899163ffffffff908116918a91168f60405163ffffffff87811660e060020a0282526004820196909652938516602485015260448401929092529092166064820152608481019190915260a401602060405180830381600087803b15156122fa57600080fd5b5af1151561230757600080fd5b50505060405180519050925061231e8360026115e1565b9c9b505050505050505050505050565b7f42616e636f724e6574776f726b0000000000000000000000000000000000000081565b7f42616e636f7247617350726963654c696d69740000000000000000000000000081565b600181565b600a5490565b600c54640100000000900463ffffffff1681565b60025460009081908190819081908190600160a060020a033081169116638da5cb5b6040518163ffffffff1660e060020a028152600401602060405180830381600087803b15156123e557600080fd5b5af115156123f257600080fd5b50505060405180519050600160a060020a031614151561240e57fe5b600160a060020a0388166000908152600b602052604090206001015488906601000000000000900460ff16151561244457600080fd5b600160a060020a0389166000908152600b60205260409020600181015490965065010000000000900460ff16151561247b57600080fd5b600254600160a060020a03166318160ddd6040518163ffffffff1660e060020a028152600401602060405180830381600087803b15156124ba57600080fd5b5af115156124c757600080fd5b5050506040518051905094506124dc89612783565b600754909450600160a060020a03166321f8a7217f42616e636f72466f726d756c610000000000000000000000000000000000000060405160e060020a63ffffffff84160281526004810191909152602401602060405180830381600087803b151561254757600080fd5b5af1151561255457600080fd5b50505060405180516001880154909450600160a060020a03851691506329a00e7c908790879063ffffffff168c6040518563ffffffff1660e060020a028152600401808581526020018481526020018363ffffffff1663ffffffff168152602001828152602001945050505050602060405180830381600087803b1515611eb757600080fd5b60005433600160a060020a039081169116146125f257fe5b80600160a060020a038116151561260857600080fd5b8130600160a060020a031681600160a060020a03161415151561262a57600080fd5b50506007805473ffffffffffffffffffffffffffffffffffffffff1916600160a060020a0392909216919091179055565b600c546c01000000000000000000000000900460ff1681565b600854600160a060020a031681565b60045433600160a060020a0390811691161461269e57600080fd5b600454600354600160a060020a0391821691167fbe4cc281795971a471c980e842627a7f1ea3892ddfce8c5b6357cd2611c1973260405160405180910390a3600480546003805473ffffffffffffffffffffffffffffffffffffffff19908116600160a060020a03841617909155169055565b60005433600160a060020a0390811691161461272957fe5b806002815111801561273d57506015815111155b801561275657506002815181151561275157fe5b066001145b151561276157600080fd5b600a8280516115dc9291602001906130c5565b600154600160a060020a031681565b600160a060020a0381166000908152600b6020526040812060010154819083906601000000000000900460ff1615156127bb57600080fd5b600160a060020a0384166000908152600b602052604090206001810154909250640100000000900460ff166128545783600160a060020a03166370a082313060405160e060020a63ffffffff8416028152600160a060020a039091166004820152602401602060405180830381600087803b151561283857600080fd5b5af1151561284557600080fd5b50505060405180519050612857565b81545b949350505050565b60005433600160a060020a039081169116148061288a575060035433600160a060020a039081169116145b151561289557600080fd5b600354600160a060020a03828116911614156128b057600080fd5b6004805473ffffffffffffffffffffffffffffffffffffffff1916600160a060020a0392909216919091179055565b600a805482908110610c1c57fe5b60005433600160a060020a0390811691161480612918575060035433600160a060020a039081169116145b151561292357600080fd5b8060008163ffffffff161015801561294f5750600c5463ffffffff640100000000909104811690821611155b151561295a57600080fd5b600c547f81cd2ffb37dd237c0e4e2a3de5265fcf9deb43d3e7801e80db9f1ccfba7ee6009068010000000000000000900463ffffffff168360405163ffffffff9283168152911660208201526040908101905180910390a150600c805463ffffffff90921668010000000000000000026bffffffff000000000000000019909216919091179055565b60005433600160a060020a039081169116146129fb57fe5b600054600160a060020a0382811691161415612a1657600080fd5b6001805473ffffffffffffffffffffffffffffffffffffffff1916600160a060020a0392909216919091179055565b600254600160a060020a031681565b600080600080612a648787612395565b92508215801590612a755750848310155b1515612a8057600080fd5b600160a060020a0387166000908152600b602052604090206001810154909250640100000000900460ff1615612abf578154612abc9087612fc6565b82555b86600160a060020a03166323b872dd33308960405160e060020a63ffffffff8616028152600160a060020a0393841660048201529190921660248201526044810191909152606401602060405180830381600087803b1515612b2057600080fd5b5af11515612b2d57600080fd5b505050604051805190501515612b3f57fe5b600254600160a060020a031663867904b4338560405160e060020a63ffffffff8516028152600160a060020a0390921660048301526024820152604401600060405180830381600087803b1515612b9557600080fd5b5af11515612ba257600080fd5b505050612bb4836113df8560016115e1565b600254909150612bd1908890600160a060020a0316888685612fe7565b600254600160a060020a03808916917f8a6a7f53b3c8fa1dc4b83e3f1be668c1b251ff8d44cdcb83eb3acec3fec6a78891166318160ddd6040518163ffffffff1660e060020a028152600401602060405180830381600087803b1515612c3657600080fd5b5af11515612c4357600080fd5b50505060405180519050612c568a612783565b600186015463ffffffff16604051928352602083019190915263ffffffff166040808301919091526060909101905180910390a2509095945050505050565b60025460009081908190819081908190600160a060020a03166370a082313360405160e060020a63ffffffff8416028152600160a060020a039091166004820152602401602060405180830381600087803b1515612cf257600080fd5b5af11515612cff57600080fd5b50505060405180518911159050612d1557600080fd5b612d1f8989611c91565b94508415801590612d305750868510155b1515612d3b57600080fd5b600254600160a060020a03166318160ddd6040518163ffffffff1660e060020a028152600401602060405180830381600087803b1515612d7a57600080fd5b5af11515612d8757600080fd5b505050604051805190509350612d9c89612783565b925082851080612db557508285148015612db557508388145b1515612dbd57fe5b600160a060020a0389166000908152600b602052604090206001810154909250640100000000900460ff1615612dfc578154612df99086612fd5565b82555b600254600160a060020a031663a24835d1338a60405160e060020a63ffffffff8516028152600160a060020a0390921660048301526024820152604401600060405180830381600087803b1515612e5257600080fd5b5af11515612e5f57600080fd5b50505088600160a060020a031663a9059cbb338760405160e060020a63ffffffff8516028152600160a060020a0390921660048301526024820152604401602060405180830381600087803b1515612eb657600080fd5b5af11515612ec357600080fd5b505050604051805190501515612ed557fe5b612ee4856113df8760016115e1565b600254909150612f0090600160a060020a03168a8a8885612fe7565b600254600160a060020a03808b16917f8a6a7f53b3c8fa1dc4b83e3f1be668c1b251ff8d44cdcb83eb3acec3fec6a78891166318160ddd6040518163ffffffff1660e060020a028152600401602060405180830381600087803b1515612f6557600080fd5b5af11515612f7257600080fd5b50505060405180519050612f858c612783565b600186015463ffffffff16604051928352602083019190915263ffffffff166040808301919091526060909101905180910390a25092979650505050505050565b600082820183811015610cca57fe5b600081831015612fe157fe5b50900390565b7f800000000000000000000000000000000000000000000000000000000000000081111561301157fe5b33600160a060020a031684600160a060020a031686600160a060020a03167f276856b36cbc45526a0ba64f44611557a2a8b68662c5388e9fe6d72e86e1c8cb86868660405180848152602001838152602001828152602001935050505060405180910390a45050505050565b6000828202831580613099575082848281151561309657fe5b04145b1515610cca57fe5b8154818355818115116115dc576000838152602090206115dc918101908301613139565b828054828255906000526020600020908101928215613129579160200282015b82811115613129578251825473ffffffffffffffffffffffffffffffffffffffff1916600160a060020a0391909116178255602092909201916001909101906130e5565b50613135929150613153565b5090565b611c8e91905b80821115613135576000815560010161313f565b611c8e91905b8082111561313557805473ffffffffffffffffffffffffffffffffffffffff191681556001016131595600a165627a7a723058200f1eae2f2ab00bf29aa60bdcfa1e20210e1cf2f4bbc1ea7dc51d8fe40a65042400290000000000000000000000001f573d6fb3f13d689ff844b4ce37794d79a7ff1c000000000000000000000000d1997064f0fef8748c1de9b5ba53468c548738b3000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000

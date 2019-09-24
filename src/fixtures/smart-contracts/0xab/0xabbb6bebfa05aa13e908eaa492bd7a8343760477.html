@@ -1,0 +1,49 @@
+/**
+ *Submitted for verification at Etherscan.io on 2016-09-06
+*/
+
+contract RequiringFunds {
+    modifier NeedEth () {
+        if (msg.value <= 0 ) throw;
+        _
+    }
+}
+
+contract AmIOnTheFork {
+    function forked() constant returns(bool);
+}
+
+contract ReplaySafeSplit is RequiringFunds {
+    //address private constant oracleAddress = 0x8128B12cABc6043d94BD3C4d9B9455077Eb18807;    // testnet
+    address private constant oracleAddress = 0x2bd2326c993dfaef84f696526064ff22eba5b362;   // mainnet
+    
+    // Fork oracle to use
+    AmIOnTheFork amIOnTheFork = AmIOnTheFork(oracleAddress);
+
+    // Splits the funds into 2 addresses
+    function split(address targetFork, address targetNoFork) NeedEth returns(bool) {
+        // The 2 checks are to ensure that users provide BOTH addresses
+        // and prevent funds to be sent to 0x0 on one fork or the other.
+        if (targetFork == 0) throw;
+        if (targetNoFork == 0) throw;
+
+        if (amIOnTheFork.forked()                   // if we are on the fork 
+            && targetFork.send(msg.value)) {        // send the ETH to the targetFork address
+            return true;
+        } else if (!amIOnTheFork.forked()           // if we are NOT on the fork 
+            && targetNoFork.send(msg.value)) {      // send the ETH to the targetNoFork address 
+            return true;
+        }
+
+        throw;                                      // don't accept value transfer, otherwise it would be trapped.
+    }
+
+    // Reject value transfers.
+    function() {
+        throw;
+    }
+}
+### ABI:
+[{"constant":false,"inputs":[{"name":"targetFork","type":"address"},{"name":"targetNoFork","type":"address"}],"name":"split","outputs":[{"name":"","type":"bool"}],"type":"function"}]
+### byteCode:
+606060405260008054600160a060020a031916732bd2326c993dfaef84f696526064ff22eba5b36217815561019990819061003990396000f36060604052361561001f5760e060020a60003504630f2c93298114610028575b6100005b610002565b6100406004356024356000348190116100e157610002565b60408051918252519081900360200190f35b80547f16c72721000000000000000000000000000000000000000000000000000000006060908152600160a060020a0391909116906316c727219060649060209060048187876161da5a03f11561000257505060405151905080156100d25750604051600160a060020a038416908290349082818181858883f193505050505b1561010f575060015b92915050565b82600160a060020a0316600014156100f857610002565b81600160a060020a03166000141561005257610002565b600060009054906101000a9004600160a060020a0316600160a060020a03166316c727216040518160e060020a0281526004018090506020604051808303816000876161da5a03f11561000257505060405151159050801561018c5750604051600160a060020a038316908290349082818181858883f193505050505b15610023575060016100db56

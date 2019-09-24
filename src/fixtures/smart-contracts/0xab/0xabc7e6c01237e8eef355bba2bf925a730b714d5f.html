@@ -1,0 +1,1238 @@
+/**
+ *Submitted for verification at Etherscan.io on 2018-02-14
+*/
+
+pragma solidity ^0.4.18;
+
+/**
+ * @title Ownable
+ * @dev The Ownable contract has an owner address, and provides basic authorization control
+ * functions, this simplifies the implementation of "user permissions".
+ */
+contract Ownable {
+  address public owner;
+
+
+  event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
+
+
+  /**
+   * @dev The Ownable constructor sets the original `owner` of the contract to the sender
+   * account.
+   */
+  function Ownable() public {
+    owner = msg.sender;
+  }
+
+  /**
+   * @dev Throws if called by any account other than the owner.
+   */
+  modifier onlyOwner() {
+    require(msg.sender == owner);
+    _;
+  }
+
+  /**
+   * @dev Allows the current owner to transfer control of the contract to a newOwner.
+   * @param newOwner The address to transfer ownership to.
+   */
+  function transferOwnership(address newOwner) public onlyOwner {
+    require(newOwner != address(0));
+    OwnershipTransferred(owner, newOwner);
+    owner = newOwner;
+  }
+
+}
+
+
+/**
+ * @title Claimable
+ * @dev Extension for the Ownable contract, where the ownership needs to be claimed.
+ * This allows the new owner to accept the transfer.
+ */
+contract Claimable is Ownable {
+  address public pendingOwner;
+
+  /**
+   * @dev Modifier throws if called by any account other than the pendingOwner.
+   */
+  modifier onlyPendingOwner() {
+    require(msg.sender == pendingOwner);
+    _;
+  }
+
+  /**
+   * @dev Allows the current owner to set the pendingOwner address.
+   * @param newOwner The address to transfer ownership to.
+   */
+  function transferOwnership(address newOwner) onlyOwner public {
+    pendingOwner = newOwner;
+  }
+
+  /**
+   * @dev Allows the pendingOwner address to finalize the transfer.
+   */
+  function claimOwnership() onlyPendingOwner public {
+    OwnershipTransferred(owner, pendingOwner);
+    owner = pendingOwner;
+    pendingOwner = address(0);
+  }
+}
+
+
+/**
+ * @title Pausable
+ * @dev Base contract which allows children to implement an emergency stop mechanism.
+ */
+contract Pausable is Ownable {
+  event Pause();
+  event Unpause();
+
+  bool public paused = false;
+
+
+  /**
+   * @dev Modifier to make a function callable only when the contract is not paused.
+   */
+  modifier whenNotPaused() {
+    require(!paused);
+    _;
+  }
+
+  /**
+   * @dev Modifier to make a function callable only when the contract is paused.
+   */
+  modifier whenPaused() {
+    require(paused);
+    _;
+  }
+
+  /**
+   * @dev called by the owner to pause, triggers stopped state
+   */
+  function pause() onlyOwner whenNotPaused public {
+    paused = true;
+    Pause();
+  }
+
+  /**
+   * @dev called by the owner to unpause, returns to normal state
+   */
+  function unpause() onlyOwner whenPaused public {
+    paused = false;
+    Unpause();
+  }
+}
+
+
+/**
+ * @title AccessDeploy
+ * @dev Adds grant/revoke functions to the contract.
+ */
+contract AccessDeploy is Claimable {
+
+  // Access for deploying heroes.
+  mapping(address => bool) private deployAccess;
+
+  // Modifier for accessibility to deploy a hero on a location.
+  modifier onlyAccessDeploy {
+    require(msg.sender == owner || deployAccess[msg.sender] == true);
+    _;
+  }
+
+  // @dev Grant acess to deploy heroes.
+  function grantAccessDeploy(address _address)
+    onlyOwner
+    public
+  {
+    deployAccess[_address] = true;
+  }
+
+  // @dev Revoke acess to deploy heroes.
+  function revokeAccessDeploy(address _address)
+    onlyOwner
+    public
+  {
+    deployAccess[_address] = false;
+  }
+
+}
+
+
+/**
+ * @title AccessDeposit
+ * @dev Adds grant/revoke functions to the contract.
+ */
+contract AccessDeposit is Claimable {
+
+  // Access for adding deposit.
+  mapping(address => bool) private depositAccess;
+
+  // Modifier for accessibility to add deposit.
+  modifier onlyAccessDeposit {
+    require(msg.sender == owner || depositAccess[msg.sender] == true);
+    _;
+  }
+
+  // @dev Grant acess to deposit heroes.
+  function grantAccessDeposit(address _address)
+    onlyOwner
+    public
+  {
+    depositAccess[_address] = true;
+  }
+
+  // @dev Revoke acess to deposit heroes.
+  function revokeAccessDeposit(address _address)
+    onlyOwner
+    public
+  {
+    depositAccess[_address] = false;
+  }
+
+}
+
+
+/**
+ * @title AccessMint
+ * @dev Adds grant/revoke functions to the contract.
+ */
+contract AccessMint is Claimable {
+
+  // Access for minting new tokens.
+  mapping(address => bool) private mintAccess;
+
+  // Modifier for accessibility to define new hero types.
+  modifier onlyAccessMint {
+    require(msg.sender == owner || mintAccess[msg.sender] == true);
+    _;
+  }
+
+  // @dev Grant acess to mint heroes.
+  function grantAccessMint(address _address)
+    onlyOwner
+    public
+  {
+    mintAccess[_address] = true;
+  }
+
+  // @dev Revoke acess to mint heroes.
+  function revokeAccessMint(address _address)
+    onlyOwner
+    public
+  {
+    mintAccess[_address] = false;
+  }
+
+}
+
+
+/**
+ * @title ERC721 interface
+ * @dev see https://github.com/ethereum/eips/issues/721
+ */
+contract ERC721 {
+  event Transfer(address indexed _from, address indexed _to, uint256 _tokenId);
+  event Approval(address indexed _owner, address indexed _approved, uint256 _tokenId);
+
+  function balanceOf(address _owner) public view returns (uint256 _balance);
+  function ownerOf(uint256 _tokenId) public view returns (address _owner);
+  function transfer(address _to, uint256 _tokenId) public;
+  function approve(address _to, uint256 _tokenId) public;
+  function takeOwnership(uint256 _tokenId) public;
+}
+
+
+/**
+ * @title ERC721Token
+ * Generic implementation for the required functionality of the ERC721 standard
+ */
+contract ERC721Token is ERC721 {
+  using SafeMath for uint256;
+
+  // Total amount of tokens
+  uint256 private totalTokens;
+
+  // Mapping from token ID to owner
+  mapping (uint256 => address) private tokenOwner;
+
+  // Mapping from token ID to approved address
+  mapping (uint256 => address) private tokenApprovals;
+
+  // Mapping from owner to list of owned token IDs
+  mapping (address => uint256[]) private ownedTokens;
+
+  // Mapping from token ID to index of the owner tokens list
+  mapping(uint256 => uint256) private ownedTokensIndex;
+
+  /**
+  * @dev Guarantees msg.sender is owner of the given token
+  * @param _tokenId uint256 ID of the token to validate its ownership belongs to msg.sender
+  */
+  modifier onlyOwnerOf(uint256 _tokenId) {
+    require(ownerOf(_tokenId) == msg.sender);
+    _;
+  }
+
+  /**
+  * @dev Gets the total amount of tokens stored by the contract
+  * @return uint256 representing the total amount of tokens
+  */
+  function totalSupply() public view returns (uint256) {
+    return totalTokens;
+  }
+
+  /**
+  * @dev Gets the balance of the specified address
+  * @param _owner address to query the balance of
+  * @return uint256 representing the amount owned by the passed address
+  */
+  function balanceOf(address _owner) public view returns (uint256) {
+    return ownedTokens[_owner].length;
+  }
+
+  /**
+  * @dev Gets the list of tokens owned by a given address
+  * @param _owner address to query the tokens of
+  * @return uint256[] representing the list of tokens owned by the passed address
+  */
+  function tokensOf(address _owner) public view returns (uint256[]) {
+    return ownedTokens[_owner];
+  }
+
+  /**
+  * @dev Gets the owner of the specified token ID
+  * @param _tokenId uint256 ID of the token to query the owner of
+  * @return owner address currently marked as the owner of the given token ID
+  */
+  function ownerOf(uint256 _tokenId) public view returns (address) {
+    address owner = tokenOwner[_tokenId];
+    require(owner != address(0));
+    return owner;
+  }
+
+  /**
+   * @dev Gets the approved address to take ownership of a given token ID
+   * @param _tokenId uint256 ID of the token to query the approval of
+   * @return address currently approved to take ownership of the given token ID
+   */
+  function approvedFor(uint256 _tokenId) public view returns (address) {
+    return tokenApprovals[_tokenId];
+  }
+
+  /**
+  * @dev Transfers the ownership of a given token ID to another address
+  * @param _to address to receive the ownership of the given token ID
+  * @param _tokenId uint256 ID of the token to be transferred
+  */
+  function transfer(address _to, uint256 _tokenId) public onlyOwnerOf(_tokenId) {
+    clearApprovalAndTransfer(msg.sender, _to, _tokenId);
+  }
+
+  /**
+  * @dev Approves another address to claim for the ownership of the given token ID
+  * @param _to address to be approved for the given token ID
+  * @param _tokenId uint256 ID of the token to be approved
+  */
+  function approve(address _to, uint256 _tokenId) public onlyOwnerOf(_tokenId) {
+    address owner = ownerOf(_tokenId);
+    require(_to != owner);
+    if (approvedFor(_tokenId) != 0 || _to != 0) {
+      tokenApprovals[_tokenId] = _to;
+      Approval(owner, _to, _tokenId);
+    }
+  }
+
+  /**
+  * @dev Claims the ownership of a given token ID
+  * @param _tokenId uint256 ID of the token being claimed by the msg.sender
+  */
+  function takeOwnership(uint256 _tokenId) public {
+    require(isApprovedFor(msg.sender, _tokenId));
+    clearApprovalAndTransfer(ownerOf(_tokenId), msg.sender, _tokenId);
+  }
+
+  /**
+  * @dev Mint token function
+  * @param _to The address that will own the minted token
+  * @param _tokenId uint256 ID of the token to be minted by the msg.sender
+  */
+  function _mint(address _to, uint256 _tokenId) internal {
+    require(_to != address(0));
+    addToken(_to, _tokenId);
+    Transfer(0x0, _to, _tokenId);
+  }
+
+  /**
+  * @dev Burns a specific token
+  * @param _tokenId uint256 ID of the token being burned by the msg.sender
+  */
+  function _burn(uint256 _tokenId) onlyOwnerOf(_tokenId) internal {
+    if (approvedFor(_tokenId) != 0) {
+      clearApproval(msg.sender, _tokenId);
+    }
+    removeToken(msg.sender, _tokenId);
+    Transfer(msg.sender, 0x0, _tokenId);
+  }
+
+  /**
+   * @dev Tells whether the msg.sender is approved for the given token ID or not
+   * This function is not private so it can be extended in further implementations like the operatable ERC721
+   * @param _owner address of the owner to query the approval of
+   * @param _tokenId uint256 ID of the token to query the approval of
+   * @return bool whether the msg.sender is approved for the given token ID or not
+   */
+  function isApprovedFor(address _owner, uint256 _tokenId) internal view returns (bool) {
+    return approvedFor(_tokenId) == _owner;
+  }
+
+  /**
+  * @dev Internal function to clear current approval and transfer the ownership of a given token ID
+  * @param _from address which you want to send tokens from
+  * @param _to address which you want to transfer the token to
+  * @param _tokenId uint256 ID of the token to be transferred
+  */
+  function clearApprovalAndTransfer(address _from, address _to, uint256 _tokenId) internal {
+    require(_to != address(0));
+    require(_to != ownerOf(_tokenId));
+    require(ownerOf(_tokenId) == _from);
+
+    clearApproval(_from, _tokenId);
+    removeToken(_from, _tokenId);
+    addToken(_to, _tokenId);
+    Transfer(_from, _to, _tokenId);
+  }
+
+  /**
+  * @dev Internal function to clear current approval of a given token ID
+  * @param _tokenId uint256 ID of the token to be transferred
+  */
+  function clearApproval(address _owner, uint256 _tokenId) private {
+    require(ownerOf(_tokenId) == _owner);
+    tokenApprovals[_tokenId] = 0;
+    Approval(_owner, 0, _tokenId);
+  }
+
+  /**
+  * @dev Internal function to add a token ID to the list of a given address
+  * @param _to address representing the new owner of the given token ID
+  * @param _tokenId uint256 ID of the token to be added to the tokens list of the given address
+  */
+  function addToken(address _to, uint256 _tokenId) private {
+    require(tokenOwner[_tokenId] == address(0));
+    tokenOwner[_tokenId] = _to;
+    uint256 length = balanceOf(_to);
+    ownedTokens[_to].push(_tokenId);
+    ownedTokensIndex[_tokenId] = length;
+    totalTokens = totalTokens.add(1);
+  }
+
+  /**
+  * @dev Internal function to remove a token ID from the list of a given address
+  * @param _from address representing the previous owner of the given token ID
+  * @param _tokenId uint256 ID of the token to be removed from the tokens list of the given address
+  */
+  function removeToken(address _from, uint256 _tokenId) private {
+    require(ownerOf(_tokenId) == _from);
+
+    uint256 tokenIndex = ownedTokensIndex[_tokenId];
+    uint256 lastTokenIndex = balanceOf(_from).sub(1);
+    uint256 lastToken = ownedTokens[_from][lastTokenIndex];
+
+    tokenOwner[_tokenId] = 0;
+    ownedTokens[_from][tokenIndex] = lastToken;
+    ownedTokens[_from][lastTokenIndex] = 0;
+    // Note that this will handle single-element arrays. In that case, both tokenIndex and lastTokenIndex are going to
+    // be zero. Then we can make sure that we will remove _tokenId from the ownedTokens list since we are first swapping
+    // the lastToken to the first position, and then dropping the element placed in the last position of the list
+
+    ownedTokens[_from].length--;
+    ownedTokensIndex[_tokenId] = 0;
+    ownedTokensIndex[lastToken] = tokenIndex;
+    totalTokens = totalTokens.sub(1);
+  }
+}
+
+
+/**
+ * @title ERC20Basic
+ * @dev Simpler version of ERC20 interface
+ * @dev see https://github.com/ethereum/EIPs/issues/179
+ */
+contract ERC20Basic {
+  function totalSupply() public view returns (uint256);
+  function balanceOf(address who) public view returns (uint256);
+  function transfer(address to, uint256 value) public returns (bool);
+  event Transfer(address indexed from, address indexed to, uint256 value);
+}
+
+
+/**
+ * @title ERC20 interface
+ * @dev see https://github.com/ethereum/EIPs/issues/20
+ */
+contract ERC20 is ERC20Basic {
+  function allowance(address owner, address spender) public view returns (uint256);
+  function transferFrom(address from, address to, uint256 value) public returns (bool);
+  function approve(address spender, uint256 value) public returns (bool);
+  event Approval(address indexed owner, address indexed spender, uint256 value);
+}
+
+
+/**
+ * @title SafeMath
+ * @dev Math operations with safety checks that throw on error
+ */
+library SafeMath {
+
+  /**
+  * @dev Multiplies two numbers, throws on overflow.
+  */
+  function mul(uint256 a, uint256 b) internal pure returns (uint256) {
+    if (a == 0) {
+      return 0;
+    }
+    uint256 c = a * b;
+    assert(c / a == b);
+    return c;
+  }
+
+  /**
+  * @dev Integer division of two numbers, truncating the quotient.
+  */
+  function div(uint256 a, uint256 b) internal pure returns (uint256) {
+    // assert(b > 0); // Solidity automatically throws when dividing by 0
+    uint256 c = a / b;
+    // assert(a == b * c + a % b); // There is no case in which this doesn't hold
+    return c;
+  }
+
+  /**
+  * @dev Substracts two numbers, throws on overflow (i.e. if subtrahend is greater than minuend).
+  */
+  function sub(uint256 a, uint256 b) internal pure returns (uint256) {
+    assert(b <= a);
+    return a - b;
+  }
+
+  /**
+  * @dev Adds two numbers, throws on overflow.
+  */
+  function add(uint256 a, uint256 b) internal pure returns (uint256) {
+    uint256 c = a + b;
+    assert(c >= a);
+    return c;
+  }
+}
+
+
+/**
+ * @title Basic token
+ * @dev Basic version of StandardToken, with no allowances.
+ */
+contract BasicToken is ERC20Basic {
+  using SafeMath for uint256;
+
+  mapping(address => uint256) balances;
+
+  uint256 totalSupply_;
+
+  /**
+  * @dev total number of tokens in existence
+  */
+  function totalSupply() public view returns (uint256) {
+    return totalSupply_;
+  }
+
+  /**
+  * @dev transfer token for a specified address
+  * @param _to The address to transfer to.
+  * @param _value The amount to be transferred.
+  */
+  function transfer(address _to, uint256 _value) public returns (bool) {
+    require(_to != address(0));
+    require(_value <= balances[msg.sender]);
+
+    // SafeMath.sub will throw if there is not enough balance.
+    balances[msg.sender] = balances[msg.sender].sub(_value);
+    balances[_to] = balances[_to].add(_value);
+    Transfer(msg.sender, _to, _value);
+    return true;
+  }
+
+  /**
+  * @dev Gets the balance of the specified address.
+  * @param _owner The address to query the the balance of.
+  * @return An uint256 representing the amount owned by the passed address.
+  */
+  function balanceOf(address _owner) public view returns (uint256 balance) {
+    return balances[_owner];
+  }
+
+}
+
+
+/**
+ * @title Standard ERC20 token
+ *
+ * @dev Implementation of the basic standard token.
+ * @dev https://github.com/ethereum/EIPs/issues/20
+ * @dev Based on code by FirstBlood: https://github.com/Firstbloodio/token/blob/master/smart_contract/FirstBloodToken.sol
+ */
+contract StandardToken is ERC20, BasicToken {
+
+  mapping (address => mapping (address => uint256)) internal allowed;
+
+
+  /**
+   * @dev Transfer tokens from one address to another
+   * @param _from address The address which you want to send tokens from
+   * @param _to address The address which you want to transfer to
+   * @param _value uint256 the amount of tokens to be transferred
+   */
+  function transferFrom(address _from, address _to, uint256 _value) public returns (bool) {
+    require(_to != address(0));
+    require(_value <= balances[_from]);
+    require(_value <= allowed[_from][msg.sender]);
+
+    balances[_from] = balances[_from].sub(_value);
+    balances[_to] = balances[_to].add(_value);
+    allowed[_from][msg.sender] = allowed[_from][msg.sender].sub(_value);
+    Transfer(_from, _to, _value);
+    return true;
+  }
+
+  /**
+   * @dev Approve the passed address to spend the specified amount of tokens on behalf of msg.sender.
+   *
+   * Beware that changing an allowance with this method brings the risk that someone may use both the old
+   * and the new allowance by unfortunate transaction ordering. One possible solution to mitigate this
+   * race condition is to first reduce the spender's allowance to 0 and set the desired value afterwards:
+   * https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729
+   * @param _spender The address which will spend the funds.
+   * @param _value The amount of tokens to be spent.
+   */
+  function approve(address _spender, uint256 _value) public returns (bool) {
+    allowed[msg.sender][_spender] = _value;
+    Approval(msg.sender, _spender, _value);
+    return true;
+  }
+
+  /**
+   * @dev Function to check the amount of tokens that an owner allowed to a spender.
+   * @param _owner address The address which owns the funds.
+   * @param _spender address The address which will spend the funds.
+   * @return A uint256 specifying the amount of tokens still available for the spender.
+   */
+  function allowance(address _owner, address _spender) public view returns (uint256) {
+    return allowed[_owner][_spender];
+  }
+
+  /**
+   * @dev Increase the amount of tokens that an owner allowed to a spender.
+   *
+   * approve should be called when allowed[_spender] == 0. To increment
+   * allowed value is better to use this function to avoid 2 calls (and wait until
+   * the first transaction is mined)
+   * From MonolithDAO Token.sol
+   * @param _spender The address which will spend the funds.
+   * @param _addedValue The amount of tokens to increase the allowance by.
+   */
+  function increaseApproval(address _spender, uint _addedValue) public returns (bool) {
+    allowed[msg.sender][_spender] = allowed[msg.sender][_spender].add(_addedValue);
+    Approval(msg.sender, _spender, allowed[msg.sender][_spender]);
+    return true;
+  }
+
+  /**
+   * @dev Decrease the amount of tokens that an owner allowed to a spender.
+   *
+   * approve should be called when allowed[_spender] == 0. To decrement
+   * allowed value is better to use this function to avoid 2 calls (and wait until
+   * the first transaction is mined)
+   * From MonolithDAO Token.sol
+   * @param _spender The address which will spend the funds.
+   * @param _subtractedValue The amount of tokens to decrease the allowance by.
+   */
+  function decreaseApproval(address _spender, uint _subtractedValue) public returns (bool) {
+    uint oldValue = allowed[msg.sender][_spender];
+    if (_subtractedValue > oldValue) {
+      allowed[msg.sender][_spender] = 0;
+    } else {
+      allowed[msg.sender][_spender] = oldValue.sub(_subtractedValue);
+    }
+    Approval(msg.sender, _spender, allowed[msg.sender][_spender]);
+    return true;
+  }
+
+}
+
+
+/**
+ * @title Gold
+ * @dev ERC20 Token that can be minted.
+ */
+contract Gold is StandardToken, Claimable, AccessMint {
+
+  string public constant name = "Gold";
+  string public constant symbol = "G";
+  uint8 public constant decimals = 18;
+
+  // Event that is fired when minted.
+  event Mint(
+    address indexed _to,
+    uint256 indexed _tokenId
+  );
+
+  // @dev Mint tokens with _amount to the address.
+  function mint(address _to, uint256 _amount) 
+    onlyAccessMint
+    public 
+    returns (bool) 
+  {
+    totalSupply_ = totalSupply_.add(_amount);
+    balances[_to] = balances[_to].add(_amount);
+    Mint(_to, _amount);
+    Transfer(address(0), _to, _amount);
+    return true;
+  }
+
+}
+
+
+/**
+ * @title CryptoSagaHero
+ * @dev The token contract for the hero.
+ *  Also a superset of the ERC721 standard that allows for the minting
+ *  of the non-fungible tokens.
+ */
+contract CryptoSagaHero is ERC721Token, Claimable, Pausable, AccessMint, AccessDeploy, AccessDeposit {
+
+  string public constant name = "CryptoSaga Hero";
+  string public constant symbol = "HERO";
+  
+  struct HeroClass {
+    // ex) Soldier, Knight, Fighter...
+    string className;
+    // 0: Common, 1: Uncommon, 2: Rare, 3: Heroic, 4: Legendary.
+    uint8 classRank;
+    // 0: Human, 1: Celestial, 2: Demon, 3: Elf, 4: Dark Elf, 5: Yogoe, 6: Furry, 7: Dragonborn, 8: Undead, 9: Goblin, 10: Troll, 11: Slime, and more to come.
+    uint8 classRace;
+    // How old is this hero class? 
+    uint32 classAge;
+    // 0: Fighter, 1: Rogue, 2: Mage.
+    uint8 classType;
+
+    // Possible max level of this class.
+    uint32 maxLevel; 
+    // 0: Water, 1: Fire, 2: Nature, 3: Light, 4: Darkness.
+    uint8 aura; 
+
+    // Base stats of this hero type. 
+    // 0: ATK	1: DEF 2: AGL	3: LUK 4: HP.
+    uint32[5] baseStats;
+    // Minimum IVs for stats. 
+    // 0: ATK	1: DEF 2: AGL	3: LUK 4: HP.
+    uint32[5] minIVForStats;
+    // Maximum IVs for stats.
+    // 0: ATK	1: DEF 2: AGL	3: LUK 4: HP.
+    uint32[5] maxIVForStats;
+    
+    // Number of currently instanced heroes.
+    uint32 currentNumberOfInstancedHeroes;
+  }
+    
+  struct HeroInstance {
+    // What is this hero's type? ex) John, Sally, Mark...
+    uint32 heroClassId;
+    
+    // Individual hero's name.
+    string heroName;
+    
+    // Current level of this hero.
+    uint32 currentLevel;
+    // Current exp of this hero.
+    uint32 currentExp;
+
+    // Where has this hero been deployed? (0: Never depolyed ever.) ex) Dungeon Floor #1, Arena #5...
+    uint32 lastLocationId;
+    // When a hero is deployed, it takes time for the hero to return to the base. This is in Unix epoch.
+    uint256 availableAt;
+
+    // Current stats of this hero. 
+    // 0: ATK	1: DEF 2: AGL	3: LUK 4: HP.
+    uint32[5] currentStats;
+    // The individual value for this hero's stats. 
+    // This will affect the current stats of heroes.
+    // 0: ATK	1: DEF 2: AGL	3: LUK 4: HP.
+    uint32[5] ivForStats;
+  }
+
+  // Required exp for level up will increase when heroes level up.
+  // This defines how the value will increase.
+  uint32 public requiredExpIncreaseFactor = 100;
+
+  // Required Gold for level up will increase when heroes level up.
+  // This defines how the value will increase.
+  uint256 public requiredGoldIncreaseFactor = 1000000000000000000;
+
+  // Existing hero classes.
+  mapping(uint32 => HeroClass) public heroClasses;
+  // The number of hero classes ever defined.
+  uint32 public numberOfHeroClasses;
+
+  // Existing hero instances.
+  // The key is _tokenId.
+  mapping(uint256 => HeroInstance) public tokenIdToHeroInstance;
+  // The number of tokens ever minted. This works as the serial number.
+  uint256 public numberOfTokenIds;
+
+  // Gold contract.
+  Gold public goldContract;
+
+  // Deposit of players (in Gold).
+  mapping(address => uint256) public addressToGoldDeposit;
+
+  // Random seed.
+  uint32 private seed = 0;
+
+  // Event that is fired when a hero type defined.
+  event DefineType(
+    address indexed _by,
+    uint32 indexed _typeId,
+    string _className
+  );
+
+  // Event that is fired when a hero is upgraded.
+  event LevelUp(
+    address indexed _by,
+    uint256 indexed _tokenId,
+    uint32 _newLevel
+  );
+
+  // Event that is fired when a hero is deployed.
+  event Deploy(
+    address indexed _by,
+    uint256 indexed _tokenId,
+    uint32 _locationId,
+    uint256 _duration
+  );
+
+  // @dev Get the class's entire infomation.
+  function getClassInfo(uint32 _classId)
+    external view
+    returns (string className, uint8 classRank, uint8 classRace, uint32 classAge, uint8 classType, uint32 maxLevel, uint8 aura, uint32[5] baseStats, uint32[5] minIVs, uint32[5] maxIVs) 
+  {
+    var _cl = heroClasses[_classId];
+    return (_cl.className, _cl.classRank, _cl.classRace, _cl.classAge, _cl.classType, _cl.maxLevel, _cl.aura, _cl.baseStats, _cl.minIVForStats, _cl.maxIVForStats);
+  }
+
+  // @dev Get the class's name.
+  function getClassName(uint32 _classId)
+    external view
+    returns (string)
+  {
+    return heroClasses[_classId].className;
+  }
+
+  // @dev Get the class's rank.
+  function getClassRank(uint32 _classId)
+    external view
+    returns (uint8)
+  {
+    return heroClasses[_classId].classRank;
+  }
+
+  // @dev Get the heroes ever minted for the class.
+  function getClassMintCount(uint32 _classId)
+    external view
+    returns (uint32)
+  {
+    return heroClasses[_classId].currentNumberOfInstancedHeroes;
+  }
+
+  // @dev Get the hero's entire infomation.
+  function getHeroInfo(uint256 _tokenId)
+    external view
+    returns (uint32 classId, string heroName, uint32 currentLevel, uint32 currentExp, uint32 lastLocationId, uint256 availableAt, uint32[5] currentStats, uint32[5] ivs, uint32 bp)
+  {
+    HeroInstance memory _h = tokenIdToHeroInstance[_tokenId];
+    var _bp = _h.currentStats[0] + _h.currentStats[1] + _h.currentStats[2] + _h.currentStats[3] + _h.currentStats[4];
+    return (_h.heroClassId, _h.heroName, _h.currentLevel, _h.currentExp, _h.lastLocationId, _h.availableAt, _h.currentStats, _h.ivForStats, _bp);
+  }
+
+  // @dev Get the hero's class id.
+  function getHeroClassId(uint256 _tokenId)
+    external view
+    returns (uint32)
+  {
+    return tokenIdToHeroInstance[_tokenId].heroClassId;
+  }
+
+  // @dev Get the hero's name.
+  function getHeroName(uint256 _tokenId)
+    external view
+    returns (string)
+  {
+    return tokenIdToHeroInstance[_tokenId].heroName;
+  }
+
+  // @dev Get the hero's level.
+  function getHeroLevel(uint256 _tokenId)
+    external view
+    returns (uint32)
+  {
+    return tokenIdToHeroInstance[_tokenId].currentLevel;
+  }
+  
+  // @dev Get the hero's location.
+  function getHeroLocation(uint256 _tokenId)
+    external view
+    returns (uint32)
+  {
+    return tokenIdToHeroInstance[_tokenId].lastLocationId;
+  }
+
+  // @dev Get the time when the hero become available.
+  function getHeroAvailableAt(uint256 _tokenId)
+    external view
+    returns (uint256)
+  {
+    return tokenIdToHeroInstance[_tokenId].availableAt;
+  }
+
+  // @dev Get the hero's BP.
+  function getHeroBP(uint256 _tokenId)
+    public view
+    returns (uint32)
+  {
+    var _tmp = tokenIdToHeroInstance[_tokenId].currentStats;
+    return (_tmp[0] + _tmp[1] + _tmp[2] + _tmp[3] + _tmp[4]);
+  }
+
+  // @dev Get the hero's required gold for level up.
+  function getHeroRequiredGoldForLevelUp(uint256 _tokenId)
+    public view
+    returns (uint256)
+  {
+    return (uint256(2) ** (tokenIdToHeroInstance[_tokenId].currentLevel / 10)) * requiredGoldIncreaseFactor;
+  }
+
+  // @dev Get the hero's required exp for level up.
+  function getHeroRequiredExpForLevelUp(uint256 _tokenId)
+    public view
+    returns (uint32)
+  {
+    return ((tokenIdToHeroInstance[_tokenId].currentLevel + 2) * requiredExpIncreaseFactor);
+  }
+
+  // @dev Get the deposit of gold of the player.
+  function getGoldDepositOfAddress(address _address)
+    external view
+    returns (uint256)
+  {
+    return addressToGoldDeposit[_address];
+  }
+
+  // @dev Get the token id of the player's #th token.
+  function getTokenIdOfAddressAndIndex(address _address, uint256 _index)
+    external view
+    returns (uint256)
+  {
+    return tokensOf(_address)[_index];
+  }
+
+  // @dev Get the total BP of the player.
+  function getTotalBPOfAddress(address _address)
+    external view
+    returns (uint32)
+  {
+    var _tokens = tokensOf(_address);
+    uint32 _totalBP = 0;
+    for (uint256 i = 0; i < _tokens.length; i ++) {
+      _totalBP += getHeroBP(_tokens[i]);
+    }
+    return _totalBP;
+  }
+
+  // @dev Set the hero's name.
+  function setHeroName(uint256 _tokenId, string _name)
+    onlyOwnerOf(_tokenId)
+    public
+  {
+    tokenIdToHeroInstance[_tokenId].heroName = _name;
+  }
+
+  // @dev Set the address of the contract that represents ERC20 Gold.
+  function setGoldContract(address _contractAddress)
+    onlyOwner
+    public
+  {
+    goldContract = Gold(_contractAddress);
+  }
+
+  // @dev Set the required golds to level up a hero.
+  function setRequiredExpIncreaseFactor(uint32 _value)
+    onlyOwner
+    public
+  {
+    requiredExpIncreaseFactor = _value;
+  }
+
+  // @dev Set the required golds to level up a hero.
+  function setRequiredGoldIncreaseFactor(uint256 _value)
+    onlyOwner
+    public
+  {
+    requiredGoldIncreaseFactor = _value;
+  }
+
+  // @dev Contructor.
+  function CryptoSagaHero(address _goldAddress)
+    public
+  {
+    require(_goldAddress != address(0));
+
+    // Assign Gold contract.
+    setGoldContract(_goldAddress);
+
+    // Initial heroes.
+    // Name, Rank, Race, Age, Type, Max Level, Aura, Stats.
+    defineType("Archangel", 4, 1, 13540, 0, 99, 3, [uint32(74), 75, 57, 99, 95], [uint32(8), 6, 8, 5, 5], [uint32(8), 10, 10, 6, 6]);
+    defineType("Shadowalker", 3, 4, 134, 1, 75, 4, [uint32(45), 35, 60, 80, 40], [uint32(3), 2, 10, 4, 5], [uint32(5), 5, 10, 7, 5]);
+    defineType("Pyromancer", 2, 0, 14, 2, 50, 1, [uint32(50), 28, 17, 40, 35], [uint32(5), 3, 2, 3, 3], [uint32(8), 4, 3, 4, 5]);
+    defineType("Magician", 1, 3, 224, 2, 30, 0, [uint32(35), 15, 25, 25, 30], [uint32(3), 1, 2, 2, 2], [uint32(5), 2, 3, 3, 3]);
+    defineType("Farmer", 0, 0, 59, 0, 15, 2, [uint32(10), 22, 8, 15, 25], [uint32(1), 2, 1, 1, 2], [uint32(1), 3, 1, 2, 3]);
+  }
+
+  // @dev Define a new hero type (class).
+  function defineType(string _className, uint8 _classRank, uint8 _classRace, uint32 _classAge, uint8 _classType, uint32 _maxLevel, uint8 _aura, uint32[5] _baseStats, uint32[5] _minIVForStats, uint32[5] _maxIVForStats)
+    onlyOwner
+    public
+  {
+    require(_classRank < 5);
+    require(_classType < 3);
+    require(_aura < 5);
+    require(_minIVForStats[0] <= _maxIVForStats[0] && _minIVForStats[1] <= _maxIVForStats[1] && _minIVForStats[2] <= _maxIVForStats[2] && _minIVForStats[3] <= _maxIVForStats[3] && _minIVForStats[4] <= _maxIVForStats[4]);
+
+    HeroClass memory _heroType = HeroClass({
+      className: _className,
+      classRank: _classRank,
+      classRace: _classRace,
+      classAge: _classAge,
+      classType: _classType,
+      maxLevel: _maxLevel,
+      aura: _aura,
+      baseStats: _baseStats,
+      minIVForStats: _minIVForStats,
+      maxIVForStats: _maxIVForStats,
+      currentNumberOfInstancedHeroes: 0
+    });
+
+    // Save the hero class.
+    heroClasses[numberOfHeroClasses] = _heroType;
+
+    // Fire event.
+    DefineType(msg.sender, numberOfHeroClasses, _heroType.className);
+
+    // Increment number of hero classes.
+    numberOfHeroClasses ++;
+
+  }
+
+  // @dev Mint a new hero, with _heroClassId.
+  function mint(address _owner, uint32 _heroClassId)
+    onlyAccessMint
+    public
+    returns (uint256)
+  {
+    require(_owner != address(0));
+    require(_heroClassId < numberOfHeroClasses);
+
+    // The information of the hero's class.
+    var _heroClassInfo = heroClasses[_heroClassId];
+
+    // Mint ERC721 token.
+    _mint(_owner, numberOfTokenIds);
+
+    // Build random IVs for this hero instance.
+    uint32[5] memory _ivForStats;
+    uint32[5] memory _initialStats;
+    for (uint8 i = 0; i < 5; i++) {
+      _ivForStats[i] = (random(_heroClassInfo.maxIVForStats[i] + 1, _heroClassInfo.minIVForStats[i]));
+      _initialStats[i] = _heroClassInfo.baseStats[i] + _ivForStats[i];
+    }
+
+    // Temporary hero instance.
+    HeroInstance memory _heroInstance = HeroInstance({
+      heroClassId: _heroClassId,
+      heroName: "",
+      currentLevel: 1,
+      currentExp: 0,
+      lastLocationId: 0,
+      availableAt: now,
+      currentStats: _initialStats,
+      ivForStats: _ivForStats
+    });
+
+    // Save the hero instance.
+    tokenIdToHeroInstance[numberOfTokenIds] = _heroInstance;
+
+    // Increment number of token ids.
+    // This will only increment when new token is minted, and will never be decemented when the token is burned.
+    numberOfTokenIds ++;
+
+     // Increment instanced number of heroes.
+    _heroClassInfo.currentNumberOfInstancedHeroes ++;
+
+    return numberOfTokenIds - 1;
+  }
+
+  // @dev Set where the heroes are deployed, and when they will return.
+  //  This is intended to be called by Dungeon, Arena, Guild contracts.
+  function deploy(uint256 _tokenId, uint32 _locationId, uint256 _duration)
+    onlyAccessDeploy
+    public
+    returns (bool)
+  {
+    // The hero should be possessed by anybody.
+    require(ownerOf(_tokenId) != address(0));
+
+    var _heroInstance = tokenIdToHeroInstance[_tokenId];
+
+    // The character should be avaiable. 
+    require(_heroInstance.availableAt <= now);
+
+    _heroInstance.lastLocationId = _locationId;
+    _heroInstance.availableAt = now + _duration;
+
+    // As the hero has been deployed to another place, fire event.
+    Deploy(msg.sender, _tokenId, _locationId, _duration);
+  }
+
+  // @dev Add exp.
+  //  This is intended to be called by Dungeon, Arena, Guild contracts.
+  function addExp(uint256 _tokenId, uint32 _exp)
+    onlyAccessDeploy
+    public
+    returns (bool)
+  {
+    // The hero should be possessed by anybody.
+    require(ownerOf(_tokenId) != address(0));
+
+    var _heroInstance = tokenIdToHeroInstance[_tokenId];
+
+    var _newExp = _heroInstance.currentExp + _exp;
+
+    // Sanity check to ensure we don't overflow.
+    require(_newExp == uint256(uint128(_newExp)));
+
+    _heroInstance.currentExp += _newExp;
+
+  }
+
+  // @dev Add deposit.
+  //  This is intended to be called by Dungeon, Arena, Guild contracts.
+  function addDeposit(address _to, uint256 _amount)
+    onlyAccessDeposit
+    public
+  {
+    // Increment deposit.
+    addressToGoldDeposit[_to] += _amount;
+  }
+
+  // @dev Level up the hero with _tokenId.
+  //  This function is called by the owner of the hero.
+  function levelUp(uint256 _tokenId)
+    onlyOwnerOf(_tokenId) whenNotPaused
+    public
+  {
+
+    // Hero instance.
+    var _heroInstance = tokenIdToHeroInstance[_tokenId];
+
+    // The character should be avaiable. (Should have already returned from the dungeons, arenas, etc.)
+    require(_heroInstance.availableAt <= now);
+
+    // The information of the hero's class.
+    var _heroClassInfo = heroClasses[_heroInstance.heroClassId];
+
+    // Hero shouldn't level up exceed its max level.
+    require(_heroInstance.currentLevel < _heroClassInfo.maxLevel);
+
+    // Required Exp.
+    var requiredExp = getHeroRequiredExpForLevelUp(_tokenId);
+
+    // Need to have enough exp.
+    require(_heroInstance.currentExp >= requiredExp);
+
+    // Required Gold.
+    var requiredGold = getHeroRequiredGoldForLevelUp(_tokenId);
+
+    // Owner of token.
+    var _ownerOfToken = ownerOf(_tokenId);
+
+    // Need to have enough Gold balance.
+    require(addressToGoldDeposit[_ownerOfToken] >= requiredGold);
+
+    // Increase Level.
+    _heroInstance.currentLevel += 1;
+
+    // Increase Stats.
+    for (uint8 i = 0; i < 5; i++) {
+      _heroInstance.currentStats[i] = _heroClassInfo.baseStats[i] + (_heroInstance.currentLevel - 1) * _heroInstance.ivForStats[i];
+    }
+    
+    // Deduct exp.
+    _heroInstance.currentExp -= requiredExp;
+
+    // Deduct gold.
+    addressToGoldDeposit[_ownerOfToken] -= requiredGold;
+
+    // Fire event.
+    LevelUp(msg.sender, _tokenId, _heroInstance.currentLevel);
+  }
+
+  // @dev Transfer deposit (with the allowance pattern.)
+  function transferDeposit(uint256 _amount)
+    whenNotPaused
+    public
+  {
+    require(goldContract.allowance(msg.sender, this) >= _amount);
+
+    // Send msg.sender's Gold to this contract.
+    if (goldContract.transferFrom(msg.sender, this, _amount)) {
+       // Increment deposit.
+      addressToGoldDeposit[msg.sender] += _amount;
+    }
+  }
+
+  // @dev Withdraw deposit.
+  function withdrawDeposit(uint256 _amount)
+    public
+  {
+    require(addressToGoldDeposit[msg.sender] >= _amount);
+
+    // Send deposit of Golds to msg.sender. (Rather minting...)
+    if (goldContract.transfer(msg.sender, _amount)) {
+      // Decrement deposit.
+      addressToGoldDeposit[msg.sender] -= _amount;
+    }
+  }
+
+  // @dev return a pseudo random number between lower and upper bounds
+  function random(uint32 _upper, uint32 _lower)
+    private
+    returns (uint32)
+  {
+    require(_upper > _lower);
+
+    seed = uint32(keccak256(keccak256(block.blockhash(block.number), seed), now));
+    return seed % (_upper - _lower) + _lower;
+  }
+
+}
+### ABI:
+[{"constant":true,"inputs":[],"name":"name","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_to","type":"address"},{"name":"_tokenId","type":"uint256"}],"name":"approve","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_tokenId","type":"uint256"}],"name":"levelUp","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"requiredExpIncreaseFactor","outputs":[{"name":"","type":"uint32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"uint32"}],"name":"heroClasses","outputs":[{"name":"className","type":"string"},{"name":"classRank","type":"uint8"},{"name":"classRace","type":"uint8"},{"name":"classAge","type":"uint32"},{"name":"classType","type":"uint8"},{"name":"maxLevel","type":"uint32"},{"name":"aura","type":"uint8"},{"name":"currentNumberOfInstancedHeroes","type":"uint32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_classId","type":"uint32"}],"name":"getClassRank","outputs":[{"name":"","type":"uint8"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"totalSupply","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_tokenId","type":"uint256"},{"name":"_exp","type":"uint32"}],"name":"addExp","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"_tokenId","type":"uint256"}],"name":"getHeroAvailableAt","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_amount","type":"uint256"}],"name":"transferDeposit","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_tokenId","type":"uint256"},{"name":"_locationId","type":"uint32"},{"name":"_duration","type":"uint256"}],"name":"deploy","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"_tokenId","type":"uint256"}],"name":"approvedFor","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_tokenId","type":"uint256"}],"name":"getHeroRequiredExpForLevelUp","outputs":[{"name":"","type":"uint32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_to","type":"address"},{"name":"_amount","type":"uint256"}],"name":"addDeposit","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_amount","type":"uint256"}],"name":"withdrawDeposit","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_contractAddress","type":"address"}],"name":"setGoldContract","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[],"name":"unpause","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[],"name":"claimOwnership","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_address","type":"address"}],"name":"grantAccessDeploy","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_address","type":"address"}],"name":"grantAccessDeposit","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"_owner","type":"address"}],"name":"tokensOf","outputs":[{"name":"","type":"uint256[]"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_value","type":"uint32"}],"name":"setRequiredExpIncreaseFactor","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"paused","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_address","type":"address"}],"name":"getTotalBPOfAddress","outputs":[{"name":"","type":"uint32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_tokenId","type":"uint256"}],"name":"ownerOf","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"requiredGoldIncreaseFactor","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_classId","type":"uint32"}],"name":"getClassInfo","outputs":[{"name":"className","type":"string"},{"name":"classRank","type":"uint8"},{"name":"classRace","type":"uint8"},{"name":"classAge","type":"uint32"},{"name":"classType","type":"uint8"},{"name":"maxLevel","type":"uint32"},{"name":"aura","type":"uint8"},{"name":"baseStats","type":"uint32[5]"},{"name":"minIVs","type":"uint32[5]"},{"name":"maxIVs","type":"uint32[5]"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_address","type":"address"}],"name":"getGoldDepositOfAddress","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_owner","type":"address"}],"name":"balanceOf","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_tokenId","type":"uint256"}],"name":"getHeroInfo","outputs":[{"name":"classId","type":"uint32"},{"name":"heroName","type":"string"},{"name":"currentLevel","type":"uint32"},{"name":"currentExp","type":"uint32"},{"name":"lastLocationId","type":"uint32"},{"name":"availableAt","type":"uint256"},{"name":"currentStats","type":"uint32[5]"},{"name":"ivs","type":"uint32[5]"},{"name":"bp","type":"uint32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_classId","type":"uint32"}],"name":"getClassName","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"address"}],"name":"addressToGoldDeposit","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_tokenId","type":"uint256"},{"name":"_name","type":"string"}],"name":"setHeroName","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[],"name":"pause","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_address","type":"address"}],"name":"revokeAccessMint","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_address","type":"address"}],"name":"grantAccessMint","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"_tokenId","type":"uint256"}],"name":"getHeroBP","outputs":[{"name":"","type":"uint32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"owner","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"symbol","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_address","type":"address"},{"name":"_index","type":"uint256"}],"name":"getTokenIdOfAddressAndIndex","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"uint256"}],"name":"tokenIdToHeroInstance","outputs":[{"name":"heroClassId","type":"uint32"},{"name":"heroName","type":"string"},{"name":"currentLevel","type":"uint32"},{"name":"currentExp","type":"uint32"},{"name":"lastLocationId","type":"uint32"},{"name":"availableAt","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_tokenId","type":"uint256"}],"name":"getHeroLocation","outputs":[{"name":"","type":"uint32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_className","type":"string"},{"name":"_classRank","type":"uint8"},{"name":"_classRace","type":"uint8"},{"name":"_classAge","type":"uint32"},{"name":"_classType","type":"uint8"},{"name":"_maxLevel","type":"uint32"},{"name":"_aura","type":"uint8"},{"name":"_baseStats","type":"uint32[5]"},{"name":"_minIVForStats","type":"uint32[5]"},{"name":"_maxIVForStats","type":"uint32[5]"}],"name":"defineType","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_to","type":"address"},{"name":"_tokenId","type":"uint256"}],"name":"transfer","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"_tokenId","type":"uint256"}],"name":"getHeroName","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_tokenId","type":"uint256"}],"name":"takeOwnership","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"numberOfHeroClasses","outputs":[{"name":"","type":"uint32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_tokenId","type":"uint256"}],"name":"getHeroLevel","outputs":[{"name":"","type":"uint32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_tokenId","type":"uint256"}],"name":"getHeroClassId","outputs":[{"name":"","type":"uint32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_owner","type":"address"},{"name":"_heroClassId","type":"uint32"}],"name":"mint","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"numberOfTokenIds","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_address","type":"address"}],"name":"revokeAccessDeploy","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"pendingOwner","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_classId","type":"uint32"}],"name":"getClassMintCount","outputs":[{"name":"","type":"uint32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_tokenId","type":"uint256"}],"name":"getHeroRequiredGoldForLevelUp","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_value","type":"uint256"}],"name":"setRequiredGoldIncreaseFactor","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_address","type":"address"}],"name":"revokeAccessDeposit","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"goldContract","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"inputs":[{"name":"_goldAddress","type":"address"}],"payable":false,"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_by","type":"address"},{"indexed":true,"name":"_typeId","type":"uint32"},{"indexed":false,"name":"_className","type":"string"}],"name":"DefineType","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_by","type":"address"},{"indexed":true,"name":"_tokenId","type":"uint256"},{"indexed":false,"name":"_newLevel","type":"uint32"}],"name":"LevelUp","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_by","type":"address"},{"indexed":true,"name":"_tokenId","type":"uint256"},{"indexed":false,"name":"_locationId","type":"uint32"},{"indexed":false,"name":"_duration","type":"uint256"}],"name":"Deploy","type":"event"},{"anonymous":false,"inputs":[],"name":"Pause","type":"event"},{"anonymous":false,"inputs":[],"name":"Unpause","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"previousOwner","type":"address"},{"indexed":true,"name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_from","type":"address"},{"indexed":true,"name":"_to","type":"address"},{"indexed":false,"name":"_tokenId","type":"uint256"}],"name":"Transfer","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_owner","type":"address"},{"indexed":true,"name":"_approved","type":"address"},{"indexed":false,"name":"_tokenId","type":"uint256"}],"name":"Approval","type":"event"}]
+### byteCode:
+60606040526006805460a060020a60ff0219169055600a805463ffffffff19908116606417909155670de0b6b3a7640000600b5560128054909116905534156200004857600080fd5b60405160208062003ee18339810160405280805160058054600160a060020a03191633600160a060020a03908116919091179091559092508216151590506200009057600080fd5b620000a981640100000000620017a96200050182021704565b620001856040805190810160405280600981526020017f41726368616e67656c0000000000000000000000000000000000000000000000815250600460016134e460006063600360a06040519081016040908152604a8252604b602083015260398183015260636060830152605f608083015260a09051908101604090815260088083526006602084015281830152600560608301819052608083015260a09051908101604090815260088252600a602083018190529082015260066060820181905260808201526401000000006200235f6200053f82021704565b620002636040805190810160405280600b81526020017f536861646f77616c6b65720000000000000000000000000000000000000000008152506003600460866001604b600460a06040519081016040908152602d825260236020830152603c81830152605060608301526028608083015260a0905190810160409081526003825260026020830152600a81830152600460608301526005608083015260a090519081016040908152600580835260208301819052600a918301919091526007606083015260808201526401000000006200235f6200053f82021704565b620003426040805190810160405280600a81526020017f5079726f6d616e6365720000000000000000000000000000000000000000000081525060026000600e60026032600160a0604051908101604090815260328252601c6020830152601181830152602860608301526023608083015260a0905190810160409081526005825260036020830181905260028284015260608301819052608083015260a090519081016040908152600882526004602083018190526003918301919091526060820152600560808201526401000000006200235f6200053f82021704565b6200041e6040805190810160405280600881526020017f4d6167696369616e0000000000000000000000000000000000000000000000008152506001600360e06002601e600060a0604051908101604090815260238252600f602083015260198183018190526060830152601e608083015260a0905190810160409081526003825260016020830152600281830181905260608301819052608083015260a090519081016040908152600582526002602083015260039082018190526060820181905260808201526401000000006200235f6200053f82021704565b620004fa6040805190810160405280600681526020017f4661726d65720000000000000000000000000000000000000000000000000000815250600080603b6000600f600260a06040519081016040908152600a825260166020830152600881830152600f60608301526019608083015260a09051908101604090815260018083526002602084018190528284018290526060840191909152608083015260a0905190810160409081526001808352600360208401819052918301526002606083015260808201526401000000006200235f6200053f82021704565b5062000af8565b60055433600160a060020a039081169116146200051d57600080fd5b60108054600160a060020a031916600160a060020a0392909216919091179055565b62000549620008da565b60055433600160a060020a039081169116146200056557600080fd5b600560ff8b16106200057657600080fd5b600360ff8816106200058757600080fd5b600560ff8616106200059857600080fd5b815163ffffffff16835163ffffffff1611158015620005cb5750602082015163ffffffff16602084015163ffffffff1611155b8015620005ec5750604082015163ffffffff16604084015163ffffffff1611155b80156200060d5750606082015163ffffffff16606084015163ffffffff1611155b80156200062e5750608082015163ffffffff16608084015163ffffffff1611155b15156200063a57600080fd5b61016060405190810160409081528c825260ff808d166020808501919091528c82168385015263ffffffff808d1660608601528b831660808601528a811660a086015291891660c085015260e084018890526101008401879052610120840186905260006101408501819052600d549092168252600c9052209091508190815181908051620006ce92916020019062000955565b50602082015160018201805460ff191660ff9290921691909117905560408201518160010160016101000a81548160ff021916908360ff16021790555060608201518160010160026101000a81548163ffffffff021916908363ffffffff16021790555060808201518160010160066101000a81548160ff021916908360ff16021790555060a08201518160010160076101000a81548163ffffffff021916908363ffffffff16021790555060c082015181600101600b6101000a81548160ff021916908360ff16021790555060e0820151620007b29060028301906005620009da565b50610100820151620007cb9060038301906005620009da565b50610120820151620007e49060048301906005620009da565b50610140820151600591909101805463ffffffff191663ffffffff928316179055600d5416905033600160a060020a03167f818b45646d48cee8f796bc4c84ad90e4c4a65c76c52e5ed1bba58859050cbb8c835160405160208082528190810183818151815260200191508051906020019080838360005b83811015620008765780820151838201526020016200085c565b50505050905090810190601f168015620008a45780820380516001836020036101000a031916815260200191505b509250505060405180910390a35050600d805463ffffffff8082166001011663ffffffff19909116179055505050505050505050565b6102e060405190810160405280620008f162000a79565b815260006020820181905260408201819052606082018190526080820181905260a0820181905260c082015260e0016200092a62000a8b565b81526020016200093962000a8b565b81526020016200094862000a8b565b8152600060209091015290565b828054600181600116156101000203166002900490600052602060002090601f016020900481019282601f106200099857805160ff1916838001178555620009c8565b82800160010185558215620009c8579182015b82811115620009c8578251825591602001919060010190620009ab565b50620009d692915062000ab4565b5090565b60018301918390821562000a6b5791602002820160005b8382111562000a3757835183826101000a81548163ffffffff021916908363ffffffff1602179055509260200192600401602081600301049283019260010302620009f1565b801562000a695782816101000a81549063ffffffff021916905560040160208160030104928301926001030262000a37565b505b50620009d692915062000ad4565b60206040519081016040526000815290565b60a06040519081016040526005815b60008152600019909101906020018162000a9a5790505090565b62000ad191905b80821115620009d6576000815560010162000abb565b90565b62000ad191905b80821115620009d657805463ffffffff1916815560010162000adb565b6133d98062000b086000396000f3006060604052600436106102a55763ffffffff60e060020a60003504166306fdde0381146102aa578063095ea7b3146103345780630ce90ec21461035857806312d1456f1461036e578063149e67881461039a5780631749bdf11461048357806318160ddd146104b55780631debbe2f146104da57806326cbe6f51461050d5780632814da3c14610523578063284fb363146105395780632a6dd48f1461055b5780633230d4861461058d57806333026bb6146105a357806333289a46146105c557806333771860146105db5780633f4ba83a146105fa5780634e71e0c81461060d57806358428322146106205780635a1428871461063f5780635a3f26721461065e5780635c5df66a146106d05780635c975abb146106ec578063610bafaa146106ff5780636352211e1461071e5780636a7882f2146107345780636ccd5cbe146107475780636f8c33a61461089d57806370a08231146108bc57806375e39f26146108db5780637874475414610a035780637d3fa29e14610a1f5780638276ccf214610a3e5780638456cb5914610a94578063847e2ba114610aa757806386d518bf14610ac65780638886ca3314610ae55780638da5cb5b14610afb57806395d89b4114610b0e578063988a9fb514610b2157806399e74ce814610b435780639cdd2e7614610c11578063a412fcc714610c27578063a9059cbb14610d27578063ac230e5214610d49578063b2e6ceeb14610d5f578063c3bf32e314610d75578063cf65488614610d88578063d1f6990214610d9e578063d35e29d714610db4578063dc47b3c114610ddc578063de852afe14610def578063e30c397814610e0e578063e5522a5b14610e21578063e802446814610e3d578063eceae9bf14610e53578063f2fde38b14610e69578063f32eca1114610e88578063fc99655714610ea7575b600080fd5b34156102b557600080fd5b6102bd610eba565b60405160208082528190810183818151815260200191508051906020019080838360005b838110156102f95780820151838201526020016102e1565b50505050905090810190601f1680156103265780820380516001836020036101000a031916815260200191505b509250505060405180910390f35b341561033f57600080fd5b610356600160a060020a0360043516602435610ef1565b005b341561036357600080fd5b610356600435610fd6565b341561037957600080fd5b61038161127b565b60405163ffffffff909116815260200160405180910390f35b34156103a557600080fd5b6103b663ffffffff60043516611287565b60405160ff8089166020830152878116604083015263ffffffff8088166060840152868216608084015285811660a084015290841660c0830152821660e08201526101008082528954600260001960018316158402019091160490820181905281906101208201908b90801561046d5780601f106104425761010080835404028352916020019161046d565b820191906000526020600020905b81548152906001019060200180831161045057829003601f168201915b5050995050505050505050505060405180910390f35b341561048e57600080fd5b61049f63ffffffff600435166112ee565b60405160ff909116815260200160405180910390f35b34156104c057600080fd5b6104c861130c565b60405190815260200160405180910390f35b34156104e557600080fd5b6104f960043563ffffffff60243516611313565b604051901515815260200160405180910390f35b341561051857600080fd5b6104c86004356113c4565b341561052e57600080fd5b6103566004356113d9565b341561054457600080fd5b6104f960043563ffffffff60243516604435611529565b341561056657600080fd5b610571600435611639565b604051600160a060020a03909116815260200160405180910390f35b341561059857600080fd5b610381600435611654565b34156105ae57600080fd5b610356600160a060020a036004351660243561167b565b34156105d057600080fd5b6103566004356116e2565b34156105e657600080fd5b610356600160a060020a03600435166117a9565b341561060557600080fd5b6103566117e6565b341561061857600080fd5b610356611865565b341561062b57600080fd5b610356600160a060020a03600435166118e6565b341561064a57600080fd5b610356600160a060020a0360043516611925565b341561066957600080fd5b61067d600160a060020a0360043516611964565b60405160208082528190810183818151815260200191508051906020019060200280838360005b838110156106bc5780820151838201526020016106a4565b505050509050019250505060405180910390f35b34156106db57600080fd5b61035663ffffffff600435166119e7565b34156106f757600080fd5b6104f9611a1e565b341561070a57600080fd5b610381600160a060020a0360043516611a2e565b341561072957600080fd5b610571600435611a8a565b341561073f57600080fd5b6104c8611ab4565b341561075257600080fd5b61076363ffffffff60043516611aba565b60405160ff808b166020830152898116604083015263ffffffff808a1660608401528882166080840152871660a08084019190915290861660c0830152819060e0820190869080838360005b838110156107c75780820151838201526020016107af565b5050505090500184600560200280838360005b838110156107f25780820151838201526020016107da565b5050505090500183600560200280838360005b8381101561081d578082015183820152602001610805565b5050505090500182810382528c818151815260200191508051906020019080838360005b83811015610859578082015183820152602001610841565b50505050905090810190601f1680156108865780820380516001836020036101000a031916815260200191505b509b50505050505050505050505060405180910390f35b34156108a857600080fd5b6104c8600160a060020a0360043516611d35565b34156108c757600080fd5b6104c8600160a060020a0360043516611d50565b34156108e657600080fd5b6108f1600435611d6b565b60405163ffffffff808b168252888116604083015287811660608301528616608082015260a0808201869052602082019060c0830190869080838360005b8381101561094757808201518382015260200161092f565b5050505090500184600560200280838360005b8381101561097257808201518382015260200161095a565b505050509050018363ffffffff1663ffffffff16815260200182810382528a818151815260200191508051906020019080838360005b838110156109c05780820151838201526020016109a8565b50505050905090810190601f1680156109ed5780820380516001836020036101000a031916815260200191505b509a505050505050505050505060405180910390f35b3415610a0e57600080fd5b6102bd63ffffffff60043516612006565b3415610a2a57600080fd5b6104c8600160a060020a03600435166120c6565b3415610a4957600080fd5b610356600480359060446024803590810190830135806020601f820181900481020160405190810160405281815292919060208401838380828437509496506120d895505050505050565b3415610a9f57600080fd5b610356612121565b3415610ab257600080fd5b610356600160a060020a03600435166121a5565b3415610ad157600080fd5b610356600160a060020a03600435166121e1565b3415610af057600080fd5b610381600435612220565b3415610b0657600080fd5b610571612281565b3415610b1957600080fd5b6102bd612290565b3415610b2c57600080fd5b6104c8600160a060020a03600435166024356122c7565b3415610b4e57600080fd5b610b596004356122ee565b60405163ffffffff8088168252858116604083015284811660608301528316608082015260a0810182905260c0602082018181528754600260001961010060018416150201909116049183018290529060e083019088908015610bfd5780601f10610bd257610100808354040283529160200191610bfd565b820191906000526020600020905b815481529060010190602001808311610be057829003601f168201915b505097505050505050505060405180910390f35b3415610c1c57600080fd5b610381600435612338565b3415610c3257600080fd5b61035660046024813581810190830135806020601f82018190048102016040519081016040528181529291906020840183838082843750949660ff873581169760208101358216975063ffffffff604080830135821698506060830135841697506080830135909116955060a080830135909316945061016082019260c090920191600591519081016040529190828260a080828437820191505050505091908060a001906005806020026040519081016040529190828260a080828437820191505050505091908060a001906005806020026040519081016040529190828260a0808284375093955061235f945050505050565b3415610d3257600080fd5b610356600160a060020a03600435166024356126e4565b3415610d5457600080fd5b6102bd60043561271b565b3415610d6a57600080fd5b6103566004356127a2565b3415610d8057600080fd5b6103816127ca565b3415610d9357600080fd5b6103816004356127d6565b3415610da957600080fd5b6103816004356127f1565b3415610dbf57600080fd5b6104c8600160a060020a036004351663ffffffff60243516612809565b3415610de757600080fd5b6104c8612b49565b3415610dfa57600080fd5b610356600160a060020a0360043516612b4f565b3415610e1957600080fd5b610571612b8b565b3415610e2c57600080fd5b61038163ffffffff60043516612b9a565b3415610e4857600080fd5b6104c8600435612bb8565b3415610e5e57600080fd5b610356600435612be2565b3415610e7457600080fd5b610356600160a060020a0360043516612c02565b3415610e9357600080fd5b610356600160a060020a0360043516612c3f565b3415610eb257600080fd5b610571612c7b565b60408051908101604052600f81527f43727970746f53616761204865726f0000000000000000000000000000000000602082015281565b60008133600160a060020a0316610f0782611a8a565b600160a060020a031614610f1a57600080fd5b610f2383611a8a565b9150600160a060020a038481169083161415610f3e57600080fd5b610f4783611639565b600160a060020a0316151580610f655750600160a060020a03841615155b15610fd057600083815260026020526040908190208054600160a060020a031916600160a060020a0387811691821790925591908416907f8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b9259086905190815260200160405180910390a35b50505050565b6000806000806000808633600160a060020a0316610ff382611a8a565b600160a060020a03161461100657600080fd5b60065460a060020a900460ff161561101d57600080fd5b6000888152600e6020526040902060038101549097504290111561104057600080fd5b865463ffffffff9081166000908152600c60205260409020600181015460028a01549198506701000000000000009004821691161061107e57600080fd5b61108788611654565b600288015490955063ffffffff8087166401000000009092041610156110ac57600080fd5b6110b588612bb8565b93506110c088611a8a565b600160a060020a038116600090815260116020526040902054909350849010156110e957600080fd5b60028701805463ffffffff8082166001011663ffffffff19909116179055600091505b60058260ff1610156111dc57866005018260ff1660058110151561112c57fe5b600891828204019190066004029054906101000a900463ffffffff1660018860020160009054906101000a900463ffffffff160302866002018360ff1660058110151561117557fe5b600891828204019190066004029054906101000a900463ffffffff1601876004018360ff166005811015156111a657fe5b600891828204019190066004026101000a81548163ffffffff021916908363ffffffff160217905550818060010192505061110c565b60028701805463ffffffff640100000000808304821689900382160267ffffffff0000000019909216919091178255600160a060020a03808616600090815260116020526040908190208054899003905592548b9333909216927f1040233f747844a9437a1c6950a2f6b576f96d4a0f88fa84cfce9bced9e1b8a8929116905163ffffffff909116815260200160405180910390a35050505050505050565b600a5463ffffffff1681565b600c6020526000908152604090206001810154600582015460ff80831692610100810482169263ffffffff6201000083048116936601000000000000840481169367010000000000000081048316936b010000000000000000000000909104909116911688565b63ffffffff166000908152600c602052604090206001015460ff1690565b6000545b90565b6005546000908190819033600160a060020a03908116911614806113545750600160a060020a03331660009081526008602052604090205460ff1615156001145b151561135f57600080fd5b600061136a86611a8a565b600160a060020a0316141561137e57600080fd5b50506000928352600e6020526040909220600201805467ffffffff0000000019811663ffffffff6401000000009283900481169485019094019093160291909117905590565b6000908152600e602052604090206003015490565b60065460a060020a900460ff16156113f057600080fd5b6010548190600160a060020a031663dd62ed3e333060006040516020015260405160e060020a63ffffffff8516028152600160a060020a03928316600482015291166024820152604401602060405180830381600087803b151561145357600080fd5b6102c65a03f1151561146457600080fd5b505050604051805190501015151561147b57600080fd5b601054600160a060020a03166323b872dd33308460006040516020015260405160e060020a63ffffffff8616028152600160a060020a0393841660048201529190921660248201526044810191909152606401602060405180830381600087803b15156114e757600080fd5b6102c65a03f115156114f857600080fd5b505050604051805190501561152657600160a060020a03331660009081526011602052604090208054820190555b50565b600554600090819033600160a060020a03908116911614806115685750600160a060020a03331660009081526008602052604090205460ff1615156001145b151561157357600080fd5b600061157e86611a8a565b600160a060020a0316141561159257600080fd5b506000848152600e602052604090206003810154429011156115b357600080fd5b6002810180546bffffffff000000000000000019166801000000000000000063ffffffff87160217905542830160038201558433600160a060020a03167f6637324ad8de1d19eeb65af5357cf52eabfa264cd1050bb936cd3e1f1540fab0868660405163ffffffff909216825260208201526040908101905180910390a3509392505050565b600090815260026020526040902054600160a060020a031690565b600a546000918252600e602052604090912060029081015463ffffffff9283169216010290565b60055433600160a060020a03908116911614806116b55750600160a060020a03331660009081526009602052604090205460ff1615156001145b15156116c057600080fd5b600160a060020a03909116600090815260116020526040902080549091019055565b600160a060020a0333166000908152601160205260409020548190101561170857600080fd5b601054600160a060020a031663a9059cbb338360006040516020015260405160e060020a63ffffffff8516028152600160a060020a0390921660048301526024820152604401602060405180830381600087803b151561176757600080fd5b6102c65a03f1151561177857600080fd5b505050604051805190501561152657600160a060020a03331660009081526011602052604090208054829003905550565b60055433600160a060020a039081169116146117c457600080fd5b60108054600160a060020a031916600160a060020a0392909216919091179055565b60055433600160a060020a0390811691161461180157600080fd5b60065460a060020a900460ff16151561181957600080fd5b6006805474ff0000000000000000000000000000000000000000191690557f7805862f689e2f13df9f062ff482ad3ad112aca9e0847911ed832e158c525b3360405160405180910390a1565b60065433600160a060020a0390811691161461188057600080fd5b600654600554600160a060020a0391821691167f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e060405160405180910390a36006805460058054600160a060020a0319908116600160a060020a03841617909155169055565b60055433600160a060020a0390811691161461190157600080fd5b600160a060020a03166000908152600860205260409020805460ff19166001179055565b60055433600160a060020a0390811691161461194057600080fd5b600160a060020a03166000908152600960205260409020805460ff19166001179055565b61196c613138565b6003600083600160a060020a0316600160a060020a031681526020019081526020016000208054806020026020016040519081016040528092919081815260200182805480156119db57602002820191906000526020600020905b8154815260200190600101908083116119c7575b50505050509050919050565b60055433600160a060020a03908116911614611a0257600080fd5b600a805463ffffffff191663ffffffff92909216919091179055565b60065460a060020a900460ff1681565b6000611a38613138565b600080611a4485611964565b925060009150600090505b8251811015611a8257611a76838281518110611a6757fe5b90602001906020020151612220565b90910190600101611a4f565b509392505050565b600081815260016020526040812054600160a060020a0316801515611aae57600080fd5b92915050565b600b5481565b611ac2613138565b600080600080600080611ad361314a565b611adb61314a565b611ae361314a565b63ffffffff8b81166000908152600c602090815260409182902060018082015482549295869560ff80841696610100808604831697620100008704861697660100000000000088048516976701000000000000008104909716966b0100000000000000000000009004909416946002808d019560038e019560048f01958f959283161502600019019091169190910491601f8301829004820290910190519081016040528092919081815260200182805460018160011615610100020316600290048015611bf25780601f10611bc757610100808354040283529160200191611bf2565b820191906000526020600020905b815481529060010190602001808311611bd557829003601f168201915b5050505050995082600580602002604051908101604052919060a08301826000855b82829054906101000a900463ffffffff1663ffffffff1681526020019060040190602082600301049283019260010382029150808411611c145790505050505050925081600580602002604051908101604052919060a08301826000855b82829054906101000a900463ffffffff1663ffffffff1681526020019060040190602082600301049283019260010382029150808411611c725790505050505050915080600580602002604051908101604052919060a08301826000855b82829054906101000a900463ffffffff1663ffffffff1681526020019060040190602082600301049283019260010382029150808411611cd0579050505050505090509a509a509a509a509a509a509a509a509a509a50509193959799509193959799565b600160a060020a031660009081526011602052604090205490565b600160a060020a031660009081526003602052604090205490565b6000611d75613138565b600080600080611d8361314a565b611d8b61314a565b6000611d95613172565b60008b8152600e602052604080822090610100905190810160405290816000820160009054906101000a900463ffffffff1663ffffffff1663ffffffff168152602001600182018054600181600116156101000203166002900480601f016020809104026020016040519081016040528092919081815260200182805460018160011615610100020316600290048015611e705780601f10611e4557610100808354040283529160200191611e70565b820191906000526020600020905b815481529060010190602001808311611e5357829003601f168201915b5050509183525050600282015463ffffffff808216602084015264010000000082048116604080850191909152680100000000000000009092041660608301526003830154608083015260a09182019160048401916005919051908101604052919060a08301826000855b82829054906101000a900463ffffffff1663ffffffff1681526020019060040190602082600301049283019260010382029150808411611edb5790505050505050815260200160058201600580602002604051908101604052919060a08301826000855b82829054906101000a900463ffffffff1663ffffffff1681526020019060040190602082600301049283019260010382029150808411611f3f57905050505050508152505091508160c00151608001518260c00151606001518360c00151604001518460c00151602001518560c0015151010101019050815182602001518360400151846060015185608001518660a001518760c001518860e00151888797508292508191509a509a509a509a509a509a509a509a509a5050509193959799909294969850565b61200e613138565b600c60008363ffffffff1663ffffffff1681526020019081526020016000206000018054600181600116156101000203166002900480601f0160208091040260200160405190810160405280929190818152602001828054600181600116156101000203166002900480156119db5780601f10612099576101008083540402835291602001916119db565b820191906000526020600020905b8154815290600101906020018083116120a75750939695505050505050565b60116020526000908152604090205481565b8133600160a060020a03166120ec82611a8a565b600160a060020a0316146120ff57600080fd5b6000838152600e60205260409020600101828051610fd09291602001906131c9565b60055433600160a060020a0390811691161461213c57600080fd5b60065460a060020a900460ff161561215357600080fd5b6006805474ff0000000000000000000000000000000000000000191660a060020a1790557f6985a02210a168e66602d3235cb6db0e70f92b3ba4d376a33c0f3d9434bff62560405160405180910390a1565b60055433600160a060020a039081169116146121c057600080fd5b600160a060020a03166000908152600760205260409020805460ff19169055565b60055433600160a060020a039081169116146121fc57600080fd5b600160a060020a03166000908152600760205260409020805460ff19166001179055565b6000908152600e602052604090206004015463ffffffff80821664010000000083048216016801000000000000000083048216016c010000000000000000000000008304821601700100000000000000000000000000000000909204160190565b600554600160a060020a031681565b60408051908101604052600481527f4845524f00000000000000000000000000000000000000000000000000000000602082015281565b60006122d283611964565b82815181106122dd57fe5b906020019060200201519392505050565b600e60205260009081526040902080546002820154600383015463ffffffff9283169360010192828116926401000000008104821692680100000000000000009091049091169086565b6000908152600e602052604090206002015468010000000000000000900463ffffffff1690565b612367613247565b60055433600160a060020a0390811691161461238257600080fd5b600560ff8b161061239257600080fd5b600360ff8816106123a257600080fd5b600560ff8616106123b257600080fd5b815163ffffffff16835163ffffffff16111580156123e45750602082015163ffffffff16602084015163ffffffff1611155b80156124045750604082015163ffffffff16604084015163ffffffff1611155b80156124245750606082015163ffffffff16606084015163ffffffff1611155b80156124445750608082015163ffffffff16608084015163ffffffff1611155b151561244f57600080fd5b61016060405190810160409081528c825260ff808d166020808501919091528c82168385015263ffffffff808d1660608601528b831660808601528a811660a086015291891660c085015260e084018890526101008401879052610120840186905260006101408501819052600d549092168252600c90522090915081908151819080516124e19291602001906131c9565b50602082015160018201805460ff191660ff9290921691909117905560408201518160010160016101000a81548160ff021916908360ff16021790555060608201518160010160026101000a81548163ffffffff021916908363ffffffff16021790555060808201518160010160066101000a81548160ff021916908360ff16021790555060a08201518160010160076101000a81548163ffffffff021916908363ffffffff16021790555060c082015181600101600b6101000a81548160ff021916908360ff16021790555060e08201516125c390600283019060056132ba565b506101008201516125da90600383019060056132ba565b506101208201516125f190600483019060056132ba565b50610140820151600591909101805463ffffffff191663ffffffff928316179055600d5416905033600160a060020a03167f818b45646d48cee8f796bc4c84ad90e4c4a65c76c52e5ed1bba58859050cbb8c835160405160208082528190810183818151815260200191508051906020019080838360005b83811015612681578082015183820152602001612669565b50505050905090810190601f1680156126ae5780820380516001836020036101000a031916815260200191505b509250505060405180910390a35050600d805463ffffffff8082166001011663ffffffff19909116179055505050505050505050565b8033600160a060020a03166126f882611a8a565b600160a060020a03161461270b57600080fd5b612716338484612c8a565b505050565b612723613138565b600e60008381526020019081526020016000206001018054600181600116156101000203166002900480601f0160208091040260200160405190810160405280929190818152602001828054600181600116156101000203166002900480156119db5780601f10612099576101008083540402835291602001916119db565b6127ac3382612d50565b15156127b757600080fd5b6115266127c382611a8a565b3383612c8a565b600d5463ffffffff1681565b6000908152600e602052604090206002015463ffffffff1690565b6000908152600e602052604090205463ffffffff1690565b60008061281461314a565b61281c61314a565b6000612826613172565b60055433600160a060020a03908116911614806128605750600160a060020a03331660009081526007602052604090205460ff1615156001145b151561286b57600080fd5b600160a060020a038816151561288057600080fd5b600d5463ffffffff9081169088161061289857600080fd5b63ffffffff87166000908152600c60205260409020600f549095506128be908990612d76565b600091505b60058260ff1610156129c6576129386004860160ff8416600581106128e457fe5b600891828204019190066004029054906101000a900463ffffffff16600101866003018460ff1660058110151561291757fe5b600891828204019190066004029054906101000a900463ffffffff16612dd8565b8460ff84166005811061294757fe5b63ffffffff90921660209290920201528360ff83166005811061296657fe5b60200201516002860160ff84166005811061297d57fe5b600891828204019190066004029054906101000a900463ffffffff1601838360ff166005811015156129ab57fe5b63ffffffff90921660209290920201526001909101906128c3565b610100604051908101604052808863ffffffff16815260200160206040519081016040908152600080835291835260016020808501919091528382018390526060840183905242608085015260a0840188905260c0909301889052600f548252600e9092522090915081908151815463ffffffff191663ffffffff91909116178155602082015181600101908051612a629291602001906131c9565b50604082015160028201805463ffffffff191663ffffffff9290921691909117905560608201518160020160046101000a81548163ffffffff021916908363ffffffff16021790555060808201518160020160086101000a81548163ffffffff021916908363ffffffff16021790555060a0820151816003015560c0820151612af190600483019060056132ba565b5060e0820151612b0790600580840191906132ba565b5050600f805460019081018255600597909701805463ffffffff19811663ffffffff918216909901169790971790965550509254600019019695505050505050565b600f5481565b60055433600160a060020a03908116911614612b6a57600080fd5b600160a060020a03166000908152600860205260409020805460ff19169055565b600654600160a060020a031681565b63ffffffff9081166000908152600c60205260409020600501541690565b600b546000918252600e6020526040909120600290810154600a63ffffffff9182160416900a0290565b60055433600160a060020a03908116911614612bfd57600080fd5b600b55565b60055433600160a060020a03908116911614612c1d57600080fd5b60068054600160a060020a031916600160a060020a0392909216919091179055565b60055433600160a060020a03908116911614612c5a57600080fd5b600160a060020a03166000908152600960205260409020805460ff19169055565b601054600160a060020a031681565b600160a060020a0382161515612c9f57600080fd5b612ca881611a8a565b600160a060020a0383811691161415612cc057600080fd5b82600160a060020a0316612cd382611a8a565b600160a060020a031614612ce657600080fd5b612cf08382612e69565b612cfa8382612eee565b612d048282613058565b81600160a060020a031683600160a060020a03167fddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef8360405190815260200160405180910390a3505050565b600082600160a060020a0316612d6583611639565b600160a060020a0316149392505050565b600160a060020a0382161515612d8b57600080fd5b612d958282613058565b81600160a060020a031660007fddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef8360405190815260200160405180910390a35050565b600063ffffffff80831690841611612def57600080fd5b60125443409063ffffffff1660405191825263ffffffff1660e060020a0260208201526024016040518091039020426040519182526020820152604090810190519081900390206012805463ffffffff191663ffffffff9283161790819055839182860381169116811515612e6057fe5b06019392505050565b81600160a060020a0316612e7c82611a8a565b600160a060020a031614612e8f57600080fd5b6000818152600260205260408082208054600160a060020a0319169055600160a060020a038416907f8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b9259084905190815260200160405180910390a35050565b600080600084600160a060020a0316612f0685611a8a565b600160a060020a031614612f1957600080fd5b6000848152600460205260409020549250612f446001612f3887611d50565b9063ffffffff61311016565b600160a060020a038616600090815260036020526040902080549193509083908110612f6c57fe5b60009182526020808320909101548683526001825260408084208054600160a060020a0319169055600160a060020a0389168452600390925291208054919250829185908110612fb857fe5b6000918252602080832090910192909255600160a060020a0387168152600390915260408120805484908110612fea57fe5b6000918252602080832090910192909255600160a060020a0387168152600390915260409020805490613021906000198301613352565b5060008481526004602052604080822082905582825281208490555461304e90600163ffffffff61311016565b6000555050505050565b600081815260016020526040812054600160a060020a03161561307a57600080fd5b60008281526001602052604090208054600160a060020a031916600160a060020a0385161790556130aa83611d50565b600160a060020a0384166000908152600360205260409020805491925090600181016130d68382613352565b50600091825260208083209190910184905583825260049052604081208290555461310890600163ffffffff61312216565b600055505050565b60008282111561311c57fe5b50900390565b60008282018381101561313157fe5b9392505050565b60206040519081016040526000815290565b60a06040519081016040526005815b6000815260001990910190602001816131595790505090565b610200604051908101604052600081526020810161318e613138565b81526000602082018190526040820181905260608201819052608082015260a0016131b761314a565b81526020016131c461314a565b905290565b828054600181600116156101000203166002900490600052602060002090601f016020900481019282601f1061320a57805160ff1916838001178555613237565b82800160010185558215613237579182015b8281111561323757825182559160200191906001019061321c565b50613243929150613372565b5090565b6102e06040519081016040528061325c613138565b815260006020820181905260408201819052606082018190526080820181905260a0820181905260c082015260e00161329361314a565b81526020016132a061314a565b81526020016132ad61314a565b8152600060209091015290565b6001830191839082156133465791602002820160005b8382111561331457835183826101000a81548163ffffffff021916908363ffffffff16021790555092602001926004016020816003010492830192600103026132d0565b80156133445782816101000a81549063ffffffff0219169055600401602081600301049283019260010302613314565b505b5061324392915061338c565b815481835581811511612716576000838152602090206127169181019083015b61131091905b808211156132435760008155600101613378565b61131091905b8082111561324357805463ffffffff191681556001016133925600a165627a7a723058201ada7616332c690d852dae1f3a296c49fc76ab0e550e7bd44b2bf0823a991d00002900000000000000000000000059bcded9c87ce46ec97c13640bfc0390ceb00e99
