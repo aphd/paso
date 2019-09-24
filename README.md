@@ -13,7 +13,7 @@ Requires Node >= v11.3.0
 **Backend part**
 
 ```bash
-node --experimental-modules src/services/client.mjs
+node --experimental-modules src/services/client.mjs --d=src/fixtures/smart-contracts/ --o /tmp/metrics.csv
 ```
 
 ### References 
