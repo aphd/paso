@@ -17,10 +17,11 @@ export function solParse(code) {
         libraries: '"kind":"library"',
         interfaces: '"kind":"interface"'
     };
-    let result = {};
-
-    result.version = get_version(ast_s);
-    result.total_lines = ast_j.loc.end.line;
+    let result = {
+        version: get_version(ast_s),
+        total_lines: ast_j.loc.end.line,
+        comments: code.match(/(\/\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*+\/)|(\/\/.*)/g).length
+    };
     for (const metric in metrics) {
         let reg = metrics[metric];
         result[metric] = (ast_s.match(new RegExp(reg, "g")) || []).length;
