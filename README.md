@@ -6,14 +6,27 @@ Requires Node >= v11.3.0
 
 ### Usage
 
-**Fontend part**
+**Web tool**
 
 [https://aphd.github.io/sopa/](https://aphd.github.io/sopa/)
 
-**Backend part**
+**CLI tool**
 
 ```bash
 node --experimental-modules src/services/client.mjs --d=src/fixtures/smart-contracts/ --o /tmp/metrics.csv
+```
+
+**Data analysis**
+
+```bash
+cd src/fixtures
+python
+```
+
+```python
+import pandas as pd
+df = pd.read_csv('metrics.csv',parse_dates=['submission_date'],  index_col='submission_date')
+df[['mapping', 'total_lines', 'interfaces', 'libraries']].resample('Y').mean().transform(lambda x: x/x.max())
 ```
 
 ### References 
