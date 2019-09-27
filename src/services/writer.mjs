@@ -17,8 +17,10 @@ export class Writer {
         this.lines = fs.readFileSync(fn, "utf8").split("\n");
         const code = this.lines.slice(3, -4).join('\n');
         let current_metrics = solParse(code);
-        current_metrics['address'] = fn.replace(/.html$/,'').slice(-42);
         current_metrics['submission_date'] = this.lines[1].match(/\d+-\d+-\d+/)[0];
+        current_metrics['bytecode'] = this.lines.slice(-3, -2)[0].length;
+        current_metrics['ABI'] = this.lines.slice(-1)[0].length;
+        current_metrics['address'] = fn.replace(/.html$/,'').slice(-42);
         this.metrics.push(current_metrics);
     }
 
