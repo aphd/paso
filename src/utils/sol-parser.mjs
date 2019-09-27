@@ -20,7 +20,8 @@ export function solParse(code) {
     let result = {
         version: get_version(ast_s),
         total_lines: ast_j.loc.end.line,
-        comments: code.match(/(\/\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*+\/)|(\/\/.*)/g).length
+        comments: code.match(/(\/\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*+\/)|(\/\/.*)/g).length,
+        blanks: code.match(/((\r\n|\n|\r)$)|(^(\r\n|\n|\r))|^\s*$/gm).length
     };
     for (const metric in metrics) {
         let reg = metrics[metric];
