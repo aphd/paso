@@ -26,8 +26,8 @@ export class Writer {
 
     write_csv() {
         try {
-            const csv = Parse.parse(this.metrics);
-            console.log(csv);
+            const opts = fs.existsSync(this.output) ? {header: false} : {};
+            const csv = Parse.parse(this.metrics, opts);
             fs.appendFile(this.output, csv, (err) => {
                 if (err) throw err;
                 console.log(`The metrics was appended to: ${this.output}!`);
