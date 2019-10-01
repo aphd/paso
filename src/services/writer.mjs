@@ -17,13 +17,23 @@ export class Writer {
 
     setMetrics(fn) {
         this.lines = fs.readFileSync(fn, "utf8").split("\n");
-        const code = this.fix_code(this.lines.slice(3, -4).join('\n'));
-        let current_metrics = solParse(code);
+        let current_metrics = this.get_metrics_from_sol_parse();
         current_metrics['submission_date'] = this.lines[1].match(/\d+-\d+-\d+/)[0];
         current_metrics['bytecode'] = this.lines.slice(-3, -2)[0].length;
         current_metrics['ABI'] = this.lines.slice(-1)[0].length;
         current_metrics['address'] = fn.replace(/.html$/,'').slice(-42);
         this.metrics.push(current_metrics);
+    }
+
+    get_metrics_from_sol_parse() {
+        const code = this.lines.slice(3, -4).join('\n');
+        let current_metrics;
+        try {
+            current_metrics = solParse(code);
+        } catch (error){
+            current_metrics = solParse(this.fix_code(code));
+        }
+        return current_metrics;
     }
 
     write_csv() {
@@ -40,6 +50,8 @@ export class Writer {
     }
 
     fix_code(code)  {
-        return code.replace(/\s+(_)\s*(})$/gm,'$1;$2').replace(/\s+(_)\s*$/gm, '$1;');
+        return code
+            .replace(/\s+(_)\s*(})$/gm,'$1;$2').replace(/\s+(_)\s*$/gm, '$1;')
+            .replace(/^pragma solidity.*$/gm, '');
     }
 }
