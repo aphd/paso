@@ -20,7 +20,7 @@ export function solParse(code) {
     let result = {
         version: get_version(ast_s),
         total_lines: ast_j.loc.end.line,
-        comments: code.match(/(\/\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*+\/)|(\/\/.*)/g).length,
+        comments: get_comments(code),
         blanks: code.match(/((\r\n|\n|\r)$)|(^(\r\n|\n|\r))|^\s*$/gm).length
     };
     for (const metric in metrics) {
@@ -29,6 +29,11 @@ export function solParse(code) {
     }
 
     return result;
+}
+
+const get_comments = code => {
+    const match = code.match(/(\/\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*+\/)|(\/\/.*)/g);
+    return match ? match.length : 0
 }
 
 const get_version = ast_s => {
