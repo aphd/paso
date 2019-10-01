@@ -40,6 +40,6 @@ export class Writer {
     }
 
     fix_code(code)  {
-        return code.replace(/(_)\s*(})$/gm,'$1;$2').replace(/(_)\s*$/gm, '$1;');
+        return code.replace(/\s+(_)\s*(})$/gm,'$1;$2').replace(/\s+(_)\s*$/gm, '$1;');
     }
 }
