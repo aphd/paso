@@ -67,6 +67,20 @@ df[['mapping', 'total_lines', 'interfaces', 'libraries', 'modifiers']] \
 ```
 
 ```python
+import pandas as pd
+
+df = pd.read_csv('src/fixtures/metrics.csv')
+
+df.replace({'submission_date': r'^(201\d).*$'}, {'submission_date': r'\1'}, \
+    regex=True, inplace=True )
+df.loc[df.submission_date > '2016', \
+    ['submission_date', 'mapping', 'total_lines', 'interfaces', 'libraries', 'modifiers']] \
+    .groupby(df['submission_date']).mean() \
+    .apply(lambda x: x / max(x)) \
+    .plot(kind = 'bar', figsize=(40,20)) 
+```
+
+```python
 print(df.describe().transpose().round(1).to_latex())
 ```
 
