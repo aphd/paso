@@ -25,8 +25,11 @@ python
 
 ```python
 import pandas as pd
-df = pd.read_csv('metrics.csv',parse_dates=['submission_date'],  index_col='submission_date')
-df[['mapping', 'total_lines', 'interfaces', 'libraries']].resample('Y').mean().transform(lambda x: x/x.max())
+df = pd.read_csv('src/fixtures/metrics.csv', \
+    parse_dates=['submission_date'],  index_col='submission_date')
+df[['mapping', 'total_lines', 'interfaces', 'libraries']] \
+    .resample('Y').mean() \
+    .transform(lambda x: x/x.max())
 ```
 
 ```python
@@ -34,10 +37,10 @@ import matplotlib.pyplot as plt
 %matplotlib inline
 import pylab as plot
 params = {
-  'legend.fontsize': 45,
-  'xtick.labelsize'     : 35.0,
-  'ytick.labelsize'     : 35.0,
-  'legend.handlelength': 2}
+    'legend.fontsize': 45,
+    'xtick.labelsize'     : 35.0,
+    'ytick.labelsize'     : 35.0,
+    'legend.handlelength': 2}
 plot.rcParams.update(params)
 
 df['2017-01-01':'2019-10-13'] \
