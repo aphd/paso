@@ -51,6 +51,22 @@ df['2017-01-01':'2019-10-13'] \
 ```
 
 ```python
+import pandas as pd
+
+df = pd.read_csv('src/fixtures/metrics.csv', \
+    parse_dates=['submission_date'],  index_col='submission_date')
+
+df.index = df.index.strftime('%Y')
+
+df = df.loc[df.index > '2016']
+
+df[['mapping', 'total_lines', 'interfaces', 'libraries', 'modifiers']] \
+    .groupby(df.index).mean().apply(lambda x: x / max(x)) \
+    .plot(kind = 'bar', figsize=(40,20)) 
+
+```
+
+```python
 print(df.describe().transpose().round(1).to_latex())
 ```
 
