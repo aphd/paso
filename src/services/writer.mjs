@@ -52,6 +52,7 @@ export class Writer {
     fix_code(code)  {
         return code
             .replace(/\s+(_)\s*(})$/gm,'$1;$2').replace(/\s+(_)\s*$/gm, '$1;')
-            .replace(/^pragma solidity.*$/gm, '');
+            .replace(/^pragma solidity.*$/gm, '')
+            .replace(/: =/gm, ':='); // Fix assembly assignments parsing
     }
 }
