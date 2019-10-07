@@ -33,20 +33,20 @@ df[['mapping', 'total_lines', 'interfaces', 'libraries']] \
 ```
 
 ```python
+import pandas as pd
 import matplotlib.pyplot as plt
 %matplotlib inline
 import pylab as plot
-params = {
-    'legend.fontsize': 45,
-    'xtick.labelsize'     : 35.0,
-    'ytick.labelsize'     : 35.0,
-    'legend.handlelength': 2}
-plot.rcParams.update(params)
 
-df['2017-01-01':'2019-10-13'] \
-    [['interfaces', 'libraries','total_lines', 'mapping', 'modifiers', 'bytecode' ]] \
-    .resample('Y').mean().apply(lambda x: x / max(x)) \
-    .plot(kind = 'bar', figsize=(40,20))
+df = pd.read_csv('src/fixtures/metrics.csv', \
+    parse_dates=['submission_date'],  index_col='submission_date')
+df.index = df.index.strftime('%Y')
+df = df.loc[df.index > '2015']
+ax = df[['interfaces', 'libraries', 'contracts']] \
+    .groupby(df.index).mean() \
+    .plot(kind = 'bar', figsize=(40,20)) 
+for p in ax.patches:
+    ax.annotate(str(round(p.get_height(),2)), (p.get_x() * 1.005, p.get_height() * 1.005), fontsize=40)
 
 ```
 
