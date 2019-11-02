@@ -84,6 +84,23 @@ df.loc[df.submission_date > '2016', \
 print(df.describe().transpose().round(1).to_latex())
 ```
 
+**Data analysis - plots**
+
+```python
+import pandas as pd
+df = pd.read_csv('./metrics.csv')
+udf = df.drop_duplicates(subset=['address'])
+%matplotlib inline
+
+udf[udf['version'].str.contains("0.5")==True]['functions'][udf['functions']<100].plot.kde()
+```
+<img src="https://user-images.githubusercontent.com/1194257/68072210-69423300-fd83-11e9-8f92-a0f4763206c0.png">
+
+```python
+df[df['version'].str.contains("0.4")==True].hist(column='functions', bins=20, range=(0, 100))
+```
+<img src="https://user-images.githubusercontent.com/1194257/68072241-d1911480-fd83-11e9-963b-15d30a4eb5fc.png">
+
 ### References 
 1. This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 3. This project is using a [solidity parser](https://github.com/federicobond/solidity-parser-antlr) built on top of a [ANTLR4](https://github.com/antlr/antlr4) grammar.
