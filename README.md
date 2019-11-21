@@ -1,6 +1,7 @@
-# SoPa (SOlidity PArser)
+# PASO (PArser for SOlidity)
 
-A Solidity Parser
+An online Parser for Solidity language  Analysis
+
 
 Requires Node >= v11.3.0
 
