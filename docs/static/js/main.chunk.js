@@ -148,7 +148,7 @@ class App extends react__WEBPACK_IMPORTED_MODULE_0__["Component"] {
           lineNumber: 32
         },
         __self: this
-      }, "SOL-PA"))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_components_form__WEBPACK_IMPORTED_MODULE_3__["default"], {
+      }, "PASO - Solidity Parser"))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_components_form__WEBPACK_IMPORTED_MODULE_3__["default"], {
         onFormSubmit: this.handleFormSubmit,
         __source: {
           fileName: _jsxFileName,
