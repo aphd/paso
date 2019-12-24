@@ -9,7 +9,7 @@ Requires Node >= v11.3.0
 
 **Web tool**
 
-[https://aphd.github.io/paso/](https://aphd.github.io/sopa/)
+[https://aphd.github.io/paso/](https://aphd.github.io/paso/)
 
 **CLI tool**
 
