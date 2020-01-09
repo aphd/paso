@@ -11,6 +11,13 @@ Requires Node >= v11.3.0
 
 [https://aphd.github.io/paso/](https://aphd.github.io/paso/)
 
+**Website deployment**
+
+```bash
+npm install
+npm start
+```
+
 **CLI tool**
 
 ```bash
