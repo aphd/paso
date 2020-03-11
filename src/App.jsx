@@ -5,24 +5,27 @@ import Form from "./components/form";
 import Metrics from "./components/metrics";
 import Error from "./components/error";
 import { solParse } from "./utils/sol-parser";
+import { getContract } from "./utils/getContract";
 
 class App extends Component {
     constructor(props) {
         super(props);
         this.state = {};
     }
-    handleFormSubmit = sc_code => {
-        try {
-            this.setState({
-                metric: solParse(sc_code),
-                errors: null
-            });
-        } catch (error) {
-            this.setState({
-                metric: null,
-                errors: error.errors
-            });
-        }
+    handleFormSubmit = data_input => {
+        getContract(data_input).then(data => {
+            try {
+                this.setState({
+                    metric: solParse(data),
+                    errors: null
+                });
+            } catch (error) {
+                this.setState({
+                    metric: null,
+                    errors: error.errors
+                });
+            }
+        });
     };
     render = () => {
         return (
