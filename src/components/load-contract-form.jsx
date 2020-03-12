@@ -31,9 +31,6 @@ export default class LoadContractForm extends Component {
                                 id="sc_address"
                                 placeholder="Write a contract's address (0x7de6783f26e024ef2db774a0fd02742b11891d3f)"
                             />
-                            <div className="invalid-feedback ml-2" id="invalid">
-                                Please choose a valid address.
-                            </div>
                         </div>
                         <div className="col-6">
                             <button
@@ -49,6 +46,14 @@ export default class LoadContractForm extends Component {
                             >
                                 Upload a Smart Contract from an address
                             </button>
+                        </div>
+                    </div>
+                    <div className="row">
+                        <div className="col pl-10">
+                            <div className="invalid-feedback" id="invalid">
+                                Please choose a valid contract address such as:
+                                0x7de6783f26e024ef2db774a0fd02742b11891d3f
+                            </div>
                         </div>
                     </div>
                 </div>
