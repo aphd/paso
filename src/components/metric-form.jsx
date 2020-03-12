@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { code } from "../fixtures/simple.sol.jsx";
 
-export default class Form extends Component {
+export default class MetricForm extends Component {
     render() {
         return (
             <form>

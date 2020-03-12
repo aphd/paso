@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import "./App.css";
 import { Helmet, HelmetProvider } from "react-helmet-async";
 import MetricForm from "./components/metric-form";
+import LoadContractForm from "./components/load-contract-form";
 import Metrics from "./components/metrics";
 import Error from "./components/error";
 import { solParse } from "./utils/sol-parser";
@@ -27,6 +28,9 @@ class App extends Component {
             }
         });
     };
+    handleLoadContractFormSubmit = address => {
+        console.log(address);
+    };
     render = () => {
         return (
             <main className="container">
@@ -35,6 +39,9 @@ class App extends Component {
                         <title>SOL-PA</title>
                     </Helmet>
                 </HelmetProvider>
+                <LoadContractForm
+                    onFormSubmit={this.handleLoadContractFormSubmit}
+                />
                 <MetricForm onFormSubmit={this.handleFormSubmit} />
                 <Metrics metric={this.state.metric} />
                 <Error errors={this.state.errors} />
