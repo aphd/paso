@@ -4,7 +4,7 @@ export default class MetricForm extends Component {
     render() {
         return (
             <div className="card mt-2">
-                <div class="card-body">
+                <div className="card-body">
                     <div className="form-group">
                         <textarea
                             className="form-control font-weight-light form-control-sm"
