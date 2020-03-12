@@ -8,7 +8,7 @@ export default class Head extends Component {
                 <Helmet>
                     <title>PASO</title>
                 </Helmet>
-                <h4 className="text-center font-weight-lighter font-italic">
+                <h4 className="text-center font-weight-lighter font-italic pt-2">
                     PASO (PArse SOlidity smart contract code)
                 </h4>
             </HelmetProvider>
