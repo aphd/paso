@@ -1,4 +1,4 @@
-(window["webpackJsonpsolpar"] = window["webpackJsonpsolpar"] || []).push([["main"],{
+(this["webpackJsonpPASO"] = this["webpackJsonpPASO"] || []).push([["main"],{
 
 /***/ "./node_modules/css-loader/dist/cjs.js?!./node_modules/postcss-loader/src/index.js?!./src/App.css":
 /*!************************************************************************************************************************!*\
@@ -10,7 +10,6 @@
 exports = module.exports = __webpack_require__(/*! ../node_modules/css-loader/dist/runtime/api.js */ "./node_modules/css-loader/dist/runtime/api.js")(false);
 // Module
 exports.push([module.i, ".App {\n    text-align: center;\n}\n\n.App-logo {\n    animation: App-logo-spin infinite 20s linear;\n    height: 40vmin;\n    pointer-events: none;\n}\n\n.App-header {\n    background-color: #282c34;\n    min-height: 100vh;\n    display: flex;\n    flex-direction: column;\n    align-items: center;\n    justify-content: center;\n    font-size: calc(10px + 2vmin);\n    color: white;\n}\n\n.App-link {\n    color: #61dafb;\n}\n\n@keyframes App-logo-spin {\n    from {\n        transform: rotate(0deg);\n    }\n    to {\n        transform: rotate(360deg);\n    }\n}\n.container {\n    padding-top: 20px;\n}\nth {\n    text-transform: capitalize;\n}\n", ""]);
-
 
 
 /***/ }),
@@ -25,7 +24,6 @@ exports.push([module.i, ".App {\n    text-align: center;\n}\n\n.App-logo {\n    
 exports = module.exports = __webpack_require__(/*! ../node_modules/css-loader/dist/runtime/api.js */ "./node_modules/css-loader/dist/runtime/api.js")(false);
 // Module
 exports.push([module.i, "body {\n  margin: 0;\n  font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", \"Roboto\", \"Oxygen\",\n    \"Ubuntu\", \"Cantarell\", \"Fira Sans\", \"Droid Sans\", \"Helvetica Neue\",\n    sans-serif;\n  -webkit-font-smoothing: antialiased;\n  -moz-osx-font-smoothing: grayscale;\n}\n\ncode {\n  font-family: source-code-pro, Menlo, Monaco, Consolas, \"Courier New\",\n    monospace;\n}\n", ""]);
-
 
 
 /***/ }),
@@ -86,16 +84,18 @@ if (true) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return App; });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _App_css__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./App.css */ "./src/App.css");
 /* harmony import */ var _App_css__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_App_css__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var react_helmet_async__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react-helmet-async */ "./node_modules/react-helmet-async/lib/index.module.js");
-/* harmony import */ var _components_form__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./components/form */ "./src/components/form.jsx");
+/* harmony import */ var _components_metric_form__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./components/metric-form */ "./src/components/metric-form.jsx");
+/* harmony import */ var _components_load_contract_form__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./components/load-contract-form */ "./src/components/load-contract-form.jsx");
 /* harmony import */ var _components_metrics__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./components/metrics */ "./src/components/metrics.jsx");
 /* harmony import */ var _components_error__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./components/error */ "./src/components/error.jsx");
-/* harmony import */ var _utils_sol_parser__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./utils/sol-parser */ "./src/utils/sol-parser.mjs");
-var _jsxFileName = "/Users/antonio/github/aphd/sopa/src/App.jsx";
+/* harmony import */ var _components_head__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./components/head */ "./src/components/head.jsx");
+/* harmony import */ var _utils_sol_parser__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./utils/sol-parser */ "./src/utils/sol-parser.mjs");
+var _jsxFileName = "/Users/antonio/github/aphd/paso/src/App.jsx";
 
 
 
@@ -108,11 +108,10 @@ class App extends react__WEBPACK_IMPORTED_MODULE_0__["Component"] {
   constructor(props) {
     super(props);
 
-    this.handleFormSubmit = sc_code => {
+    this.handleFormSubmit = data_input => {
       try {
         this.setState({
-          metric: Object(_utils_sol_parser__WEBPACK_IMPORTED_MODULE_6__["solParse"])(sc_code),
-          errors: null
+          metric: Object(_utils_sol_parser__WEBPACK_IMPORTED_MODULE_7__["solParse"])(data_input)
         });
       } catch (error) {
         this.setState({
@@ -127,46 +126,40 @@ class App extends react__WEBPACK_IMPORTED_MODULE_0__["Component"] {
         className: "container",
         __source: {
           fileName: _jsxFileName,
-          lineNumber: 29
-        },
-        __self: this
-      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_helmet_async__WEBPACK_IMPORTED_MODULE_2__["HelmetProvider"], {
-        __source: {
-          fileName: _jsxFileName,
-          lineNumber: 30
-        },
-        __self: this
-      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_helmet_async__WEBPACK_IMPORTED_MODULE_2__["Helmet"], {
-        __source: {
-          fileName: _jsxFileName,
           lineNumber: 31
         },
         __self: this
-      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("title", {
+      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_components_head__WEBPACK_IMPORTED_MODULE_6__["default"], {
         __source: {
           fileName: _jsxFileName,
           lineNumber: 32
         },
         __self: this
-      }, "PASO - Solidity Parser"))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_components_form__WEBPACK_IMPORTED_MODULE_3__["default"], {
+      }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_components_load_contract_form__WEBPACK_IMPORTED_MODULE_3__["default"], {
+        __source: {
+          fileName: _jsxFileName,
+          lineNumber: 33
+        },
+        __self: this
+      }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_components_metric_form__WEBPACK_IMPORTED_MODULE_2__["default"], {
         onFormSubmit: this.handleFormSubmit,
         __source: {
           fileName: _jsxFileName,
-          lineNumber: 35
+          lineNumber: 34
         },
         __self: this
       }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_components_metrics__WEBPACK_IMPORTED_MODULE_4__["default"], {
         metric: this.state.metric,
         __source: {
           fileName: _jsxFileName,
-          lineNumber: 36
+          lineNumber: 35
         },
         __self: this
       }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_components_error__WEBPACK_IMPORTED_MODULE_5__["default"], {
         errors: this.state.errors,
         __source: {
           fileName: _jsxFileName,
-          lineNumber: 37
+          lineNumber: 36
         },
         __self: this
       }));
@@ -176,8 +169,6 @@ class App extends react__WEBPACK_IMPORTED_MODULE_0__["Component"] {
   }
 
 }
-
-/* harmony default export */ __webpack_exports__["default"] = (App);
 
 /***/ }),
 
@@ -193,7 +184,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _utils_json2html__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../utils/json2html */ "./src/utils/json2html.js");
-var _jsxFileName = "/Users/antonio/github/aphd/sopa/src/components/error.jsx";
+var _jsxFileName = "/Users/antonio/github/aphd/paso/src/components/error.jsx";
 
 
 
@@ -235,25 +226,200 @@ class Error extends react__WEBPACK_IMPORTED_MODULE_0__["Component"] {
 
 /***/ }),
 
-/***/ "./src/components/form.jsx":
+/***/ "./src/components/head.jsx":
 /*!*********************************!*\
-  !*** ./src/components/form.jsx ***!
+  !*** ./src/components/head.jsx ***!
   \*********************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Head; });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var react_helmet_async__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react-helmet-async */ "./node_modules/react-helmet-async/lib/index.module.js");
+var _jsxFileName = "/Users/antonio/github/aphd/paso/src/components/head.jsx";
+
+
+class Head extends react__WEBPACK_IMPORTED_MODULE_0__["Component"] {
+  constructor(...args) {
+    super(...args);
+
+    this.render = () => {
+      return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_helmet_async__WEBPACK_IMPORTED_MODULE_1__["HelmetProvider"], {
+        __source: {
+          fileName: _jsxFileName,
+          lineNumber: 7
+        },
+        __self: this
+      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_helmet_async__WEBPACK_IMPORTED_MODULE_1__["Helmet"], {
+        __source: {
+          fileName: _jsxFileName,
+          lineNumber: 8
+        },
+        __self: this
+      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("title", {
+        __source: {
+          fileName: _jsxFileName,
+          lineNumber: 9
+        },
+        __self: this
+      }, "PASO")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h4", {
+        class: "text-center font-weight-lighter font-italic",
+        __source: {
+          fileName: _jsxFileName,
+          lineNumber: 11
+        },
+        __self: this
+      }, "PASO (PArse SOlidity smart contract code)"));
+    };
+  }
+
+}
+
+/***/ }),
+
+/***/ "./src/components/load-contract-form.jsx":
+/*!***********************************************!*\
+  !*** ./src/components/load-contract-form.jsx ***!
+  \***********************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return LoadContractForm; });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _fixtures_simple_sol_jsx__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../fixtures/simple.sol.jsx */ "./src/fixtures/simple.sol.jsx");
-var _jsxFileName = "/Users/antonio/github/aphd/sopa/src/components/form.jsx";
+/* harmony import */ var _utils_getContract__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../utils/getContract */ "./src/utils/getContract.js");
+var _jsxFileName = "/Users/antonio/github/aphd/paso/src/components/load-contract-form.jsx";
 
 
 
-class Form extends react__WEBPACK_IMPORTED_MODULE_0__["Component"] {
+class LoadContractForm extends react__WEBPACK_IMPORTED_MODULE_0__["Component"] {
+  constructor(...args) {
+    super(...args);
+
+    this.handleLoadSCFormSubmit = address => {
+      Object(_utils_getContract__WEBPACK_IMPORTED_MODULE_2__["getContractFromAddress"])(address).then(data => {
+        try {
+          document.getElementById("sc_code").value = data;
+        } catch (error) {
+          console.log("error:", error);
+        }
+      });
+    };
+  }
+
+  componentDidMount() {
+    document.getElementById("sc_code").value = _fixtures_simple_sol_jsx__WEBPACK_IMPORTED_MODULE_1__["code"];
+  }
+
+  checkAddress(addr) {
+    document.getElementById("invalid").classList.remove("d-block");
+    !!addr.match(/^0x[a-zA-Z0-9]{40}$/) || document.getElementById("invalid").classList.add("d-block");
+  }
+
   render() {
-    return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("form", {
+    return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+      className: "card ",
+      __source: {
+        fileName: _jsxFileName,
+        lineNumber: 25
+      },
+      __self: this
+    }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+      className: "card-body",
+      __source: {
+        fileName: _jsxFileName,
+        lineNumber: 26
+      },
+      __self: this
+    }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+      className: "row",
+      __source: {
+        fileName: _jsxFileName,
+        lineNumber: 27
+      },
+      __self: this
+    }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+      className: "col-6",
+      __source: {
+        fileName: _jsxFileName,
+        lineNumber: 28
+      },
+      __self: this
+    }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("input", {
+      className: "form-control form-control-sm font-weight-light",
+      id: "sc_address",
+      placeholder: "Write a contract's address (0x7de6783f26e024ef2db774a0fd02742b11891d3f)",
+      __source: {
+        fileName: _jsxFileName,
+        lineNumber: 29
+      },
+      __self: this
+    }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+      className: "invalid-feedback ml-2",
+      id: "invalid",
+      __source: {
+        fileName: _jsxFileName,
+        lineNumber: 34
+      },
+      __self: this
+    }, "Please choose a valid address.")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+      className: "col-6",
+      __source: {
+        fileName: _jsxFileName,
+        lineNumber: 38
+      },
+      __self: this
+    }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("button", {
+      type: "button",
+      className: "btn btn-sm btn-secondary btn-block",
+      onClick: () => {
+        const addr = document.getElementById("sc_address").value;
+        this.checkAddress(addr);
+        this.handleLoadSCFormSubmit(addr);
+      },
+      __source: {
+        fileName: _jsxFileName,
+        lineNumber: 39
+      },
+      __self: this
+    }, "Upload a Smart Contract from an address")))));
+  }
+
+}
+
+/***/ }),
+
+/***/ "./src/components/metric-form.jsx":
+/*!****************************************!*\
+  !*** ./src/components/metric-form.jsx ***!
+  \****************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return MetricForm; });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+var _jsxFileName = "/Users/antonio/github/aphd/paso/src/components/metric-form.jsx";
+
+class MetricForm extends react__WEBPACK_IMPORTED_MODULE_0__["Component"] {
+  render() {
+    return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+      className: "card mt-2",
+      __source: {
+        fileName: _jsxFileName,
+        lineNumber: 6
+      },
+      __self: this
+    }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+      class: "card-body",
       __source: {
         fileName: _jsxFileName,
         lineNumber: 7
@@ -267,10 +433,9 @@ class Form extends react__WEBPACK_IMPORTED_MODULE_0__["Component"] {
       },
       __self: this
     }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("textarea", {
-      className: "form-control",
+      className: "form-control font-weight-light form-control-sm",
       id: "sc_code",
       rows: "10",
-      defaultValue: _fixtures_simple_sol_jsx__WEBPACK_IMPORTED_MODULE_1__["code"],
       __source: {
         fileName: _jsxFileName,
         lineNumber: 9
@@ -278,19 +443,17 @@ class Form extends react__WEBPACK_IMPORTED_MODULE_0__["Component"] {
       __self: this
     })), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("button", {
       type: "button",
-      className: "btn btn-primary mb-2",
+      className: "btn btn-info btn-block",
       onClick: () => this.props.onFormSubmit(document.getElementById("sc_code").value),
       __source: {
         fileName: _jsxFileName,
-        lineNumber: 16
+        lineNumber: 15
       },
       __self: this
-    }, "Submit"));
+    }, "Compute the Solidity Metrics")));
   }
 
 }
-
-/* harmony default export */ __webpack_exports__["default"] = (Form);
 
 /***/ }),
 
@@ -306,7 +469,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _utils_json2html__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../utils/json2html */ "./src/utils/json2html.js");
-var _jsxFileName = "/Users/antonio/github/aphd/sopa/src/components/metrics.jsx";
+var _jsxFileName = "/Users/antonio/github/aphd/paso/src/components/metrics.jsx";
 
 
 
@@ -331,11 +494,10 @@ class Metrics extends react__WEBPACK_IMPORTED_MODULE_0__["Component"] {
           __self: this
         }, Object(_utils_json2html__WEBPACK_IMPORTED_MODULE_1__["json2html"])(this.props.metric)));
       } catch (error) {
-        console.log(error);
         return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, {
           __source: {
             fileName: _jsxFileName,
-            lineNumber: 14
+            lineNumber: 13
           },
           __self: this
         });
@@ -359,7 +521,26 @@ class Metrics extends react__WEBPACK_IMPORTED_MODULE_0__["Component"] {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "code", function() { return code; });
-const code = "pragma solidity ^0.4.10;\n\ncontract SimpleAuction {\n    event HighestBidIncreased(address bidder, uint amount); // Event\n    address public minter;\n    mapping (address => uint) public balances;\n    modifier onlySeller() { }\n      function bid() public payable {\n        emit HighestBidIncreased(msg.sender, msg.value); // Triggering event\n    }\n}\n\ninterface Token {\n  function transfer(address recipient, uint amount) public;\n}\n\nlibrary Set {\n}";
+const code = `/***** [You can write, edit or copy and paste a smart contract code here] *******/
+
+pragma solidity ^0.4.10;
+
+contract SimpleAuction {
+    event HighestBidIncreased(address bidder, uint amount); // Event
+    address public minter;
+    mapping (address => uint) public balances;
+    modifier onlySeller() { }
+      function bid() public payable {
+        emit HighestBidIncreased(msg.sender, msg.value); // Triggering event
+    }
+}
+
+interface Token {
+  function transfer(address recipient, uint amount) public;
+}
+
+library Set {
+}`;
 
 /***/ }),
 
@@ -429,7 +610,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var bootstrap_dist_css_bootstrap_min_css__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(bootstrap_dist_css_bootstrap_min_css__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var _App_jsx__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./App.jsx */ "./src/App.jsx");
 /* harmony import */ var _serviceWorker__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./serviceWorker */ "./src/serviceWorker.js");
-var _jsxFileName = "/Users/antonio/github/aphd/sopa/src/index.js";
+var _jsxFileName = "/Users/antonio/github/aphd/paso/src/index.js";
 
 
 
@@ -547,6 +728,23 @@ function unregister() {
 
 /***/ }),
 
+/***/ "./src/utils/getContract.js":
+/*!**********************************!*\
+  !*** ./src/utils/getContract.js ***!
+  \**********************************/
+/*! exports provided: getContractFromAddress */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getContractFromAddress", function() { return getContractFromAddress; });
+function getContractFromAddress(address) {
+  let url = `https://api.etherscan.io/api?module=contract&action=getsourcecode&address=${address}&apikey=E5KM3HIGE2PV4RR763IQSXGZIV6UV638P2`;
+  return fetch(url).then(response => response.json()).then(data => data.result[0].SourceCode);
+}
+
+/***/ }),
+
 /***/ "./src/utils/json2html.js":
 /*!********************************!*\
   !*** ./src/utils/json2html.js ***!
@@ -559,7 +757,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "json2html", function() { return json2html; });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-var _jsxFileName = "/Users/antonio/github/aphd/sopa/src/utils/json2html.js";
+var _jsxFileName = "/Users/antonio/github/aphd/paso/src/utils/json2html.js";
 
 function json2html(types) {
   const items = [];
@@ -623,9 +821,12 @@ function solParse(code) {
     libraries: '"kind":"library"',
     interfaces: '"kind":"interface"'
   };
-  let result = {};
-  result.version = get_version(ast_s);
-  result.total_lines = ast_j.loc.end.line;
+  let result = {
+    version: get_version(ast_s),
+    total_lines: ast_j.loc.end.line,
+    comments: get_comments(code),
+    blanks: code.match(/((\r\n|\n|\r)$)|(^(\r\n|\n|\r))|^\s*$/gm).length
+  };
 
   for (const metric in metrics) {
     let reg = metrics[metric];
@@ -635,6 +836,11 @@ function solParse(code) {
   return result;
 }
 
+const get_comments = code => {
+  const match = code.match(/(\/\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*+\/)|(\/\/.*)/g);
+  return match ? match.length : 0;
+};
+
 const get_version = ast_s => {
   let version = ast_s.match(/"name":"solidity","value":"\^(\d{1,}.\d{1,}.\d{1,})/);
   return version ? version[1] : "Not defined";
@@ -642,18 +848,19 @@ const get_version = ast_s => {
 
 /***/ }),
 
-/***/ 0:
-/*!**********************************************************************************!*\
-  !*** multi ./node_modules/react-dev-utils/webpackHotDevClient.js ./src/index.js ***!
-  \**********************************************************************************/
+/***/ 1:
+/*!**************************************************************************************************************!*\
+  !*** multi (webpack)/hot/dev-server.js ./node_modules/react-dev-utils/webpackHotDevClient.js ./src/index.js ***!
+  \**************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(/*! /Users/antonio/github/aphd/sopa/node_modules/react-dev-utils/webpackHotDevClient.js */"./node_modules/react-dev-utils/webpackHotDevClient.js");
-module.exports = __webpack_require__(/*! /Users/antonio/github/aphd/sopa/src/index.js */"./src/index.js");
+__webpack_require__(/*! /Users/antonio/github/aphd/paso/node_modules/webpack/hot/dev-server.js */"./node_modules/webpack/hot/dev-server.js");
+__webpack_require__(/*! /Users/antonio/github/aphd/paso/node_modules/react-dev-utils/webpackHotDevClient.js */"./node_modules/react-dev-utils/webpackHotDevClient.js");
+module.exports = __webpack_require__(/*! /Users/antonio/github/aphd/paso/src/index.js */"./src/index.js");
 
 
 /***/ })
 
-},[[0,"runtime~main",0]]]);
+},[[1,"runtime-main",1]]]);
 //# sourceMappingURL=main.chunk.js.map

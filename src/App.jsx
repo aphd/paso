@@ -1,21 +1,22 @@
 import React, { Component } from "react";
 import "./App.css";
-import { Helmet, HelmetProvider } from "react-helmet-async";
-import Form from "./components/form";
+import MetricForm from "./components/metric-form";
+import LoadContractForm from "./components/load-contract-form";
 import Metrics from "./components/metrics";
 import Error from "./components/error";
+import Head from "./components/head";
 import { solParse } from "./utils/sol-parser";
 
-class App extends Component {
+export default class App extends Component {
     constructor(props) {
         super(props);
         this.state = {};
     }
-    handleFormSubmit = sc_code => {
+
+    handleFormSubmit = data_input => {
         try {
             this.setState({
-                metric: solParse(sc_code),
-                errors: null
+                metric: solParse(data_input)
             });
         } catch (error) {
             this.setState({
@@ -24,20 +25,16 @@ class App extends Component {
             });
         }
     };
+
     render = () => {
         return (
             <main className="container">
-                <HelmetProvider>
-                    <Helmet>
-                        <title>SOL-PA</title>
-                    </Helmet>
-                </HelmetProvider>
-                <Form onFormSubmit={this.handleFormSubmit} />
+                <Head />
+                <LoadContractForm />
+                <MetricForm onFormSubmit={this.handleFormSubmit} />
                 <Metrics metric={this.state.metric} />
                 <Error errors={this.state.errors} />
             </main>
         );
     };
 }
-
-export default App;

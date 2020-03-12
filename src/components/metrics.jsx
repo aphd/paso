@@ -10,7 +10,6 @@ class Metrics extends Component {
                 </table>
             );
         } catch (error) {
-            console.log(error);
             return <React.Fragment></React.Fragment>;
         }
     };

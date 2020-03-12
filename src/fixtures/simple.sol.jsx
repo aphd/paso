@@ -1,4 +1,6 @@
-export const code = `pragma solidity ^0.4.10;
+export const code = `/***** [You can write, edit or copy and paste a smart contract code here] *******/
+
+pragma solidity ^0.4.10;
 
 contract SimpleAuction {
     event HighestBidIncreased(address bidder, uint amount); // Event
