@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { code } from "../fixtures/simple.sol.jsx";
 
-class Form extends Component {
+export default class Form extends Component {
     render() {
         return (
             <form>
@@ -28,5 +28,3 @@ class Form extends Component {
         );
     }
 }
-
-export default Form;

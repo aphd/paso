@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import "./App.css";
 import { Helmet, HelmetProvider } from "react-helmet-async";
-import Form from "./components/form";
+import MetricForm from "./components/metric-form";
 import Metrics from "./components/metrics";
 import Error from "./components/error";
 import { solParse } from "./utils/sol-parser";
@@ -35,7 +35,7 @@ class App extends Component {
                         <title>SOL-PA</title>
                     </Helmet>
                 </HelmetProvider>
-                <Form onFormSubmit={this.handleFormSubmit} />
+                <MetricForm onFormSubmit={this.handleFormSubmit} />
                 <Metrics metric={this.state.metric} />
                 <Error errors={this.state.errors} />
             </main>
