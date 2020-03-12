@@ -1,19 +1,5 @@
 (this["webpackJsonpPASO"] = this["webpackJsonpPASO"] || []).push([["main"],{
 
-/***/ "./node_modules/css-loader/dist/cjs.js?!./node_modules/postcss-loader/src/index.js?!./src/App.css":
-/*!************************************************************************************************************************!*\
-  !*** ./node_modules/css-loader/dist/cjs.js??ref--6-oneOf-3-1!./node_modules/postcss-loader/src??postcss!./src/App.css ***!
-  \************************************************************************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-exports = module.exports = __webpack_require__(/*! ../node_modules/css-loader/dist/runtime/api.js */ "./node_modules/css-loader/dist/runtime/api.js")(false);
-// Module
-exports.push([module.i, ".App {\n    text-align: center;\n}\n\n.App-logo {\n    animation: App-logo-spin infinite 20s linear;\n    height: 40vmin;\n    pointer-events: none;\n}\n\n.App-header {\n    background-color: #282c34;\n    min-height: 100vh;\n    display: flex;\n    flex-direction: column;\n    align-items: center;\n    justify-content: center;\n    font-size: calc(10px + 2vmin);\n    color: white;\n}\n\n.App-link {\n    color: #61dafb;\n}\n\n@keyframes App-logo-spin {\n    from {\n        transform: rotate(0deg);\n    }\n    to {\n        transform: rotate(360deg);\n    }\n}\n.container {\n    padding-top: 20px;\n}\nth {\n    text-transform: capitalize;\n}\n", ""]);
-
-
-/***/ }),
-
 /***/ "./node_modules/css-loader/dist/cjs.js?!./node_modules/postcss-loader/src/index.js?!./src/index.css":
 /*!**************************************************************************************************************************!*\
   !*** ./node_modules/css-loader/dist/cjs.js??ref--6-oneOf-3-1!./node_modules/postcss-loader/src??postcss!./src/index.css ***!
@@ -21,57 +7,14 @@ exports.push([module.i, ".App {\n    text-align: center;\n}\n\n.App-logo {\n    
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__(/*! ../node_modules/css-loader/dist/runtime/api.js */ "./node_modules/css-loader/dist/runtime/api.js")(false);
+// Imports
+var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../node_modules/css-loader/dist/runtime/api.js */ "./node_modules/css-loader/dist/runtime/api.js");
+exports = ___CSS_LOADER_API_IMPORT___(false);
 // Module
 exports.push([module.i, "body {\n  margin: 0;\n  font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", \"Roboto\", \"Oxygen\",\n    \"Ubuntu\", \"Cantarell\", \"Fira Sans\", \"Droid Sans\", \"Helvetica Neue\",\n    sans-serif;\n  -webkit-font-smoothing: antialiased;\n  -moz-osx-font-smoothing: grayscale;\n}\n\ncode {\n  font-family: source-code-pro, Menlo, Monaco, Consolas, \"Courier New\",\n    monospace;\n}\n", ""]);
+// Exports
+module.exports = exports;
 
-
-/***/ }),
-
-/***/ "./src/App.css":
-/*!*********************!*\
-  !*** ./src/App.css ***!
-  \*********************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-var content = __webpack_require__(/*! !../node_modules/css-loader/dist/cjs.js??ref--6-oneOf-3-1!../node_modules/postcss-loader/src??postcss!./App.css */ "./node_modules/css-loader/dist/cjs.js?!./node_modules/postcss-loader/src/index.js?!./src/App.css");
-
-if (typeof content === 'string') {
-  content = [[module.i, content, '']];
-}
-
-var options = {}
-
-options.insert = "head";
-options.singleton = false;
-
-var update = __webpack_require__(/*! ../node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js */ "./node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js")(content, options);
-
-if (content.locals) {
-  module.exports = content.locals;
-}
-
-if (true) {
-  if (!content.locals) {
-    module.hot.accept(
-      /*! !../node_modules/css-loader/dist/cjs.js??ref--6-oneOf-3-1!../node_modules/postcss-loader/src??postcss!./App.css */ "./node_modules/css-loader/dist/cjs.js?!./node_modules/postcss-loader/src/index.js?!./src/App.css",
-      function () {
-        var newContent = __webpack_require__(/*! !../node_modules/css-loader/dist/cjs.js??ref--6-oneOf-3-1!../node_modules/postcss-loader/src??postcss!./App.css */ "./node_modules/css-loader/dist/cjs.js?!./node_modules/postcss-loader/src/index.js?!./src/App.css");
-
-        if (typeof newContent === 'string') {
-          newContent = [[module.i, newContent, '']];
-        }
-        
-        update(newContent);
-      }
-    )
-  }
-
-  module.hot.dispose(function() { 
-    update();
-  });
-}
 
 /***/ }),
 
@@ -87,16 +30,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return App; });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _App_css__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./App.css */ "./src/App.css");
-/* harmony import */ var _App_css__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_App_css__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _components_metric_form__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./components/metric-form */ "./src/components/metric-form.jsx");
-/* harmony import */ var _components_load_contract_form__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./components/load-contract-form */ "./src/components/load-contract-form.jsx");
-/* harmony import */ var _components_metrics__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./components/metrics */ "./src/components/metrics.jsx");
-/* harmony import */ var _components_error__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./components/error */ "./src/components/error.jsx");
-/* harmony import */ var _components_head__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./components/head */ "./src/components/head.jsx");
-/* harmony import */ var _utils_sol_parser__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./utils/sol-parser */ "./src/utils/sol-parser.mjs");
+/* harmony import */ var _components_metric_form__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./components/metric-form */ "./src/components/metric-form.jsx");
+/* harmony import */ var _components_load_contract_form__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./components/load-contract-form */ "./src/components/load-contract-form.jsx");
+/* harmony import */ var _components_metrics__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./components/metrics */ "./src/components/metrics.jsx");
+/* harmony import */ var _components_error__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./components/error */ "./src/components/error.jsx");
+/* harmony import */ var _components_head__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./components/head */ "./src/components/head.jsx");
+/* harmony import */ var _utils_sol_parser__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./utils/sol-parser */ "./src/utils/sol-parser.mjs");
 var _jsxFileName = "/Users/antonio/github/aphd/paso/src/App.jsx";
-
 
 
 
@@ -111,7 +51,7 @@ class App extends react__WEBPACK_IMPORTED_MODULE_0__["Component"] {
     this.handleFormSubmit = data_input => {
       try {
         this.setState({
-          metric: Object(_utils_sol_parser__WEBPACK_IMPORTED_MODULE_7__["solParse"])(data_input)
+          metric: Object(_utils_sol_parser__WEBPACK_IMPORTED_MODULE_6__["solParse"])(data_input)
         });
       } catch (error) {
         this.setState({
@@ -126,40 +66,40 @@ class App extends react__WEBPACK_IMPORTED_MODULE_0__["Component"] {
         className: "container",
         __source: {
           fileName: _jsxFileName,
+          lineNumber: 30
+        },
+        __self: this
+      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_components_head__WEBPACK_IMPORTED_MODULE_5__["default"], {
+        __source: {
+          fileName: _jsxFileName,
           lineNumber: 31
         },
         __self: this
-      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_components_head__WEBPACK_IMPORTED_MODULE_6__["default"], {
+      }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_components_load_contract_form__WEBPACK_IMPORTED_MODULE_2__["default"], {
         __source: {
           fileName: _jsxFileName,
           lineNumber: 32
         },
         __self: this
-      }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_components_load_contract_form__WEBPACK_IMPORTED_MODULE_3__["default"], {
+      }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_components_metric_form__WEBPACK_IMPORTED_MODULE_1__["default"], {
+        onFormSubmit: this.handleFormSubmit,
         __source: {
           fileName: _jsxFileName,
           lineNumber: 33
         },
         __self: this
-      }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_components_metric_form__WEBPACK_IMPORTED_MODULE_2__["default"], {
-        onFormSubmit: this.handleFormSubmit,
+      }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_components_metrics__WEBPACK_IMPORTED_MODULE_3__["default"], {
+        metric: this.state.metric,
         __source: {
           fileName: _jsxFileName,
           lineNumber: 34
         },
         __self: this
-      }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_components_metrics__WEBPACK_IMPORTED_MODULE_4__["default"], {
-        metric: this.state.metric,
-        __source: {
-          fileName: _jsxFileName,
-          lineNumber: 35
-        },
-        __self: this
-      }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_components_error__WEBPACK_IMPORTED_MODULE_5__["default"], {
+      }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_components_error__WEBPACK_IMPORTED_MODULE_4__["default"], {
         errors: this.state.errors,
         __source: {
           fileName: _jsxFileName,
-          lineNumber: 36
+          lineNumber: 35
         },
         __self: this
       }));
@@ -266,7 +206,7 @@ class Head extends react__WEBPACK_IMPORTED_MODULE_0__["Component"] {
         },
         __self: this
       }, "PASO")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h4", {
-        className: "text-center font-weight-lighter font-italic",
+        className: "text-center font-weight-lighter font-italic pt-2",
         __source: {
           fileName: _jsxFileName,
           lineNumber: 11
@@ -565,42 +505,50 @@ library Set {
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
+
 var content = __webpack_require__(/*! !../node_modules/css-loader/dist/cjs.js??ref--6-oneOf-3-1!../node_modules/postcss-loader/src??postcss!./index.css */ "./node_modules/css-loader/dist/cjs.js?!./node_modules/postcss-loader/src/index.js?!./src/index.css");
 
-if (typeof content === 'string') {
-  content = [[module.i, content, '']];
-}
+if(typeof content === 'string') content = [[module.i, content, '']];
 
-var options = {}
+var transform;
+var insertInto;
 
-options.insert = "head";
-options.singleton = false;
 
-var update = __webpack_require__(/*! ../node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js */ "./node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js")(content, options);
 
-if (content.locals) {
-  module.exports = content.locals;
-}
+var options = {"hmr":true}
 
-if (true) {
-  if (!content.locals) {
-    module.hot.accept(
-      /*! !../node_modules/css-loader/dist/cjs.js??ref--6-oneOf-3-1!../node_modules/postcss-loader/src??postcss!./index.css */ "./node_modules/css-loader/dist/cjs.js?!./node_modules/postcss-loader/src/index.js?!./src/index.css",
-      function () {
-        var newContent = __webpack_require__(/*! !../node_modules/css-loader/dist/cjs.js??ref--6-oneOf-3-1!../node_modules/postcss-loader/src??postcss!./index.css */ "./node_modules/css-loader/dist/cjs.js?!./node_modules/postcss-loader/src/index.js?!./src/index.css");
+options.transform = transform
+options.insertInto = undefined;
 
-        if (typeof newContent === 'string') {
-          newContent = [[module.i, newContent, '']];
-        }
-        
-        update(newContent);
-      }
-    )
-  }
+var update = __webpack_require__(/*! ../node_modules/style-loader/lib/addStyles.js */ "./node_modules/style-loader/lib/addStyles.js")(content, options);
 
-  module.hot.dispose(function() { 
-    update();
-  });
+if(content.locals) module.exports = content.locals;
+
+if(true) {
+	module.hot.accept(/*! !../node_modules/css-loader/dist/cjs.js??ref--6-oneOf-3-1!../node_modules/postcss-loader/src??postcss!./index.css */ "./node_modules/css-loader/dist/cjs.js?!./node_modules/postcss-loader/src/index.js?!./src/index.css", function() {
+		var newContent = __webpack_require__(/*! !../node_modules/css-loader/dist/cjs.js??ref--6-oneOf-3-1!../node_modules/postcss-loader/src??postcss!./index.css */ "./node_modules/css-loader/dist/cjs.js?!./node_modules/postcss-loader/src/index.js?!./src/index.css");
+
+		if(typeof newContent === 'string') newContent = [[module.i, newContent, '']];
+
+		var locals = (function(a, b) {
+			var key, idx = 0;
+
+			for(key in a) {
+				if(!b || a[key] !== b[key]) return false;
+				idx++;
+			}
+
+			for(key in b) idx--;
+
+			return idx === 0;
+		}(content.locals, newContent.locals));
+
+		if(!locals) throw new Error('Aborting CSS HMR due to changed css-modules locals.');
+
+		update(newContent);
+	});
+
+	module.hot.dispose(function() { update(); });
 }
 
 /***/ }),
@@ -876,5 +824,5 @@ module.exports = __webpack_require__(/*! /Users/antonio/github/aphd/paso/src/ind
 
 /***/ })
 
-},[[1,"runtime-main",1]]]);
+},[[1,"runtime-main",0]]]);
 //# sourceMappingURL=main.chunk.js.map
