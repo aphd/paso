@@ -1,4 +1,4 @@
-export const code = `// ***** [You can write, edit or copy and paste a smart contract's code here] *******
+export const code = `/***** [You can write, edit or copy and paste a smart contract code here] *******/
 
 pragma solidity ^0.4.10;
 
