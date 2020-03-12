@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import "./App.css";
 import MetricForm from "./components/metric-form";
 import LoadContractForm from "./components/load-contract-form";
 import Metrics from "./components/metrics";
