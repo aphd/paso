@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import { code } from "../fixtures/simple.sol.jsx";
 
 export default class MetricForm extends Component {
     render() {
@@ -10,7 +9,6 @@ export default class MetricForm extends Component {
                         className="form-control"
                         id="sc_code"
                         rows="10"
-                        defaultValue={code}
                     ></textarea>
                 </div>
                 <button
