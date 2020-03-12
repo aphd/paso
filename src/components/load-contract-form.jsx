@@ -29,7 +29,7 @@ export default class LoadContractForm extends Component {
                             <input
                                 className="form-control form-control-sm"
                                 id="sc_address"
-                                defaultValue="0x7de6783f26e024ef2db774a0fd02742b11891d3f"
+                                defaultValue="Write a smart contract's address"
                             />
                             <div className="invalid-feedback ml-2" id="invalid">
                                 Please choose a valid address.
@@ -47,7 +47,7 @@ export default class LoadContractForm extends Component {
                                     this.handleLoadSCFormSubmit(addr);
                                 }}
                             >
-                                Load a Smart Contract from an address
+                                Upload a Smart Contract from an address
                             </button>
                         </div>
                     </div>

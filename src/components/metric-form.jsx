@@ -7,7 +7,7 @@ export default class MetricForm extends Component {
                 <div class="card-body">
                     <div className="form-group">
                         <textarea
-                            className="form-control"
+                            className="form-control font-weight-light form-control-sm"
                             id="sc_code"
                             rows="10"
                         ></textarea>
