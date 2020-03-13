@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { json2html } from "../utils/json2html";
+import { json2html } from "../../utils/json2html";
 
 class Error extends Component {
     render = () => {
@@ -10,7 +10,7 @@ class Error extends Component {
                 </table>
             );
         } catch {
-            return <React.Fragment>Error</React.Fragment>;
+            return <React.Fragment></React.Fragment>;
         }
     };
 }

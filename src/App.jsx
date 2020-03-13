@@ -1,39 +1,18 @@
 import React, { Component } from "react";
-import MetricForm from "./components/metric-form";
-import LoadContractForm from "./components/load-contract-form";
-import Metrics from "./components/metrics";
-import Error from "./components/error";
-import Head from "./components/head";
-import { solParse } from "./utils/sol-parser";
+import PasoGui from "./components/paso-gui/";
+import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 
 export default class App extends Component {
-    constructor(props) {
-        super(props);
-        this.state = {};
-    }
-
-    handleFormSubmit = data_input => {
-        try {
-            this.setState({
-                metric: solParse(data_input)
-            });
-        } catch (error) {
-            this.setState({
-                metric: null,
-                errors: error.errors
-            });
-        }
-    };
-
-    render = () => {
+    render() {
         return (
-            <main className="container">
-                <Head />
-                <LoadContractForm />
-                <MetricForm onFormSubmit={this.handleFormSubmit} />
-                <Metrics metric={this.state.metric} />
-                <Error errors={this.state.errors} />
-            </main>
+            <Router>
+                <div className="container">
+                    <Switch>
+                        <Route path="/" component={PasoGui} exact />
+                        {/* <Route component={Error} /> */}
+                    </Switch>
+                </div>
+            </Router>
         );
-    };
+    }
 }
