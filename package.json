@@ -10,6 +10,7 @@
         "react": "^16.9.0",
         "react-dom": "^16.9.0",
         "react-helmet-async": "^1.0.3",
+        "react-router-dom": "^5.1.2",
         "react-scripts": "^3.3.0",
         "react-scripts-plugin-no-minify": "^0.4.0",
         "solidity-parser-diligence": "^0.4.18",
