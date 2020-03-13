@@ -1,20 +1,19 @@
 export const code = `/***** [You can write, edit or copy and paste a smart contract code here] *******/
 
-pragma solidity ^0.4.10;
+pragma solidity ^0.6.1;
 
-contract SimpleAuction {
-    event HighestBidIncreased(address bidder, uint amount); // Event
-    address public minter;
-    mapping (address => uint) public balances;
-    modifier onlySeller() { }
-      function bid() public payable {
-        emit HighestBidIncreased(msg.sender, msg.value); // Triggering event
+contract CharitySplitterFactory {
+    mapping (address => CharitySplitter) public charitySplitters;
+    uint public errorCount;
+    event ErrorHandled(string reason);
+    event ErrorNotHandled(bytes reason);
+    function createCharitySplitter(address charityOwner) public {
+        try new CharitySplitter(charityOwner)
+            returns (CharitySplitter newCharitySplitter) 
+        {
+            charitySplitters[msg.sender] = newCharitySplitter;
+        } catch {
+            errorCount++;
+        }
     }
-}
-
-interface Token {
-  function transfer(address recipient, uint amount) public;
-}
-
-library Set {
 }`;

@@ -1,4 +1,4 @@
-(this["webpackJsonpPASO"] = this["webpackJsonpPASO"] || []).push([[0],{
+(this["webpackJsonpPASO"] = this["webpackJsonpPASO"] || []).push([[1],{
 
 /***/ "./node_modules/ansi-styles/index.js":
 /*!*******************************************!*\
@@ -3165,335 +3165,6 @@ module.exports = shouldUseNative() ? Object.assign : function (target, source) {
 
 /***/ }),
 
-/***/ "./node_modules/path-browserify/index.js":
-/*!***********************************************!*\
-  !*** ./node_modules/path-browserify/index.js ***!
-  \***********************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-/* WEBPACK VAR INJECTION */(function(process) {// .dirname, .basename, and .extname methods are extracted from Node.js v8.11.1,
-// backported and transplited with Babel, with backwards-compat fixes
-// Copyright Joyent, Inc. and other Node contributors.
-//
-// Permission is hereby granted, free of charge, to any person obtaining a
-// copy of this software and associated documentation files (the
-// "Software"), to deal in the Software without restriction, including
-// without limitation the rights to use, copy, modify, merge, publish,
-// distribute, sublicense, and/or sell copies of the Software, and to permit
-// persons to whom the Software is furnished to do so, subject to the
-// following conditions:
-//
-// The above copyright notice and this permission notice shall be included
-// in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
-// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
-// USE OR OTHER DEALINGS IN THE SOFTWARE.
-// resolves . and .. elements in a path array with directory names there
-// must be no slashes, empty elements, or device names (c:\) in the array
-// (so also no leading and trailing slashes - it does not distinguish
-// relative and absolute paths)
-function normalizeArray(parts, allowAboveRoot) {
-  // if the path tries to go above the root, `up` ends up > 0
-  var up = 0;
-
-  for (var i = parts.length - 1; i >= 0; i--) {
-    var last = parts[i];
-
-    if (last === '.') {
-      parts.splice(i, 1);
-    } else if (last === '..') {
-      parts.splice(i, 1);
-      up++;
-    } else if (up) {
-      parts.splice(i, 1);
-      up--;
-    }
-  } // if the path is allowed to go above the root, restore leading ..s
-
-
-  if (allowAboveRoot) {
-    for (; up--; up) {
-      parts.unshift('..');
-    }
-  }
-
-  return parts;
-} // path.resolve([from ...], to)
-// posix version
-
-
-exports.resolve = function () {
-  var resolvedPath = '',
-      resolvedAbsolute = false;
-
-  for (var i = arguments.length - 1; i >= -1 && !resolvedAbsolute; i--) {
-    var path = i >= 0 ? arguments[i] : process.cwd(); // Skip empty and invalid entries
-
-    if (typeof path !== 'string') {
-      throw new TypeError('Arguments to path.resolve must be strings');
-    } else if (!path) {
-      continue;
-    }
-
-    resolvedPath = path + '/' + resolvedPath;
-    resolvedAbsolute = path.charAt(0) === '/';
-  } // At this point the path should be resolved to a full absolute path, but
-  // handle relative paths to be safe (might happen when process.cwd() fails)
-  // Normalize the path
-
-
-  resolvedPath = normalizeArray(filter(resolvedPath.split('/'), function (p) {
-    return !!p;
-  }), !resolvedAbsolute).join('/');
-  return (resolvedAbsolute ? '/' : '') + resolvedPath || '.';
-}; // path.normalize(path)
-// posix version
-
-
-exports.normalize = function (path) {
-  var isAbsolute = exports.isAbsolute(path),
-      trailingSlash = substr(path, -1) === '/'; // Normalize the path
-
-  path = normalizeArray(filter(path.split('/'), function (p) {
-    return !!p;
-  }), !isAbsolute).join('/');
-
-  if (!path && !isAbsolute) {
-    path = '.';
-  }
-
-  if (path && trailingSlash) {
-    path += '/';
-  }
-
-  return (isAbsolute ? '/' : '') + path;
-}; // posix version
-
-
-exports.isAbsolute = function (path) {
-  return path.charAt(0) === '/';
-}; // posix version
-
-
-exports.join = function () {
-  var paths = Array.prototype.slice.call(arguments, 0);
-  return exports.normalize(filter(paths, function (p, index) {
-    if (typeof p !== 'string') {
-      throw new TypeError('Arguments to path.join must be strings');
-    }
-
-    return p;
-  }).join('/'));
-}; // path.relative(from, to)
-// posix version
-
-
-exports.relative = function (from, to) {
-  from = exports.resolve(from).substr(1);
-  to = exports.resolve(to).substr(1);
-
-  function trim(arr) {
-    var start = 0;
-
-    for (; start < arr.length; start++) {
-      if (arr[start] !== '') break;
-    }
-
-    var end = arr.length - 1;
-
-    for (; end >= 0; end--) {
-      if (arr[end] !== '') break;
-    }
-
-    if (start > end) return [];
-    return arr.slice(start, end - start + 1);
-  }
-
-  var fromParts = trim(from.split('/'));
-  var toParts = trim(to.split('/'));
-  var length = Math.min(fromParts.length, toParts.length);
-  var samePartsLength = length;
-
-  for (var i = 0; i < length; i++) {
-    if (fromParts[i] !== toParts[i]) {
-      samePartsLength = i;
-      break;
-    }
-  }
-
-  var outputParts = [];
-
-  for (var i = samePartsLength; i < fromParts.length; i++) {
-    outputParts.push('..');
-  }
-
-  outputParts = outputParts.concat(toParts.slice(samePartsLength));
-  return outputParts.join('/');
-};
-
-exports.sep = '/';
-exports.delimiter = ':';
-
-exports.dirname = function (path) {
-  if (typeof path !== 'string') path = path + '';
-  if (path.length === 0) return '.';
-  var code = path.charCodeAt(0);
-  var hasRoot = code === 47
-  /*/*/
-  ;
-  var end = -1;
-  var matchedSlash = true;
-
-  for (var i = path.length - 1; i >= 1; --i) {
-    code = path.charCodeAt(i);
-
-    if (code === 47
-    /*/*/
-    ) {
-        if (!matchedSlash) {
-          end = i;
-          break;
-        }
-      } else {
-      // We saw the first non-path separator
-      matchedSlash = false;
-    }
-  }
-
-  if (end === -1) return hasRoot ? '/' : '.';
-
-  if (hasRoot && end === 1) {
-    // return '//';
-    // Backwards-compat fix:
-    return '/';
-  }
-
-  return path.slice(0, end);
-};
-
-function basename(path) {
-  if (typeof path !== 'string') path = path + '';
-  var start = 0;
-  var end = -1;
-  var matchedSlash = true;
-  var i;
-
-  for (i = path.length - 1; i >= 0; --i) {
-    if (path.charCodeAt(i) === 47
-    /*/*/
-    ) {
-        // If we reached a path separator that was not part of a set of path
-        // separators at the end of the string, stop now
-        if (!matchedSlash) {
-          start = i + 1;
-          break;
-        }
-      } else if (end === -1) {
-      // We saw the first non-path separator, mark this as the end of our
-      // path component
-      matchedSlash = false;
-      end = i + 1;
-    }
-  }
-
-  if (end === -1) return '';
-  return path.slice(start, end);
-} // Uses a mixed approach for backwards-compatibility, as ext behavior changed
-// in new Node.js versions, so only basename() above is backported here
-
-
-exports.basename = function (path, ext) {
-  var f = basename(path);
-
-  if (ext && f.substr(-1 * ext.length) === ext) {
-    f = f.substr(0, f.length - ext.length);
-  }
-
-  return f;
-};
-
-exports.extname = function (path) {
-  if (typeof path !== 'string') path = path + '';
-  var startDot = -1;
-  var startPart = 0;
-  var end = -1;
-  var matchedSlash = true; // Track the state of characters (if any) we see before our first dot and
-  // after any path separator we find
-
-  var preDotState = 0;
-
-  for (var i = path.length - 1; i >= 0; --i) {
-    var code = path.charCodeAt(i);
-
-    if (code === 47
-    /*/*/
-    ) {
-        // If we reached a path separator that was not part of a set of path
-        // separators at the end of the string, stop now
-        if (!matchedSlash) {
-          startPart = i + 1;
-          break;
-        }
-
-        continue;
-      }
-
-    if (end === -1) {
-      // We saw the first non-path separator, mark this as the end of our
-      // extension
-      matchedSlash = false;
-      end = i + 1;
-    }
-
-    if (code === 46
-    /*.*/
-    ) {
-        // If this is our first dot, mark it as the start of our extension
-        if (startDot === -1) startDot = i;else if (preDotState !== 1) preDotState = 1;
-      } else if (startDot !== -1) {
-      // We saw a non-dot and non-path separator before our dot, so we should
-      // have a good chance at having a non-empty extension
-      preDotState = -1;
-    }
-  }
-
-  if (startDot === -1 || end === -1 || // We saw a non-dot character immediately before the dot
-  preDotState === 0 || // The (right-most) trimmed path component is exactly '..'
-  preDotState === 1 && startDot === end - 1 && startDot === startPart + 1) {
-    return '';
-  }
-
-  return path.slice(startDot, end);
-};
-
-function filter(xs, f) {
-  if (xs.filter) return xs.filter(f);
-  var res = [];
-
-  for (var i = 0; i < xs.length; i++) {
-    if (f(xs[i], i, xs)) res.push(xs[i]);
-  }
-
-  return res;
-} // String.prototype.substr - negative index don't work in IE8
-
-
-var substr = 'ab'.substr(-1) === 'b' ? function (str, start, len) {
-  return str.substr(start, len);
-} : function (str, start, len) {
-  if (start < 0) start = str.length + start;
-  return str.substr(start, len);
-};
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../process/browser.js */ "./node_modules/process/browser.js")))
-
-/***/ }),
-
 /***/ "./node_modules/process/browser.js":
 /*!*****************************************!*\
   !*** ./node_modules/process/browser.js ***!
@@ -4949,25 +4620,6 @@ if ( true && typeof module.hot.dispose === 'function') {
   });
 } // Connect to WebpackDevServer via a socket.
 
-
-var connection = new WebSocket(url.format({
-  protocol: window.location.protocol === 'https:' ? 'wss' : 'ws',
-  hostname: undefined || window.location.hostname,
-  port: undefined || window.location.port,
-  // Hardcoded in WebpackDevServer
-  pathname: undefined || '/sockjs-node',
-  slashes: true
-})); // Unlike WebpackDevServer client, we won't try to reconnect
-// to avoid spamming the console. Disconnect usually happens
-// when developer stops the server.
-
-connection.onclose = function () {
-  if (typeof console !== 'undefined' && typeof console.info === 'function') {
-    console.info('The development server has disconnected.\nRefresh the page if necessary.');
-  }
-}; // Remember some state related to hot module replacement.
-
-
 var isFirstCompilation = true;
 var mostRecentCompilationHash = null;
 var hasCompileErrors = false;
@@ -5068,37 +4720,6 @@ function handleAvailableHash(hash) {
   mostRecentCompilationHash = hash;
 } // Handle messages from the server.
 
-
-connection.onmessage = function (e) {
-  var message = JSON.parse(e.data);
-
-  switch (message.type) {
-    case 'hash':
-      handleAvailableHash(message.data);
-      break;
-
-    case 'still-ok':
-    case 'ok':
-      handleSuccess();
-      break;
-
-    case 'content-changed':
-      // Triggered when a file from `contentBase` changed.
-      window.location.reload();
-      break;
-
-    case 'warnings':
-      handleWarnings(message.data);
-      break;
-
-    case 'errors':
-      handleErrors(message.data);
-      break;
-
-    default: // Do nothing.
-
-  }
-}; // Is there a newer version of this code available?
 
 
 function isUpdateAvailable() {
@@ -36164,17 +35785,17 @@ module.exports = function shallowEqual(objA, objB, compare, compareContext) {
 
 /***/ }),
 
-/***/ "./node_modules/solidity-parser-antlr/dist/ASTBuilder.js":
-/*!***************************************************************!*\
-  !*** ./node_modules/solidity-parser-antlr/dist/ASTBuilder.js ***!
-  \***************************************************************/
+/***/ "./node_modules/solidity-parser-diligence/dist/ASTBuilder.js":
+/*!*******************************************************************!*\
+  !*** ./node_modules/solidity-parser-diligence/dist/ASTBuilder.js ***!
+  \*******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var antlr4 = __webpack_require__(/*! ./antlr4/index */ "./node_modules/solidity-parser-antlr/dist/antlr4/index.js");
+var antlr4 = __webpack_require__(/*! ./antlr4/index */ "./node_modules/solidity-parser-diligence/dist/antlr4/index.js");
 
 function toText(ctx) {
   if (ctx !== null) {
@@ -36279,12 +35900,13 @@ var transformAST = {
   },
   ContractDefinition: function ContractDefinition(ctx) {
     var name = toText(ctx.identifier());
+    var kind = toText(ctx.getChild(0));
     this._currentContract = name;
     return {
       name: name,
       baseContracts: this.visit(ctx.inheritanceSpecifier()),
       subNodes: this.visit(ctx.contractPart()),
-      kind: toText(ctx.getChild(0))
+      kind: kind
     };
   },
   InheritanceSpecifier: function InheritanceSpecifier(ctx) {
@@ -36298,55 +35920,17 @@ var transformAST = {
   ContractPart: function ContractPart(ctx) {
     return this.visit(ctx.children[0]);
   },
-  ConstructorDefinition: function ConstructorDefinition(ctx) {
+  FunctionDefinition: function FunctionDefinition(ctx) {
     var _this = this;
 
-    var parameters = this.visit(ctx.parameterList());
-    var block = this.visit(ctx.block());
-    var modifiers = ctx.modifierList().modifierInvocation().map(function (mod) {
-      return _this.visit(mod);
-    }); // parse function visibility
-
+    var isConstructor = false;
+    var isFallback = false;
+    var isReceiveEther = false;
+    var isVirtual = false;
+    var name = null;
+    var parameters = [];
+    var returnParameters = null;
     var visibility = 'default';
-
-    if (ctx.modifierList().ExternalKeyword(0)) {
-      visibility = 'external';
-    } else if (ctx.modifierList().InternalKeyword(0)) {
-      visibility = 'internal';
-    } else if (ctx.modifierList().PublicKeyword(0)) {
-      visibility = 'public';
-    } else if (ctx.modifierList().PrivateKeyword(0)) {
-      visibility = 'private';
-    }
-
-    var stateMutability = null;
-
-    if (ctx.modifierList().stateMutability(0)) {
-      stateMutability = toText(ctx.modifierList().stateMutability(0));
-    }
-
-    return {
-      type: 'FunctionDefinition',
-      name: null,
-      parameters: parameters,
-      body: block,
-      visibility: visibility,
-      modifiers: modifiers,
-      isConstructor: true,
-      stateMutability: stateMutability
-    };
-  },
-  FunctionDefinition: function FunctionDefinition(ctx) {
-    var _this2 = this;
-
-    var name = '';
-
-    if (ctx.identifier(0)) {
-      name = toText(ctx.identifier(0));
-    }
-
-    var parameters = this.visit(ctx.parameterList());
-    var returnParameters = this.visit(ctx.returnParameters());
     var block = null;
 
     if (ctx.block()) {
@@ -36354,25 +35938,99 @@ var transformAST = {
     }
 
     var modifiers = ctx.modifierList().modifierInvocation().map(function (mod) {
-      return _this2.visit(mod);
-    }); // parse function visibility
-
-    var visibility = 'default';
-
-    if (ctx.modifierList().ExternalKeyword(0)) {
-      visibility = 'external';
-    } else if (ctx.modifierList().InternalKeyword(0)) {
-      visibility = 'internal';
-    } else if (ctx.modifierList().PublicKeyword(0)) {
-      visibility = 'public';
-    } else if (ctx.modifierList().PrivateKeyword(0)) {
-      visibility = 'private';
-    }
-
+      return _this.visit(mod);
+    });
     var stateMutability = null;
 
     if (ctx.modifierList().stateMutability(0)) {
       stateMutability = toText(ctx.modifierList().stateMutability(0));
+    } // see what type of function we're dealing with
+
+
+    switch (toText(ctx.functionDescriptor().getChild(0))) {
+      case 'constructor':
+        parameters = this.visit(ctx.parameterList());
+
+        if (ctx.returnParameters() && ctx.returnParameters().parameterList().parameter().length > 0) {
+          throw new Error('Constructors cannot have return parameters');
+        } // error out on incorrect function visibility
+
+
+        if (ctx.modifierList().InternalKeyword(0)) {
+          visibility = 'internal';
+        } else if (ctx.modifierList().PublicKeyword(0)) {
+          visibility = 'public';
+        } else {
+          throw new Error('Constructors have to be declared either "public" or "internal"');
+        }
+
+        isConstructor = true;
+        break;
+
+      case 'fallback':
+        if (ctx.parameterList().parameter().length > 0) {
+          throw new Error('Fallback functions cannot have parameters');
+        }
+
+        if (ctx.returnParameters() && ctx.returnParameters().parameterList().parameter().length > 0) {
+          throw new Error('Fallback functions cannot have return parameters');
+        } // error out on incorrect function visibility
+
+
+        if (!ctx.modifierList().ExternalKeyword(0)) {
+          throw new Error('Fallback functions have to be declared "external"');
+        }
+
+        visibility = 'external';
+        isFallback = true;
+        break;
+
+      case 'receive':
+        if (ctx.parameterList().parameter().length > 0) {
+          throw new Error('Receive Ether functions cannot have parameters');
+        }
+
+        if (ctx.returnParameters() && ctx.returnParameters().parameterList().parameter().length > 0) {
+          throw new Error('Receive Ether functions cannot have return parameters');
+        } // error out on incorrect function visibility
+
+
+        if (!ctx.modifierList().ExternalKeyword(0)) {
+          throw new Error('Receive Ether functions have to be declared "external"');
+        }
+
+        visibility = 'external'; // error out on incorrect function payability
+
+        if (!ctx.modifierList().stateMutability(0) || !ctx.modifierList().stateMutability(0).PayableKeyword(0)) {
+          throw new Error('Receive Ether functions have to be declared "payable"');
+        }
+
+        isReceiveEther = true;
+        break;
+
+      case 'function':
+        name = ctx.functionDescriptor().identifier(0) ? toText(ctx.functionDescriptor().identifier(0)) : '';
+        parameters = this.visit(ctx.parameterList());
+        returnParameters = this.visit(ctx.returnParameters()); // parse function visibility
+
+        if (ctx.modifierList().ExternalKeyword(0)) {
+          visibility = 'external';
+        } else if (ctx.modifierList().InternalKeyword(0)) {
+          visibility = 'internal';
+        } else if (ctx.modifierList().PublicKeyword(0)) {
+          visibility = 'public';
+        } else if (ctx.modifierList().PrivateKeyword(0)) {
+          visibility = 'private';
+        } // check if function is virtual
+
+
+        if (ctx.modifierList().VirtualKeyword(0)) {
+          isVirtual = true;
+        }
+
+        isConstructor = name === this._currentContract;
+        isFallback = name === '';
+        break;
     }
 
     return {
@@ -36382,7 +36040,10 @@ var transformAST = {
       body: block,
       visibility: visibility,
       modifiers: modifiers,
-      isConstructor: name === this._currentContract,
+      isConstructor: isConstructor,
+      isReceiveEther: isReceiveEther,
+      isFallback: isFallback,
+      isVirtual: isVirtual,
       stateMutability: stateMutability
     };
   },
@@ -36403,9 +36064,15 @@ var transformAST = {
       arguments: args
     };
   },
-  ElementaryTypeNameExpression: function ElementaryTypeNameExpression(ctx) {
+  TypeNameExpression: function TypeNameExpression(ctx) {
+    var typeName = ctx.elementaryTypeName();
+
+    if (typeName === null) {
+      typeName = ctx.userDefinedTypeName();
+    }
+
     return {
-      typeName: this.visit(ctx.elementaryTypeName())
+      typeName: this.visit(typeName)
     };
   },
   TypeName: function TypeName(ctx) {
@@ -36418,7 +36085,7 @@ var transformAST = {
 
       return {
         type: 'ArrayTypeName',
-        baseTypeName: this.visit(ctx.getChild(0)),
+        baseTypeName: this.visit(ctx.typeName()),
         length: length
       };
     }
@@ -36434,16 +36101,16 @@ var transformAST = {
     return this.visit(ctx.getChild(0));
   },
   FunctionTypeName: function FunctionTypeName(ctx) {
-    var _this3 = this;
+    var _this2 = this;
 
     var parameterTypes = ctx.functionTypeParameterList(0).functionTypeParameter().map(function (typeCtx) {
-      return _this3.visit(typeCtx);
+      return _this2.visit(typeCtx);
     });
     var returnTypes = [];
 
     if (ctx.functionTypeParameterList(1)) {
       returnTypes = ctx.functionTypeParameterList(1).functionTypeParameter().map(function (typeCtx) {
-        return _this3.visit(typeCtx);
+        return _this2.visit(typeCtx);
       });
     }
 
@@ -36485,7 +36152,7 @@ var transformAST = {
     };
   },
   FunctionCall: function FunctionCall(ctx) {
-    var _this4 = this;
+    var _this3 = this;
 
     var args = [];
     var names = [];
@@ -36493,7 +36160,7 @@ var transformAST = {
 
     if (ctxArgs.expressionList()) {
       args = ctxArgs.expressionList().expression().map(function (exprCtx) {
-        return _this4.visit(exprCtx);
+        return _this3.visit(exprCtx);
       });
     } else if (ctxArgs.nameValueList()) {
       var _iteratorNormalCompletion2 = true;
@@ -36607,6 +36274,42 @@ var transformAST = {
       falseBody: falseBody
     };
   },
+  TryStatement: function TryStatement(ctx) {
+    var _this4 = this;
+
+    var returnParameters = null;
+
+    if (ctx.returnParameters()) {
+      returnParameters = this.visit(ctx.returnParameters());
+    }
+
+    var catchClauses = ctx.catchClause().map(function (exprCtx) {
+      return _this4.visit(exprCtx);
+    });
+    return {
+      expression: this.visit(ctx.expression()),
+      returnParameters: returnParameters,
+      body: this.visit(ctx.block()),
+      catchClauses: catchClauses
+    };
+  },
+  CatchClause: function CatchClause(ctx) {
+    var parameters = null;
+
+    if (ctx.parameterList()) {
+      parameters = this.visit(ctx.parameterList());
+    }
+
+    if (ctx.identifier() && toText(ctx.identifier()) !== 'Error') {
+      throw new Error('Expected "Error" identifier in catch clause');
+    }
+
+    return {
+      isReasonStringType: !!(ctx.identifier() && toText(ctx.identifier()) === 'Error'),
+      parameters: parameters,
+      body: this.visit(ctx.block())
+    };
+  },
   UserDefinedTypeName: function UserDefinedTypeName(ctx) {
     return {
       namePath: toText(ctx)
@@ -36716,6 +36419,19 @@ var transformAST = {
             components: [this.visit(ctx.getChild(1))],
             isArray: false
           };
+        } // if square parenthesis are present it can only be
+        // a typename expression
+
+
+        if (toText(ctx.getChild(1)) === '[' && toText(ctx.getChild(2)) === ']') {
+          return {
+            "type": "TypeNameExpression",
+            "typeName": {
+              "type": "ArrayTypeName",
+              "baseTypeName": this.visit(ctx.getChild(0)),
+              "length": null
+            }
+          };
         }
 
         op = toText(ctx.getChild(1)); // tuple separator
@@ -36814,12 +36530,42 @@ var transformAST = {
             trueExpression: this.visit(ctx.getChild(2)),
             falseExpression: this.visit(ctx.getChild(4))
           };
+        } // index range access
+
+
+        if (toText(ctx.getChild(1)) === '[' && toText(ctx.getChild(2)) === ':' && toText(ctx.getChild(4)) === ']') {
+          return {
+            type: 'IndexRangeAccess',
+            base: this.visit(ctx.getChild(0)),
+            indexStart: null,
+            indexEnd: this.visit(ctx.getChild(3))
+          };
+        } else if (toText(ctx.getChild(1)) === '[' && toText(ctx.getChild(3)) === ':' && toText(ctx.getChild(4)) === ']') {
+          return {
+            type: 'IndexRangeAccess',
+            base: this.visit(ctx.getChild(0)),
+            indexStart: this.visit(ctx.getChild(2)),
+            indexEnd: null
+          };
+        }
+
+        break;
+
+      case 6:
+        // index range access
+        if (toText(ctx.getChild(1)) === '[' && toText(ctx.getChild(3)) === ':' && toText(ctx.getChild(5)) === ']') {
+          return {
+            type: 'IndexRangeAccess',
+            base: this.visit(ctx.getChild(0)),
+            indexStart: this.visit(ctx.getChild(2)),
+            indexEnd: this.visit(ctx.getChild(4))
+          };
         }
 
         break;
     }
 
-    throw new Error('unrecognized expression');
+    throw new Error('Unrecognized expression');
   },
   StateVariableDeclaration: function StateVariableDeclaration(ctx) {
     var type = this.visit(ctx.typeName());
@@ -36894,11 +36640,14 @@ var transformAST = {
       };
     }
 
-    if (ctx.StringLiteral()) {
-      var text = toText(ctx);
-      var singleQuotes = text[0] === "'";
-      var textWithoutQuotes = text.substring(1, text.length - 1);
-      var value = singleQuotes ? textWithoutQuotes.replace(new RegExp("\\\\'", 'g'), "'") : textWithoutQuotes.replace(new RegExp('\\\\"', 'g'), '"');
+    if (ctx.stringLiteral()) {
+      var value = ctx.stringLiteral().StringLiteralFragment().map(function (stringLiteralFragmentCtx) {
+        var text = toText(stringLiteralFragmentCtx);
+        var singleQuotes = text[0] === "'";
+        var textWithoutQuotes = text.substring(1, text.length - 1);
+        var value = singleQuotes ? textWithoutQuotes.replace(new RegExp("\\\\'", 'g'), "'") : textWithoutQuotes.replace(new RegExp('\\\\"', 'g'), '"');
+        return value;
+      }).join("");
       return {
         type: 'StringLiteral',
         value: value
@@ -36920,6 +36669,8 @@ var transformAST = {
           type: 'UserDefinedTypeName',
           namePath: node.name
         };
+      } else if (node.type == 'TypeNameExpression') {
+        node = node.typeName;
       } else {
         node = {
           type: 'ElementaryTypeName',
@@ -36927,10 +36678,14 @@ var transformAST = {
         };
       }
 
-      return {
+      var typeName = {
         type: 'ArrayTypeName',
         baseTypeName: node,
         length: null
+      };
+      return {
+        type: 'TypeNameExpression',
+        typeName: typeName
       };
     }
 
@@ -37029,7 +36784,7 @@ var transformAST = {
     };
   },
   ImportDirective: function ImportDirective(ctx) {
-    var pathString = toText(ctx.StringLiteral());
+    var pathString = toText(ctx.StringLiteralFragment());
     var unitAlias = null;
     var symbolAliases = null;
 
@@ -37116,8 +36871,8 @@ var transformAST = {
   InlineAssemblyStatement: function InlineAssemblyStatement(ctx) {
     var language = null;
 
-    if (ctx.StringLiteral()) {
-      language = toText(ctx.StringLiteral());
+    if (ctx.StringLiteralFragment()) {
+      language = toText(ctx.StringLiteralFragment());
       language = language.substring(1, language.length - 1);
     }
 
@@ -37146,8 +36901,8 @@ var transformAST = {
       };
     }
 
-    if (ctx.StringLiteral()) {
-      text = toText(ctx.StringLiteral());
+    if (ctx.stringLiteral()) {
+      text = toText(ctx.stringLiteral());
       return {
         type: 'StringLiteral',
         value: text.substring(1, text.length - 1)
@@ -37186,7 +36941,7 @@ var transformAST = {
   AssemblyLiteral: function AssemblyLiteral(ctx) {
     var text = void 0;
 
-    if (ctx.StringLiteral()) {
+    if (ctx.stringLiteral()) {
       text = toText(ctx);
       return {
         type: 'StringLiteral',
@@ -37396,17 +37151,17 @@ module.exports = ASTBuilder;
 
 /***/ }),
 
-/***/ "./node_modules/solidity-parser-antlr/dist/ErrorListener.js":
-/*!******************************************************************!*\
-  !*** ./node_modules/solidity-parser-antlr/dist/ErrorListener.js ***!
-  \******************************************************************/
+/***/ "./node_modules/solidity-parser-diligence/dist/ErrorListener.js":
+/*!**********************************************************************!*\
+  !*** ./node_modules/solidity-parser-diligence/dist/ErrorListener.js ***!
+  \**********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var antlr4 = __webpack_require__(/*! ./antlr4/index */ "./node_modules/solidity-parser-antlr/dist/antlr4/index.js");
+var antlr4 = __webpack_require__(/*! ./antlr4/index */ "./node_modules/solidity-parser-diligence/dist/antlr4/index.js");
 
 function ErrorListener() {
   antlr4.error.ErrorListener.call(this);
@@ -37436,10 +37191,10 @@ module.exports = ErrorListener;
 
 /***/ }),
 
-/***/ "./node_modules/solidity-parser-antlr/dist/antlr4/BufferedTokenStream.js":
-/*!*******************************************************************************!*\
-  !*** ./node_modules/solidity-parser-antlr/dist/antlr4/BufferedTokenStream.js ***!
-  \*******************************************************************************/
+/***/ "./node_modules/solidity-parser-diligence/dist/antlr4/BufferedTokenStream.js":
+/*!***********************************************************************************!*\
+  !*** ./node_modules/solidity-parser-diligence/dist/antlr4/BufferedTokenStream.js ***!
+  \***********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -37461,11 +37216,11 @@ module.exports = ErrorListener;
 // {@link Token//HIDDEN_CHANNEL}, use a filtering token stream such a
 // {@link CommonTokenStream}.</p>
 
-var Token = __webpack_require__(/*! ./Token */ "./node_modules/solidity-parser-antlr/dist/antlr4/Token.js").Token;
+var Token = __webpack_require__(/*! ./Token */ "./node_modules/solidity-parser-diligence/dist/antlr4/Token.js").Token;
 
-var Lexer = __webpack_require__(/*! ./Lexer */ "./node_modules/solidity-parser-antlr/dist/antlr4/Lexer.js").Lexer;
+var Lexer = __webpack_require__(/*! ./Lexer */ "./node_modules/solidity-parser-diligence/dist/antlr4/Lexer.js").Lexer;
 
-var Interval = __webpack_require__(/*! ./IntervalSet */ "./node_modules/solidity-parser-antlr/dist/antlr4/IntervalSet.js").Interval; // this is just to keep meaningful parameter types to Parser
+var Interval = __webpack_require__(/*! ./IntervalSet */ "./node_modules/solidity-parser-diligence/dist/antlr4/IntervalSet.js").Interval; // this is just to keep meaningful parameter types to Parser
 
 
 function TokenStream() {
@@ -37868,10 +37623,10 @@ exports.BufferedTokenStream = BufferedTokenStream;
 
 /***/ }),
 
-/***/ "./node_modules/solidity-parser-antlr/dist/antlr4/CharStreams.js":
-/*!***********************************************************************!*\
-  !*** ./node_modules/solidity-parser-antlr/dist/antlr4/CharStreams.js ***!
-  \***********************************************************************/
+/***/ "./node_modules/solidity-parser-diligence/dist/antlr4/CharStreams.js":
+/*!***************************************************************************!*\
+  !*** ./node_modules/solidity-parser-diligence/dist/antlr4/CharStreams.js ***!
+  \***************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -37884,7 +37639,7 @@ exports.BufferedTokenStream = BufferedTokenStream;
  */
 //
 
-var InputStream = __webpack_require__(/*! ./InputStream */ "./node_modules/solidity-parser-antlr/dist/antlr4/InputStream.js").InputStream;
+var InputStream = __webpack_require__(/*! ./InputStream */ "./node_modules/solidity-parser-diligence/dist/antlr4/InputStream.js").InputStream;
 
 var isNodeJs = typeof window === 'undefined' && typeof importScripts === 'undefined';
 var fs = isNodeJs ? __webpack_require__(/*! fs */ "./node_modules/node-libs-browser/mock/empty.js") : null; // Utility functions to create InputStreams from various sources.
@@ -37949,10 +37704,10 @@ exports.CharStreams = CharStreams;
 
 /***/ }),
 
-/***/ "./node_modules/solidity-parser-antlr/dist/antlr4/CommonTokenFactory.js":
-/*!******************************************************************************!*\
-  !*** ./node_modules/solidity-parser-antlr/dist/antlr4/CommonTokenFactory.js ***!
-  \******************************************************************************/
+/***/ "./node_modules/solidity-parser-diligence/dist/antlr4/CommonTokenFactory.js":
+/*!**********************************************************************************!*\
+  !*** ./node_modules/solidity-parser-diligence/dist/antlr4/CommonTokenFactory.js ***!
+  \**********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -37969,7 +37724,7 @@ exports.CharStreams = CharStreams;
 // {@link CommonToken} objects.
 //
 
-var CommonToken = __webpack_require__(/*! ./Token */ "./node_modules/solidity-parser-antlr/dist/antlr4/Token.js").CommonToken;
+var CommonToken = __webpack_require__(/*! ./Token */ "./node_modules/solidity-parser-diligence/dist/antlr4/Token.js").CommonToken;
 
 function TokenFactory() {
   return this;
@@ -38030,10 +37785,10 @@ exports.CommonTokenFactory = CommonTokenFactory;
 
 /***/ }),
 
-/***/ "./node_modules/solidity-parser-antlr/dist/antlr4/CommonTokenStream.js":
-/*!*****************************************************************************!*\
-  !*** ./node_modules/solidity-parser-antlr/dist/antlr4/CommonTokenStream.js ***!
-  \*****************************************************************************/
+/***/ "./node_modules/solidity-parser-diligence/dist/antlr4/CommonTokenStream.js":
+/*!*********************************************************************************!*\
+  !*** ./node_modules/solidity-parser-diligence/dist/antlr4/CommonTokenStream.js ***!
+  \*********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -38070,9 +37825,9 @@ exports.CommonTokenFactory = CommonTokenFactory;
 // channel.</p>
 ///
 
-var Token = __webpack_require__(/*! ./Token */ "./node_modules/solidity-parser-antlr/dist/antlr4/Token.js").Token;
+var Token = __webpack_require__(/*! ./Token */ "./node_modules/solidity-parser-diligence/dist/antlr4/Token.js").Token;
 
-var BufferedTokenStream = __webpack_require__(/*! ./BufferedTokenStream */ "./node_modules/solidity-parser-antlr/dist/antlr4/BufferedTokenStream.js").BufferedTokenStream;
+var BufferedTokenStream = __webpack_require__(/*! ./BufferedTokenStream */ "./node_modules/solidity-parser-diligence/dist/antlr4/BufferedTokenStream.js").BufferedTokenStream;
 
 function CommonTokenStream(lexer, channel) {
   BufferedTokenStream.call(this, lexer);
@@ -38159,10 +37914,10 @@ exports.CommonTokenStream = CommonTokenStream;
 
 /***/ }),
 
-/***/ "./node_modules/solidity-parser-antlr/dist/antlr4/FileStream.js":
-/*!**********************************************************************!*\
-  !*** ./node_modules/solidity-parser-antlr/dist/antlr4/FileStream.js ***!
-  \**********************************************************************/
+/***/ "./node_modules/solidity-parser-diligence/dist/antlr4/FileStream.js":
+/*!**************************************************************************!*\
+  !*** ./node_modules/solidity-parser-diligence/dist/antlr4/FileStream.js ***!
+  \**************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -38179,7 +37934,7 @@ exports.CommonTokenStream = CommonTokenStream;
 //  when you construct the object.
 //
 
-var InputStream = __webpack_require__(/*! ./InputStream */ "./node_modules/solidity-parser-antlr/dist/antlr4/InputStream.js").InputStream;
+var InputStream = __webpack_require__(/*! ./InputStream */ "./node_modules/solidity-parser-diligence/dist/antlr4/InputStream.js").InputStream;
 
 var isNodeJs = typeof window === 'undefined' && typeof importScripts === 'undefined';
 var fs = isNodeJs ? __webpack_require__(/*! fs */ "./node_modules/node-libs-browser/mock/empty.js") : null;
@@ -38197,10 +37952,10 @@ exports.FileStream = FileStream;
 
 /***/ }),
 
-/***/ "./node_modules/solidity-parser-antlr/dist/antlr4/InputStream.js":
-/*!***********************************************************************!*\
-  !*** ./node_modules/solidity-parser-antlr/dist/antlr4/InputStream.js ***!
-  \***********************************************************************/
+/***/ "./node_modules/solidity-parser-diligence/dist/antlr4/InputStream.js":
+/*!***************************************************************************!*\
+  !*** ./node_modules/solidity-parser-diligence/dist/antlr4/InputStream.js ***!
+  \***************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -38213,11 +37968,11 @@ exports.FileStream = FileStream;
  */
 //
 
-var Token = __webpack_require__(/*! ./Token */ "./node_modules/solidity-parser-antlr/dist/antlr4/Token.js").Token;
+var Token = __webpack_require__(/*! ./Token */ "./node_modules/solidity-parser-diligence/dist/antlr4/Token.js").Token;
 
-__webpack_require__(/*! ./polyfills/codepointat */ "./node_modules/solidity-parser-antlr/dist/antlr4/polyfills/codepointat.js");
+__webpack_require__(/*! ./polyfills/codepointat */ "./node_modules/solidity-parser-diligence/dist/antlr4/polyfills/codepointat.js");
 
-__webpack_require__(/*! ./polyfills/fromcodepoint */ "./node_modules/solidity-parser-antlr/dist/antlr4/polyfills/fromcodepoint.js"); // Vacuum all input from a string and then treat it like a buffer.
+__webpack_require__(/*! ./polyfills/fromcodepoint */ "./node_modules/solidity-parser-diligence/dist/antlr4/polyfills/fromcodepoint.js"); // Vacuum all input from a string and then treat it like a buffer.
 
 
 function _loadString(stream, decodeToUnicodeCodePoints) {
@@ -38357,10 +38112,10 @@ exports.InputStream = InputStream;
 
 /***/ }),
 
-/***/ "./node_modules/solidity-parser-antlr/dist/antlr4/IntervalSet.js":
-/*!***********************************************************************!*\
-  !*** ./node_modules/solidity-parser-antlr/dist/antlr4/IntervalSet.js ***!
-  \***********************************************************************/
+/***/ "./node_modules/solidity-parser-diligence/dist/antlr4/IntervalSet.js":
+/*!***************************************************************************!*\
+  !*** ./node_modules/solidity-parser-diligence/dist/antlr4/IntervalSet.js ***!
+  \***************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -38373,7 +38128,7 @@ exports.InputStream = InputStream;
 
 /*jslint smarttabs:true */
 
-var Token = __webpack_require__(/*! ./Token */ "./node_modules/solidity-parser-antlr/dist/antlr4/Token.js").Token;
+var Token = __webpack_require__(/*! ./Token */ "./node_modules/solidity-parser-diligence/dist/antlr4/Token.js").Token;
 /* stop is not included! */
 
 
@@ -38674,10 +38429,10 @@ exports.IntervalSet = IntervalSet;
 
 /***/ }),
 
-/***/ "./node_modules/solidity-parser-antlr/dist/antlr4/LL1Analyzer.js":
-/*!***********************************************************************!*\
-  !*** ./node_modules/solidity-parser-antlr/dist/antlr4/LL1Analyzer.js ***!
-  \***********************************************************************/
+/***/ "./node_modules/solidity-parser-diligence/dist/antlr4/LL1Analyzer.js":
+/*!***************************************************************************!*\
+  !*** ./node_modules/solidity-parser-diligence/dist/antlr4/LL1Analyzer.js ***!
+  \***************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -38690,29 +38445,29 @@ exports.IntervalSet = IntervalSet;
  */
 ///
 
-var Set = __webpack_require__(/*! ./Utils */ "./node_modules/solidity-parser-antlr/dist/antlr4/Utils.js").Set;
+var Set = __webpack_require__(/*! ./Utils */ "./node_modules/solidity-parser-diligence/dist/antlr4/Utils.js").Set;
 
-var BitSet = __webpack_require__(/*! ./Utils */ "./node_modules/solidity-parser-antlr/dist/antlr4/Utils.js").BitSet;
+var BitSet = __webpack_require__(/*! ./Utils */ "./node_modules/solidity-parser-diligence/dist/antlr4/Utils.js").BitSet;
 
-var Token = __webpack_require__(/*! ./Token */ "./node_modules/solidity-parser-antlr/dist/antlr4/Token.js").Token;
+var Token = __webpack_require__(/*! ./Token */ "./node_modules/solidity-parser-diligence/dist/antlr4/Token.js").Token;
 
-var ATNConfig = __webpack_require__(/*! ./atn/ATNConfig */ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/ATNConfig.js").ATNConfig;
+var ATNConfig = __webpack_require__(/*! ./atn/ATNConfig */ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/ATNConfig.js").ATNConfig;
 
-var Interval = __webpack_require__(/*! ./IntervalSet */ "./node_modules/solidity-parser-antlr/dist/antlr4/IntervalSet.js").Interval;
+var Interval = __webpack_require__(/*! ./IntervalSet */ "./node_modules/solidity-parser-diligence/dist/antlr4/IntervalSet.js").Interval;
 
-var IntervalSet = __webpack_require__(/*! ./IntervalSet */ "./node_modules/solidity-parser-antlr/dist/antlr4/IntervalSet.js").IntervalSet;
+var IntervalSet = __webpack_require__(/*! ./IntervalSet */ "./node_modules/solidity-parser-diligence/dist/antlr4/IntervalSet.js").IntervalSet;
 
-var RuleStopState = __webpack_require__(/*! ./atn/ATNState */ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/ATNState.js").RuleStopState;
+var RuleStopState = __webpack_require__(/*! ./atn/ATNState */ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/ATNState.js").RuleStopState;
 
-var RuleTransition = __webpack_require__(/*! ./atn/Transition */ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/Transition.js").RuleTransition;
+var RuleTransition = __webpack_require__(/*! ./atn/Transition */ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/Transition.js").RuleTransition;
 
-var NotSetTransition = __webpack_require__(/*! ./atn/Transition */ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/Transition.js").NotSetTransition;
+var NotSetTransition = __webpack_require__(/*! ./atn/Transition */ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/Transition.js").NotSetTransition;
 
-var WildcardTransition = __webpack_require__(/*! ./atn/Transition */ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/Transition.js").WildcardTransition;
+var WildcardTransition = __webpack_require__(/*! ./atn/Transition */ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/Transition.js").WildcardTransition;
 
-var AbstractPredicateTransition = __webpack_require__(/*! ./atn/Transition */ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/Transition.js").AbstractPredicateTransition;
+var AbstractPredicateTransition = __webpack_require__(/*! ./atn/Transition */ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/Transition.js").AbstractPredicateTransition;
 
-var pc = __webpack_require__(/*! ./PredictionContext */ "./node_modules/solidity-parser-antlr/dist/antlr4/PredictionContext.js");
+var pc = __webpack_require__(/*! ./PredictionContext */ "./node_modules/solidity-parser-diligence/dist/antlr4/PredictionContext.js");
 
 var predictionContextFromRuleContext = pc.predictionContextFromRuleContext;
 var PredictionContext = pc.PredictionContext;
@@ -38919,10 +38674,10 @@ exports.LL1Analyzer = LL1Analyzer;
 
 /***/ }),
 
-/***/ "./node_modules/solidity-parser-antlr/dist/antlr4/Lexer.js":
-/*!*****************************************************************!*\
-  !*** ./node_modules/solidity-parser-antlr/dist/antlr4/Lexer.js ***!
-  \*****************************************************************/
+/***/ "./node_modules/solidity-parser-diligence/dist/antlr4/Lexer.js":
+/*!*********************************************************************!*\
+  !*** ./node_modules/solidity-parser-diligence/dist/antlr4/Lexer.js ***!
+  \*********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -38937,15 +38692,15 @@ exports.LL1Analyzer = LL1Analyzer;
 //  lexer grammars result in a subclass of this object. A Lexer object
 //  uses simplified match() and error recovery mechanisms in the interest of speed.
 
-var Token = __webpack_require__(/*! ./Token */ "./node_modules/solidity-parser-antlr/dist/antlr4/Token.js").Token;
+var Token = __webpack_require__(/*! ./Token */ "./node_modules/solidity-parser-diligence/dist/antlr4/Token.js").Token;
 
-var Recognizer = __webpack_require__(/*! ./Recognizer */ "./node_modules/solidity-parser-antlr/dist/antlr4/Recognizer.js").Recognizer;
+var Recognizer = __webpack_require__(/*! ./Recognizer */ "./node_modules/solidity-parser-diligence/dist/antlr4/Recognizer.js").Recognizer;
 
-var CommonTokenFactory = __webpack_require__(/*! ./CommonTokenFactory */ "./node_modules/solidity-parser-antlr/dist/antlr4/CommonTokenFactory.js").CommonTokenFactory;
+var CommonTokenFactory = __webpack_require__(/*! ./CommonTokenFactory */ "./node_modules/solidity-parser-diligence/dist/antlr4/CommonTokenFactory.js").CommonTokenFactory;
 
-var RecognitionException = __webpack_require__(/*! ./error/Errors */ "./node_modules/solidity-parser-antlr/dist/antlr4/error/Errors.js").RecognitionException;
+var RecognitionException = __webpack_require__(/*! ./error/Errors */ "./node_modules/solidity-parser-diligence/dist/antlr4/error/Errors.js").RecognitionException;
 
-var LexerNoViableAltException = __webpack_require__(/*! ./error/Errors */ "./node_modules/solidity-parser-antlr/dist/antlr4/error/Errors.js").LexerNoViableAltException;
+var LexerNoViableAltException = __webpack_require__(/*! ./error/Errors */ "./node_modules/solidity-parser-diligence/dist/antlr4/error/Errors.js").LexerNoViableAltException;
 
 function TokenSource() {
   return this;
@@ -39307,10 +39062,10 @@ exports.Lexer = Lexer;
 
 /***/ }),
 
-/***/ "./node_modules/solidity-parser-antlr/dist/antlr4/Parser.js":
-/*!******************************************************************!*\
-  !*** ./node_modules/solidity-parser-antlr/dist/antlr4/Parser.js ***!
-  \******************************************************************/
+/***/ "./node_modules/solidity-parser-diligence/dist/antlr4/Parser.js":
+/*!**********************************************************************!*\
+  !*** ./node_modules/solidity-parser-diligence/dist/antlr4/Parser.js ***!
+  \**********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -39321,21 +39076,21 @@ exports.Lexer = Lexer;
  * can be found in the LICENSE.txt file in the project root.
  */
 
-var Token = __webpack_require__(/*! ./Token */ "./node_modules/solidity-parser-antlr/dist/antlr4/Token.js").Token;
+var Token = __webpack_require__(/*! ./Token */ "./node_modules/solidity-parser-diligence/dist/antlr4/Token.js").Token;
 
-var ParseTreeListener = __webpack_require__(/*! ./tree/Tree */ "./node_modules/solidity-parser-antlr/dist/antlr4/tree/Tree.js").ParseTreeListener;
+var ParseTreeListener = __webpack_require__(/*! ./tree/Tree */ "./node_modules/solidity-parser-diligence/dist/antlr4/tree/Tree.js").ParseTreeListener;
 
-var Recognizer = __webpack_require__(/*! ./Recognizer */ "./node_modules/solidity-parser-antlr/dist/antlr4/Recognizer.js").Recognizer;
+var Recognizer = __webpack_require__(/*! ./Recognizer */ "./node_modules/solidity-parser-diligence/dist/antlr4/Recognizer.js").Recognizer;
 
-var DefaultErrorStrategy = __webpack_require__(/*! ./error/ErrorStrategy */ "./node_modules/solidity-parser-antlr/dist/antlr4/error/ErrorStrategy.js").DefaultErrorStrategy;
+var DefaultErrorStrategy = __webpack_require__(/*! ./error/ErrorStrategy */ "./node_modules/solidity-parser-diligence/dist/antlr4/error/ErrorStrategy.js").DefaultErrorStrategy;
 
-var ATNDeserializer = __webpack_require__(/*! ./atn/ATNDeserializer */ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/ATNDeserializer.js").ATNDeserializer;
+var ATNDeserializer = __webpack_require__(/*! ./atn/ATNDeserializer */ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/ATNDeserializer.js").ATNDeserializer;
 
-var ATNDeserializationOptions = __webpack_require__(/*! ./atn/ATNDeserializationOptions */ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/ATNDeserializationOptions.js").ATNDeserializationOptions;
+var ATNDeserializationOptions = __webpack_require__(/*! ./atn/ATNDeserializationOptions */ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/ATNDeserializationOptions.js").ATNDeserializationOptions;
 
-var TerminalNode = __webpack_require__(/*! ./tree/Tree */ "./node_modules/solidity-parser-antlr/dist/antlr4/tree/Tree.js").TerminalNode;
+var TerminalNode = __webpack_require__(/*! ./tree/Tree */ "./node_modules/solidity-parser-diligence/dist/antlr4/tree/Tree.js").TerminalNode;
 
-var ErrorNode = __webpack_require__(/*! ./tree/Tree */ "./node_modules/solidity-parser-antlr/dist/antlr4/tree/Tree.js").ErrorNode;
+var ErrorNode = __webpack_require__(/*! ./tree/Tree */ "./node_modules/solidity-parser-diligence/dist/antlr4/tree/Tree.js").ErrorNode;
 
 function TraceListener(parser) {
   ParseTreeListener.call(this);
@@ -39638,7 +39393,7 @@ Parser.prototype.getATNWithBypassAlts = function () {
 // </pre>
 
 
-var Lexer = __webpack_require__(/*! ./Lexer */ "./node_modules/solidity-parser-antlr/dist/antlr4/Lexer.js").Lexer;
+var Lexer = __webpack_require__(/*! ./Lexer */ "./node_modules/solidity-parser-diligence/dist/antlr4/Lexer.js").Lexer;
 
 Parser.prototype.compileParseTreePattern = function (pattern, patternRuleIndex, lexer) {
   lexer = lexer || null;
@@ -40061,10 +39816,10 @@ exports.Parser = Parser;
 
 /***/ }),
 
-/***/ "./node_modules/solidity-parser-antlr/dist/antlr4/ParserRuleContext.js":
-/*!*****************************************************************************!*\
-  !*** ./node_modules/solidity-parser-antlr/dist/antlr4/ParserRuleContext.js ***!
-  \*****************************************************************************/
+/***/ "./node_modules/solidity-parser-diligence/dist/antlr4/ParserRuleContext.js":
+/*!*********************************************************************************!*\
+  !*** ./node_modules/solidity-parser-diligence/dist/antlr4/ParserRuleContext.js ***!
+  \*********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -40097,16 +39852,16 @@ exports.Parser = Parser;
 //  group values such as this aggregate.  The getters/setters are there to
 //  satisfy the superclass interface.
 
-var RuleContext = __webpack_require__(/*! ./RuleContext */ "./node_modules/solidity-parser-antlr/dist/antlr4/RuleContext.js").RuleContext;
+var RuleContext = __webpack_require__(/*! ./RuleContext */ "./node_modules/solidity-parser-diligence/dist/antlr4/RuleContext.js").RuleContext;
 
-var Tree = __webpack_require__(/*! ./tree/Tree */ "./node_modules/solidity-parser-antlr/dist/antlr4/tree/Tree.js");
+var Tree = __webpack_require__(/*! ./tree/Tree */ "./node_modules/solidity-parser-diligence/dist/antlr4/tree/Tree.js");
 
 var INVALID_INTERVAL = Tree.INVALID_INTERVAL;
 var TerminalNode = Tree.TerminalNode;
 var TerminalNodeImpl = Tree.TerminalNodeImpl;
 var ErrorNodeImpl = Tree.ErrorNodeImpl;
 
-var Interval = __webpack_require__(/*! ./IntervalSet */ "./node_modules/solidity-parser-antlr/dist/antlr4/IntervalSet.js").Interval;
+var Interval = __webpack_require__(/*! ./IntervalSet */ "./node_modules/solidity-parser-diligence/dist/antlr4/IntervalSet.js").Interval;
 
 function ParserRuleContext(parent, invokingStateNumber) {
   parent = parent || null;
@@ -40309,10 +40064,10 @@ exports.ParserRuleContext = ParserRuleContext;
 
 /***/ }),
 
-/***/ "./node_modules/solidity-parser-antlr/dist/antlr4/PredictionContext.js":
-/*!*****************************************************************************!*\
-  !*** ./node_modules/solidity-parser-antlr/dist/antlr4/PredictionContext.js ***!
-  \*****************************************************************************/
+/***/ "./node_modules/solidity-parser-diligence/dist/antlr4/PredictionContext.js":
+/*!*********************************************************************************!*\
+  !*** ./node_modules/solidity-parser-diligence/dist/antlr4/PredictionContext.js ***!
+  \*********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -40325,9 +40080,9 @@ exports.ParserRuleContext = ParserRuleContext;
  */
 ///
 
-var RuleContext = __webpack_require__(/*! ./RuleContext */ "./node_modules/solidity-parser-antlr/dist/antlr4/RuleContext.js").RuleContext;
+var RuleContext = __webpack_require__(/*! ./RuleContext */ "./node_modules/solidity-parser-diligence/dist/antlr4/RuleContext.js").RuleContext;
 
-var Hash = __webpack_require__(/*! ./Utils */ "./node_modules/solidity-parser-antlr/dist/antlr4/Utils.js").Hash;
+var Hash = __webpack_require__(/*! ./Utils */ "./node_modules/solidity-parser-diligence/dist/antlr4/Utils.js").Hash;
 
 function PredictionContext(cachedHashCode) {
   this.cachedHashCode = cachedHashCode;
@@ -41132,10 +40887,10 @@ exports.getCachedPredictionContext = getCachedPredictionContext;
 
 /***/ }),
 
-/***/ "./node_modules/solidity-parser-antlr/dist/antlr4/Recognizer.js":
-/*!**********************************************************************!*\
-  !*** ./node_modules/solidity-parser-antlr/dist/antlr4/Recognizer.js ***!
-  \**********************************************************************/
+/***/ "./node_modules/solidity-parser-diligence/dist/antlr4/Recognizer.js":
+/*!**************************************************************************!*\
+  !*** ./node_modules/solidity-parser-diligence/dist/antlr4/Recognizer.js ***!
+  \**************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -41148,11 +40903,11 @@ exports.getCachedPredictionContext = getCachedPredictionContext;
  */
 //
 
-var Token = __webpack_require__(/*! ./Token */ "./node_modules/solidity-parser-antlr/dist/antlr4/Token.js").Token;
+var Token = __webpack_require__(/*! ./Token */ "./node_modules/solidity-parser-diligence/dist/antlr4/Token.js").Token;
 
-var ConsoleErrorListener = __webpack_require__(/*! ./error/ErrorListener */ "./node_modules/solidity-parser-antlr/dist/antlr4/error/ErrorListener.js").ConsoleErrorListener;
+var ConsoleErrorListener = __webpack_require__(/*! ./error/ErrorListener */ "./node_modules/solidity-parser-diligence/dist/antlr4/error/ErrorListener.js").ConsoleErrorListener;
 
-var ProxyErrorListener = __webpack_require__(/*! ./error/ErrorListener */ "./node_modules/solidity-parser-antlr/dist/antlr4/error/ErrorListener.js").ProxyErrorListener;
+var ProxyErrorListener = __webpack_require__(/*! ./error/ErrorListener */ "./node_modules/solidity-parser-diligence/dist/antlr4/error/ErrorListener.js").ProxyErrorListener;
 
 function Recognizer() {
   this._listeners = [ConsoleErrorListener.INSTANCE];
@@ -41304,10 +41059,10 @@ exports.Recognizer = Recognizer;
 
 /***/ }),
 
-/***/ "./node_modules/solidity-parser-antlr/dist/antlr4/RuleContext.js":
-/*!***********************************************************************!*\
-  !*** ./node_modules/solidity-parser-antlr/dist/antlr4/RuleContext.js ***!
-  \***********************************************************************/
+/***/ "./node_modules/solidity-parser-diligence/dist/antlr4/RuleContext.js":
+/*!***************************************************************************!*\
+  !*** ./node_modules/solidity-parser-diligence/dist/antlr4/RuleContext.js ***!
+  \***************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -41339,11 +41094,11 @@ exports.Recognizer = Recognizer;
 //  @see ParserRuleContext
 ///
 
-var RuleNode = __webpack_require__(/*! ./tree/Tree */ "./node_modules/solidity-parser-antlr/dist/antlr4/tree/Tree.js").RuleNode;
+var RuleNode = __webpack_require__(/*! ./tree/Tree */ "./node_modules/solidity-parser-diligence/dist/antlr4/tree/Tree.js").RuleNode;
 
-var INVALID_INTERVAL = __webpack_require__(/*! ./tree/Tree */ "./node_modules/solidity-parser-antlr/dist/antlr4/tree/Tree.js").INVALID_INTERVAL;
+var INVALID_INTERVAL = __webpack_require__(/*! ./tree/Tree */ "./node_modules/solidity-parser-diligence/dist/antlr4/tree/Tree.js").INVALID_INTERVAL;
 
-var INVALID_ALT_NUMBER = __webpack_require__(/*! ./atn/ATN */ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/ATN.js").INVALID_ALT_NUMBER;
+var INVALID_ALT_NUMBER = __webpack_require__(/*! ./atn/ATN */ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/ATN.js").INVALID_ALT_NUMBER;
 
 function RuleContext(parent, invokingState) {
   RuleNode.call(this); // What context invoked this rule?
@@ -41439,7 +41194,7 @@ RuleContext.prototype.accept = function (visitor) {
 
 exports.RuleContext = RuleContext;
 
-var Trees = __webpack_require__(/*! ./tree/Trees */ "./node_modules/solidity-parser-antlr/dist/antlr4/tree/Trees.js").Trees; // Print out a whole tree, not just a node, in LISP format
+var Trees = __webpack_require__(/*! ./tree/Trees */ "./node_modules/solidity-parser-diligence/dist/antlr4/tree/Trees.js").Trees; // Print out a whole tree, not just a node, in LISP format
 // (root child1 .. childN). Print just a node if this is a leaf.
 //
 
@@ -41478,10 +41233,10 @@ RuleContext.prototype.toString = function (ruleNames, stop) {
 
 /***/ }),
 
-/***/ "./node_modules/solidity-parser-antlr/dist/antlr4/Token.js":
-/*!*****************************************************************!*\
-  !*** ./node_modules/solidity-parser-antlr/dist/antlr4/Token.js ***!
-  \*****************************************************************/
+/***/ "./node_modules/solidity-parser-diligence/dist/antlr4/Token.js":
+/*!*********************************************************************!*\
+  !*** ./node_modules/solidity-parser-diligence/dist/antlr4/Token.js ***!
+  \*********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -41641,10 +41396,10 @@ exports.CommonToken = CommonToken;
 
 /***/ }),
 
-/***/ "./node_modules/solidity-parser-antlr/dist/antlr4/Utils.js":
-/*!*****************************************************************!*\
-  !*** ./node_modules/solidity-parser-antlr/dist/antlr4/Utils.js ***!
-  \*****************************************************************/
+/***/ "./node_modules/solidity-parser-diligence/dist/antlr4/Utils.js":
+/*!*********************************************************************!*\
+  !*** ./node_modules/solidity-parser-diligence/dist/antlr4/Utils.js ***!
+  \*********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -42137,10 +41892,10 @@ exports.equalArrays = equalArrays;
 
 /***/ }),
 
-/***/ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/ATN.js":
-/*!*******************************************************************!*\
-  !*** ./node_modules/solidity-parser-antlr/dist/antlr4/atn/ATN.js ***!
-  \*******************************************************************/
+/***/ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/ATN.js":
+/*!***********************************************************************!*\
+  !*** ./node_modules/solidity-parser-diligence/dist/antlr4/atn/ATN.js ***!
+  \***********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -42151,9 +41906,9 @@ exports.equalArrays = equalArrays;
  * can be found in the LICENSE.txt file in the project root.
  */
 
-var LL1Analyzer = __webpack_require__(/*! ./../LL1Analyzer */ "./node_modules/solidity-parser-antlr/dist/antlr4/LL1Analyzer.js").LL1Analyzer;
+var LL1Analyzer = __webpack_require__(/*! ./../LL1Analyzer */ "./node_modules/solidity-parser-diligence/dist/antlr4/LL1Analyzer.js").LL1Analyzer;
 
-var IntervalSet = __webpack_require__(/*! ./../IntervalSet */ "./node_modules/solidity-parser-antlr/dist/antlr4/IntervalSet.js").IntervalSet;
+var IntervalSet = __webpack_require__(/*! ./../IntervalSet */ "./node_modules/solidity-parser-diligence/dist/antlr4/IntervalSet.js").IntervalSet;
 
 function ATN(grammarType, maxTokenType) {
   // Used for runtime deserialization of ATNs from strings///
@@ -42258,7 +42013,7 @@ ATN.prototype.getDecisionState = function (decision) {
 // number {@code stateNumber}
 
 
-var Token = __webpack_require__(/*! ./../Token */ "./node_modules/solidity-parser-antlr/dist/antlr4/Token.js").Token;
+var Token = __webpack_require__(/*! ./../Token */ "./node_modules/solidity-parser-diligence/dist/antlr4/Token.js").Token;
 
 ATN.prototype.getExpectedTokens = function (stateNumber, ctx) {
   if (stateNumber < 0 || stateNumber >= this.states.length) {
@@ -42297,10 +42052,10 @@ exports.ATN = ATN;
 
 /***/ }),
 
-/***/ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/ATNConfig.js":
-/*!*************************************************************************!*\
-  !*** ./node_modules/solidity-parser-antlr/dist/antlr4/atn/ATNConfig.js ***!
-  \*************************************************************************/
+/***/ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/ATNConfig.js":
+/*!*****************************************************************************!*\
+  !*** ./node_modules/solidity-parser-diligence/dist/antlr4/atn/ATNConfig.js ***!
+  \*****************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -42320,11 +42075,11 @@ exports.ATN = ATN;
 //  an ATN state.
 ///
 
-var DecisionState = __webpack_require__(/*! ./ATNState */ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/ATNState.js").DecisionState;
+var DecisionState = __webpack_require__(/*! ./ATNState */ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/ATNState.js").DecisionState;
 
-var SemanticContext = __webpack_require__(/*! ./SemanticContext */ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/SemanticContext.js").SemanticContext;
+var SemanticContext = __webpack_require__(/*! ./SemanticContext */ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/SemanticContext.js").SemanticContext;
 
-var Hash = __webpack_require__(/*! ../Utils */ "./node_modules/solidity-parser-antlr/dist/antlr4/Utils.js").Hash;
+var Hash = __webpack_require__(/*! ../Utils */ "./node_modules/solidity-parser-diligence/dist/antlr4/Utils.js").Hash;
 
 function checkParams(params, isCfg) {
   if (params === null) {
@@ -42464,10 +42219,10 @@ exports.LexerATNConfig = LexerATNConfig;
 
 /***/ }),
 
-/***/ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/ATNConfigSet.js":
-/*!****************************************************************************!*\
-  !*** ./node_modules/solidity-parser-antlr/dist/antlr4/atn/ATNConfigSet.js ***!
-  \****************************************************************************/
+/***/ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/ATNConfigSet.js":
+/*!********************************************************************************!*\
+  !*** ./node_modules/solidity-parser-diligence/dist/antlr4/atn/ATNConfigSet.js ***!
+  \********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -42484,16 +42239,16 @@ exports.LexerATNConfig = LexerATNConfig;
 // graph-structured stack.
 ///
 
-var ATN = __webpack_require__(/*! ./ATN */ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/ATN.js").ATN;
+var ATN = __webpack_require__(/*! ./ATN */ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/ATN.js").ATN;
 
-var Utils = __webpack_require__(/*! ./../Utils */ "./node_modules/solidity-parser-antlr/dist/antlr4/Utils.js");
+var Utils = __webpack_require__(/*! ./../Utils */ "./node_modules/solidity-parser-diligence/dist/antlr4/Utils.js");
 
 var Hash = Utils.Hash;
 var Set = Utils.Set;
 
-var SemanticContext = __webpack_require__(/*! ./SemanticContext */ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/SemanticContext.js").SemanticContext;
+var SemanticContext = __webpack_require__(/*! ./SemanticContext */ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/SemanticContext.js").SemanticContext;
 
-var merge = __webpack_require__(/*! ./../PredictionContext */ "./node_modules/solidity-parser-antlr/dist/antlr4/PredictionContext.js").merge;
+var merge = __webpack_require__(/*! ./../PredictionContext */ "./node_modules/solidity-parser-diligence/dist/antlr4/PredictionContext.js").merge;
 
 function hashATNConfig(c) {
   return c.hashCodeForConfigSet();
@@ -42736,10 +42491,10 @@ exports.OrderedATNConfigSet = OrderedATNConfigSet;
 
 /***/ }),
 
-/***/ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/ATNDeserializationOptions.js":
-/*!*****************************************************************************************!*\
-  !*** ./node_modules/solidity-parser-antlr/dist/antlr4/atn/ATNDeserializationOptions.js ***!
-  \*****************************************************************************************/
+/***/ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/ATNDeserializationOptions.js":
+/*!*********************************************************************************************!*\
+  !*** ./node_modules/solidity-parser-diligence/dist/antlr4/atn/ATNDeserializationOptions.js ***!
+  \*********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -42771,10 +42526,10 @@ exports.ATNDeserializationOptions = ATNDeserializationOptions;
 
 /***/ }),
 
-/***/ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/ATNDeserializer.js":
-/*!*******************************************************************************!*\
-  !*** ./node_modules/solidity-parser-antlr/dist/antlr4/atn/ATNDeserializer.js ***!
-  \*******************************************************************************/
+/***/ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/ATNDeserializer.js":
+/*!***********************************************************************************!*\
+  !*** ./node_modules/solidity-parser-diligence/dist/antlr4/atn/ATNDeserializer.js ***!
+  \***********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -42785,13 +42540,13 @@ exports.ATNDeserializationOptions = ATNDeserializationOptions;
  * can be found in the LICENSE.txt file in the project root.
  */
 
-var Token = __webpack_require__(/*! ./../Token */ "./node_modules/solidity-parser-antlr/dist/antlr4/Token.js").Token;
+var Token = __webpack_require__(/*! ./../Token */ "./node_modules/solidity-parser-diligence/dist/antlr4/Token.js").Token;
 
-var ATN = __webpack_require__(/*! ./ATN */ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/ATN.js").ATN;
+var ATN = __webpack_require__(/*! ./ATN */ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/ATN.js").ATN;
 
-var ATNType = __webpack_require__(/*! ./ATNType */ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/ATNType.js").ATNType;
+var ATNType = __webpack_require__(/*! ./ATNType */ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/ATNType.js").ATNType;
 
-var ATNStates = __webpack_require__(/*! ./ATNState */ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/ATNState.js");
+var ATNStates = __webpack_require__(/*! ./ATNState */ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/ATNState.js");
 
 var ATNState = ATNStates.ATNState;
 var BasicState = ATNStates.BasicState;
@@ -42809,7 +42564,7 @@ var PlusBlockStartState = ATNStates.PlusBlockStartState;
 var StarBlockStartState = ATNStates.StarBlockStartState;
 var BasicBlockStartState = ATNStates.BasicBlockStartState;
 
-var Transitions = __webpack_require__(/*! ./Transition */ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/Transition.js");
+var Transitions = __webpack_require__(/*! ./Transition */ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/Transition.js");
 
 var Transition = Transitions.Transition;
 var AtomTransition = Transitions.AtomTransition;
@@ -42823,13 +42578,13 @@ var WildcardTransition = Transitions.WildcardTransition;
 var PredicateTransition = Transitions.PredicateTransition;
 var PrecedencePredicateTransition = Transitions.PrecedencePredicateTransition;
 
-var IntervalSet = __webpack_require__(/*! ./../IntervalSet */ "./node_modules/solidity-parser-antlr/dist/antlr4/IntervalSet.js").IntervalSet;
+var IntervalSet = __webpack_require__(/*! ./../IntervalSet */ "./node_modules/solidity-parser-diligence/dist/antlr4/IntervalSet.js").IntervalSet;
 
-var Interval = __webpack_require__(/*! ./../IntervalSet */ "./node_modules/solidity-parser-antlr/dist/antlr4/IntervalSet.js").Interval;
+var Interval = __webpack_require__(/*! ./../IntervalSet */ "./node_modules/solidity-parser-diligence/dist/antlr4/IntervalSet.js").Interval;
 
-var ATNDeserializationOptions = __webpack_require__(/*! ./ATNDeserializationOptions */ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/ATNDeserializationOptions.js").ATNDeserializationOptions;
+var ATNDeserializationOptions = __webpack_require__(/*! ./ATNDeserializationOptions */ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/ATNDeserializationOptions.js").ATNDeserializationOptions;
 
-var LexerActions = __webpack_require__(/*! ./LexerAction */ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/LexerAction.js");
+var LexerActions = __webpack_require__(/*! ./LexerAction */ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/LexerAction.js");
 
 var LexerActionType = LexerActions.LexerActionType;
 var LexerSkipAction = LexerActions.LexerSkipAction;
@@ -43607,10 +43362,10 @@ exports.ATNDeserializer = ATNDeserializer;
 
 /***/ }),
 
-/***/ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/ATNSimulator.js":
-/*!****************************************************************************!*\
-  !*** ./node_modules/solidity-parser-antlr/dist/antlr4/atn/ATNSimulator.js ***!
-  \****************************************************************************/
+/***/ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/ATNSimulator.js":
+/*!********************************************************************************!*\
+  !*** ./node_modules/solidity-parser-diligence/dist/antlr4/atn/ATNSimulator.js ***!
+  \********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -43623,11 +43378,11 @@ exports.ATNDeserializer = ATNDeserializer;
  */
 ///
 
-var DFAState = __webpack_require__(/*! ./../dfa/DFAState */ "./node_modules/solidity-parser-antlr/dist/antlr4/dfa/DFAState.js").DFAState;
+var DFAState = __webpack_require__(/*! ./../dfa/DFAState */ "./node_modules/solidity-parser-diligence/dist/antlr4/dfa/DFAState.js").DFAState;
 
-var ATNConfigSet = __webpack_require__(/*! ./ATNConfigSet */ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/ATNConfigSet.js").ATNConfigSet;
+var ATNConfigSet = __webpack_require__(/*! ./ATNConfigSet */ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/ATNConfigSet.js").ATNConfigSet;
 
-var getCachedPredictionContext = __webpack_require__(/*! ./../PredictionContext */ "./node_modules/solidity-parser-antlr/dist/antlr4/PredictionContext.js").getCachedPredictionContext;
+var getCachedPredictionContext = __webpack_require__(/*! ./../PredictionContext */ "./node_modules/solidity-parser-diligence/dist/antlr4/PredictionContext.js").getCachedPredictionContext;
 
 function ATNSimulator(atn, sharedContextCache) {
   // The context cache maps all PredictionContext objects that are ==
@@ -43671,10 +43426,10 @@ exports.ATNSimulator = ATNSimulator;
 
 /***/ }),
 
-/***/ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/ATNState.js":
-/*!************************************************************************!*\
-  !*** ./node_modules/solidity-parser-antlr/dist/antlr4/atn/ATNState.js ***!
-  \************************************************************************/
+/***/ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/ATNState.js":
+/*!****************************************************************************!*\
+  !*** ./node_modules/solidity-parser-diligence/dist/antlr4/atn/ATNState.js ***!
+  \****************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -43976,10 +43731,10 @@ exports.BasicBlockStartState = BasicBlockStartState;
 
 /***/ }),
 
-/***/ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/ATNType.js":
-/*!***********************************************************************!*\
-  !*** ./node_modules/solidity-parser-antlr/dist/antlr4/atn/ATNType.js ***!
-  \***********************************************************************/
+/***/ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/ATNType.js":
+/*!***************************************************************************!*\
+  !*** ./node_modules/solidity-parser-diligence/dist/antlr4/atn/ATNType.js ***!
+  \***************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -44000,10 +43755,10 @@ exports.ATNType = ATNType;
 
 /***/ }),
 
-/***/ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/LexerATNSimulator.js":
-/*!*********************************************************************************!*\
-  !*** ./node_modules/solidity-parser-antlr/dist/antlr4/atn/LexerATNSimulator.js ***!
-  \*********************************************************************************/
+/***/ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/LexerATNSimulator.js":
+/*!*************************************************************************************!*\
+  !*** ./node_modules/solidity-parser-diligence/dist/antlr4/atn/LexerATNSimulator.js ***!
+  \*************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -44031,33 +43786,33 @@ exports.ATNType = ATNType;
 //  can simply return the predicted token type.</p>
 ///
 
-var Token = __webpack_require__(/*! ./../Token */ "./node_modules/solidity-parser-antlr/dist/antlr4/Token.js").Token;
+var Token = __webpack_require__(/*! ./../Token */ "./node_modules/solidity-parser-diligence/dist/antlr4/Token.js").Token;
 
-var Lexer = __webpack_require__(/*! ./../Lexer */ "./node_modules/solidity-parser-antlr/dist/antlr4/Lexer.js").Lexer;
+var Lexer = __webpack_require__(/*! ./../Lexer */ "./node_modules/solidity-parser-diligence/dist/antlr4/Lexer.js").Lexer;
 
-var ATN = __webpack_require__(/*! ./ATN */ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/ATN.js").ATN;
+var ATN = __webpack_require__(/*! ./ATN */ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/ATN.js").ATN;
 
-var ATNSimulator = __webpack_require__(/*! ./ATNSimulator */ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/ATNSimulator.js").ATNSimulator;
+var ATNSimulator = __webpack_require__(/*! ./ATNSimulator */ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/ATNSimulator.js").ATNSimulator;
 
-var DFAState = __webpack_require__(/*! ./../dfa/DFAState */ "./node_modules/solidity-parser-antlr/dist/antlr4/dfa/DFAState.js").DFAState;
+var DFAState = __webpack_require__(/*! ./../dfa/DFAState */ "./node_modules/solidity-parser-diligence/dist/antlr4/dfa/DFAState.js").DFAState;
 
-var ATNConfigSet = __webpack_require__(/*! ./ATNConfigSet */ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/ATNConfigSet.js").ATNConfigSet;
+var ATNConfigSet = __webpack_require__(/*! ./ATNConfigSet */ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/ATNConfigSet.js").ATNConfigSet;
 
-var OrderedATNConfigSet = __webpack_require__(/*! ./ATNConfigSet */ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/ATNConfigSet.js").OrderedATNConfigSet;
+var OrderedATNConfigSet = __webpack_require__(/*! ./ATNConfigSet */ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/ATNConfigSet.js").OrderedATNConfigSet;
 
-var PredictionContext = __webpack_require__(/*! ./../PredictionContext */ "./node_modules/solidity-parser-antlr/dist/antlr4/PredictionContext.js").PredictionContext;
+var PredictionContext = __webpack_require__(/*! ./../PredictionContext */ "./node_modules/solidity-parser-diligence/dist/antlr4/PredictionContext.js").PredictionContext;
 
-var SingletonPredictionContext = __webpack_require__(/*! ./../PredictionContext */ "./node_modules/solidity-parser-antlr/dist/antlr4/PredictionContext.js").SingletonPredictionContext;
+var SingletonPredictionContext = __webpack_require__(/*! ./../PredictionContext */ "./node_modules/solidity-parser-diligence/dist/antlr4/PredictionContext.js").SingletonPredictionContext;
 
-var RuleStopState = __webpack_require__(/*! ./ATNState */ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/ATNState.js").RuleStopState;
+var RuleStopState = __webpack_require__(/*! ./ATNState */ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/ATNState.js").RuleStopState;
 
-var LexerATNConfig = __webpack_require__(/*! ./ATNConfig */ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/ATNConfig.js").LexerATNConfig;
+var LexerATNConfig = __webpack_require__(/*! ./ATNConfig */ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/ATNConfig.js").LexerATNConfig;
 
-var Transition = __webpack_require__(/*! ./Transition */ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/Transition.js").Transition;
+var Transition = __webpack_require__(/*! ./Transition */ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/Transition.js").Transition;
 
-var LexerActionExecutor = __webpack_require__(/*! ./LexerActionExecutor */ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/LexerActionExecutor.js").LexerActionExecutor;
+var LexerActionExecutor = __webpack_require__(/*! ./LexerActionExecutor */ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/LexerActionExecutor.js").LexerActionExecutor;
 
-var LexerNoViableAltException = __webpack_require__(/*! ./../error/Errors */ "./node_modules/solidity-parser-antlr/dist/antlr4/error/Errors.js").LexerNoViableAltException;
+var LexerNoViableAltException = __webpack_require__(/*! ./../error/Errors */ "./node_modules/solidity-parser-diligence/dist/antlr4/error/Errors.js").LexerNoViableAltException;
 
 function resetSimState(sim) {
   sim.index = -1;
@@ -44730,10 +44485,10 @@ exports.LexerATNSimulator = LexerATNSimulator;
 
 /***/ }),
 
-/***/ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/LexerAction.js":
-/*!***************************************************************************!*\
-  !*** ./node_modules/solidity-parser-antlr/dist/antlr4/atn/LexerAction.js ***!
-  \***************************************************************************/
+/***/ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/LexerAction.js":
+/*!*******************************************************************************!*\
+  !*** ./node_modules/solidity-parser-diligence/dist/antlr4/atn/LexerAction.js ***!
+  \*******************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -45094,10 +44849,10 @@ exports.LexerModeAction = LexerModeAction;
 
 /***/ }),
 
-/***/ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/LexerActionExecutor.js":
-/*!***********************************************************************************!*\
-  !*** ./node_modules/solidity-parser-antlr/dist/antlr4/atn/LexerActionExecutor.js ***!
-  \***********************************************************************************/
+/***/ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/LexerActionExecutor.js":
+/*!***************************************************************************************!*\
+  !*** ./node_modules/solidity-parser-diligence/dist/antlr4/atn/LexerActionExecutor.js ***!
+  \***************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -45116,9 +44871,9 @@ exports.LexerModeAction = LexerModeAction;
 // efficiently, ensuring that actions appearing only at the end of the rule do
 // not cause bloating of the {@link DFA} created for the lexer.</p>
 
-var hashStuff = __webpack_require__(/*! ../Utils */ "./node_modules/solidity-parser-antlr/dist/antlr4/Utils.js").hashStuff;
+var hashStuff = __webpack_require__(/*! ../Utils */ "./node_modules/solidity-parser-diligence/dist/antlr4/Utils.js").hashStuff;
 
-var LexerIndexedCustomAction = __webpack_require__(/*! ./LexerAction */ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/LexerAction.js").LexerIndexedCustomAction;
+var LexerIndexedCustomAction = __webpack_require__(/*! ./LexerAction */ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/LexerAction.js").LexerIndexedCustomAction;
 
 function LexerActionExecutor(lexerActions) {
   this.lexerActions = lexerActions === null ? [] : lexerActions; // Caches the result of {@link //hashCode} since the hash code is an element
@@ -45279,10 +45034,10 @@ exports.LexerActionExecutor = LexerActionExecutor;
 
 /***/ }),
 
-/***/ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/ParserATNSimulator.js":
-/*!**********************************************************************************!*\
-  !*** ./node_modules/solidity-parser-antlr/dist/antlr4/atn/ParserATNSimulator.js ***!
-  \**********************************************************************************/
+/***/ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/ParserATNSimulator.js":
+/*!**************************************************************************************!*\
+  !*** ./node_modules/solidity-parser-diligence/dist/antlr4/atn/ParserATNSimulator.js ***!
+  \**************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -45522,45 +45277,45 @@ exports.LexerActionExecutor = LexerActionExecutor;
 // the input.</p>
 //
 
-var Utils = __webpack_require__(/*! ./../Utils */ "./node_modules/solidity-parser-antlr/dist/antlr4/Utils.js");
+var Utils = __webpack_require__(/*! ./../Utils */ "./node_modules/solidity-parser-diligence/dist/antlr4/Utils.js");
 
 var Set = Utils.Set;
 var BitSet = Utils.BitSet;
 var DoubleDict = Utils.DoubleDict;
 
-var ATN = __webpack_require__(/*! ./ATN */ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/ATN.js").ATN;
+var ATN = __webpack_require__(/*! ./ATN */ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/ATN.js").ATN;
 
-var ATNState = __webpack_require__(/*! ./ATNState */ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/ATNState.js").ATNState;
+var ATNState = __webpack_require__(/*! ./ATNState */ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/ATNState.js").ATNState;
 
-var ATNConfig = __webpack_require__(/*! ./ATNConfig */ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/ATNConfig.js").ATNConfig;
+var ATNConfig = __webpack_require__(/*! ./ATNConfig */ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/ATNConfig.js").ATNConfig;
 
-var ATNConfigSet = __webpack_require__(/*! ./ATNConfigSet */ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/ATNConfigSet.js").ATNConfigSet;
+var ATNConfigSet = __webpack_require__(/*! ./ATNConfigSet */ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/ATNConfigSet.js").ATNConfigSet;
 
-var Token = __webpack_require__(/*! ./../Token */ "./node_modules/solidity-parser-antlr/dist/antlr4/Token.js").Token;
+var Token = __webpack_require__(/*! ./../Token */ "./node_modules/solidity-parser-diligence/dist/antlr4/Token.js").Token;
 
-var DFAState = __webpack_require__(/*! ./../dfa/DFAState */ "./node_modules/solidity-parser-antlr/dist/antlr4/dfa/DFAState.js").DFAState;
+var DFAState = __webpack_require__(/*! ./../dfa/DFAState */ "./node_modules/solidity-parser-diligence/dist/antlr4/dfa/DFAState.js").DFAState;
 
-var PredPrediction = __webpack_require__(/*! ./../dfa/DFAState */ "./node_modules/solidity-parser-antlr/dist/antlr4/dfa/DFAState.js").PredPrediction;
+var PredPrediction = __webpack_require__(/*! ./../dfa/DFAState */ "./node_modules/solidity-parser-diligence/dist/antlr4/dfa/DFAState.js").PredPrediction;
 
-var ATNSimulator = __webpack_require__(/*! ./ATNSimulator */ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/ATNSimulator.js").ATNSimulator;
+var ATNSimulator = __webpack_require__(/*! ./ATNSimulator */ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/ATNSimulator.js").ATNSimulator;
 
-var PredictionMode = __webpack_require__(/*! ./PredictionMode */ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/PredictionMode.js").PredictionMode;
+var PredictionMode = __webpack_require__(/*! ./PredictionMode */ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/PredictionMode.js").PredictionMode;
 
-var RuleContext = __webpack_require__(/*! ./../RuleContext */ "./node_modules/solidity-parser-antlr/dist/antlr4/RuleContext.js").RuleContext;
+var RuleContext = __webpack_require__(/*! ./../RuleContext */ "./node_modules/solidity-parser-diligence/dist/antlr4/RuleContext.js").RuleContext;
 
-var ParserRuleContext = __webpack_require__(/*! ./../ParserRuleContext */ "./node_modules/solidity-parser-antlr/dist/antlr4/ParserRuleContext.js").ParserRuleContext;
+var ParserRuleContext = __webpack_require__(/*! ./../ParserRuleContext */ "./node_modules/solidity-parser-diligence/dist/antlr4/ParserRuleContext.js").ParserRuleContext;
 
-var SemanticContext = __webpack_require__(/*! ./SemanticContext */ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/SemanticContext.js").SemanticContext;
+var SemanticContext = __webpack_require__(/*! ./SemanticContext */ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/SemanticContext.js").SemanticContext;
 
-var StarLoopEntryState = __webpack_require__(/*! ./ATNState */ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/ATNState.js").StarLoopEntryState;
+var StarLoopEntryState = __webpack_require__(/*! ./ATNState */ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/ATNState.js").StarLoopEntryState;
 
-var RuleStopState = __webpack_require__(/*! ./ATNState */ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/ATNState.js").RuleStopState;
+var RuleStopState = __webpack_require__(/*! ./ATNState */ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/ATNState.js").RuleStopState;
 
-var PredictionContext = __webpack_require__(/*! ./../PredictionContext */ "./node_modules/solidity-parser-antlr/dist/antlr4/PredictionContext.js").PredictionContext;
+var PredictionContext = __webpack_require__(/*! ./../PredictionContext */ "./node_modules/solidity-parser-diligence/dist/antlr4/PredictionContext.js").PredictionContext;
 
-var Interval = __webpack_require__(/*! ./../IntervalSet */ "./node_modules/solidity-parser-antlr/dist/antlr4/IntervalSet.js").Interval;
+var Interval = __webpack_require__(/*! ./../IntervalSet */ "./node_modules/solidity-parser-diligence/dist/antlr4/IntervalSet.js").Interval;
 
-var Transitions = __webpack_require__(/*! ./Transition */ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/Transition.js");
+var Transitions = __webpack_require__(/*! ./Transition */ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/Transition.js");
 
 var Transition = Transitions.Transition;
 var SetTransition = Transitions.SetTransition;
@@ -45568,11 +45323,11 @@ var NotSetTransition = Transitions.NotSetTransition;
 var RuleTransition = Transitions.RuleTransition;
 var ActionTransition = Transitions.ActionTransition;
 
-var NoViableAltException = __webpack_require__(/*! ./../error/Errors */ "./node_modules/solidity-parser-antlr/dist/antlr4/error/Errors.js").NoViableAltException;
+var NoViableAltException = __webpack_require__(/*! ./../error/Errors */ "./node_modules/solidity-parser-diligence/dist/antlr4/error/Errors.js").NoViableAltException;
 
-var SingletonPredictionContext = __webpack_require__(/*! ./../PredictionContext */ "./node_modules/solidity-parser-antlr/dist/antlr4/PredictionContext.js").SingletonPredictionContext;
+var SingletonPredictionContext = __webpack_require__(/*! ./../PredictionContext */ "./node_modules/solidity-parser-diligence/dist/antlr4/PredictionContext.js").SingletonPredictionContext;
 
-var predictionContextFromRuleContext = __webpack_require__(/*! ./../PredictionContext */ "./node_modules/solidity-parser-antlr/dist/antlr4/PredictionContext.js").predictionContextFromRuleContext;
+var predictionContextFromRuleContext = __webpack_require__(/*! ./../PredictionContext */ "./node_modules/solidity-parser-diligence/dist/antlr4/PredictionContext.js").predictionContextFromRuleContext;
 
 function ParserATNSimulator(parser, atn, decisionToDFA, sharedContextCache) {
   ATNSimulator.call(this, atn, sharedContextCache);
@@ -47208,10 +46963,10 @@ exports.ParserATNSimulator = ParserATNSimulator;
 
 /***/ }),
 
-/***/ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/PredictionMode.js":
-/*!******************************************************************************!*\
-  !*** ./node_modules/solidity-parser-antlr/dist/antlr4/atn/PredictionMode.js ***!
-  \******************************************************************************/
+/***/ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/PredictionMode.js":
+/*!**********************************************************************************!*\
+  !*** ./node_modules/solidity-parser-diligence/dist/antlr4/atn/PredictionMode.js ***!
+  \**********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -47228,29 +46983,29 @@ exports.ParserATNSimulator = ParserATNSimulator;
 // utility methods for analyzing configuration sets for conflicts and/or
 // ambiguities.
 
-var Set = __webpack_require__(/*! ./../Utils */ "./node_modules/solidity-parser-antlr/dist/antlr4/Utils.js").Set;
+var Set = __webpack_require__(/*! ./../Utils */ "./node_modules/solidity-parser-diligence/dist/antlr4/Utils.js").Set;
 
-var Map = __webpack_require__(/*! ./../Utils */ "./node_modules/solidity-parser-antlr/dist/antlr4/Utils.js").Map;
+var Map = __webpack_require__(/*! ./../Utils */ "./node_modules/solidity-parser-diligence/dist/antlr4/Utils.js").Map;
 
-var BitSet = __webpack_require__(/*! ./../Utils */ "./node_modules/solidity-parser-antlr/dist/antlr4/Utils.js").BitSet;
+var BitSet = __webpack_require__(/*! ./../Utils */ "./node_modules/solidity-parser-diligence/dist/antlr4/Utils.js").BitSet;
 
-var AltDict = __webpack_require__(/*! ./../Utils */ "./node_modules/solidity-parser-antlr/dist/antlr4/Utils.js").AltDict;
+var AltDict = __webpack_require__(/*! ./../Utils */ "./node_modules/solidity-parser-diligence/dist/antlr4/Utils.js").AltDict;
 
-var ATN = __webpack_require__(/*! ./ATN */ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/ATN.js").ATN;
+var ATN = __webpack_require__(/*! ./ATN */ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/ATN.js").ATN;
 
-var RuleStopState = __webpack_require__(/*! ./ATNState */ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/ATNState.js").RuleStopState;
+var RuleStopState = __webpack_require__(/*! ./ATNState */ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/ATNState.js").RuleStopState;
 
-var ATNConfigSet = __webpack_require__(/*! ./ATNConfigSet */ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/ATNConfigSet.js").ATNConfigSet;
+var ATNConfigSet = __webpack_require__(/*! ./ATNConfigSet */ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/ATNConfigSet.js").ATNConfigSet;
 
-var ATNConfig = __webpack_require__(/*! ./ATNConfig */ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/ATNConfig.js").ATNConfig;
+var ATNConfig = __webpack_require__(/*! ./ATNConfig */ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/ATNConfig.js").ATNConfig;
 
-var SemanticContext = __webpack_require__(/*! ./SemanticContext */ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/SemanticContext.js").SemanticContext;
+var SemanticContext = __webpack_require__(/*! ./SemanticContext */ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/SemanticContext.js").SemanticContext;
 
-var Hash = __webpack_require__(/*! ../Utils */ "./node_modules/solidity-parser-antlr/dist/antlr4/Utils.js").Hash;
+var Hash = __webpack_require__(/*! ../Utils */ "./node_modules/solidity-parser-diligence/dist/antlr4/Utils.js").Hash;
 
-var hashStuff = __webpack_require__(/*! ./../Utils */ "./node_modules/solidity-parser-antlr/dist/antlr4/Utils.js").hashStuff;
+var hashStuff = __webpack_require__(/*! ./../Utils */ "./node_modules/solidity-parser-diligence/dist/antlr4/Utils.js").hashStuff;
 
-var equalArrays = __webpack_require__(/*! ./../Utils */ "./node_modules/solidity-parser-antlr/dist/antlr4/Utils.js").equalArrays;
+var equalArrays = __webpack_require__(/*! ./../Utils */ "./node_modules/solidity-parser-diligence/dist/antlr4/Utils.js").equalArrays;
 
 function PredictionMode() {
   return this;
@@ -47825,10 +47580,10 @@ exports.PredictionMode = PredictionMode;
 
 /***/ }),
 
-/***/ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/SemanticContext.js":
-/*!*******************************************************************************!*\
-  !*** ./node_modules/solidity-parser-antlr/dist/antlr4/atn/SemanticContext.js ***!
-  \*******************************************************************************/
+/***/ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/SemanticContext.js":
+/*!***********************************************************************************!*\
+  !*** ./node_modules/solidity-parser-diligence/dist/antlr4/atn/SemanticContext.js ***!
+  \***********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -47848,9 +47603,9 @@ exports.PredictionMode = PredictionMode;
 //  {@link SemanticContext} within the scope of this outer class.</p>
 //
 
-var Set = __webpack_require__(/*! ./../Utils */ "./node_modules/solidity-parser-antlr/dist/antlr4/Utils.js").Set;
+var Set = __webpack_require__(/*! ./../Utils */ "./node_modules/solidity-parser-diligence/dist/antlr4/Utils.js").Set;
 
-var Hash = __webpack_require__(/*! ./../Utils */ "./node_modules/solidity-parser-antlr/dist/antlr4/Utils.js").Hash;
+var Hash = __webpack_require__(/*! ./../Utils */ "./node_modules/solidity-parser-diligence/dist/antlr4/Utils.js").Hash;
 
 function SemanticContext() {
   return this;
@@ -48263,10 +48018,10 @@ exports.Predicate = Predicate;
 
 /***/ }),
 
-/***/ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/Transition.js":
-/*!**************************************************************************!*\
-  !*** ./node_modules/solidity-parser-antlr/dist/antlr4/atn/Transition.js ***!
-  \**************************************************************************/
+/***/ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/Transition.js":
+/*!******************************************************************************!*\
+  !*** ./node_modules/solidity-parser-diligence/dist/antlr4/atn/Transition.js ***!
+  \******************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -48289,15 +48044,15 @@ exports.Predicate = Predicate;
 //  the states. We'll use the term Edge for the DFA to distinguish them from
 //  ATN transitions.</p>
 
-var Token = __webpack_require__(/*! ./../Token */ "./node_modules/solidity-parser-antlr/dist/antlr4/Token.js").Token;
+var Token = __webpack_require__(/*! ./../Token */ "./node_modules/solidity-parser-diligence/dist/antlr4/Token.js").Token;
 
-var Interval = __webpack_require__(/*! ./../IntervalSet */ "./node_modules/solidity-parser-antlr/dist/antlr4/IntervalSet.js").Interval;
+var Interval = __webpack_require__(/*! ./../IntervalSet */ "./node_modules/solidity-parser-diligence/dist/antlr4/IntervalSet.js").Interval;
 
-var IntervalSet = __webpack_require__(/*! ./../IntervalSet */ "./node_modules/solidity-parser-antlr/dist/antlr4/IntervalSet.js").IntervalSet;
+var IntervalSet = __webpack_require__(/*! ./../IntervalSet */ "./node_modules/solidity-parser-diligence/dist/antlr4/IntervalSet.js").IntervalSet;
 
-var Predicate = __webpack_require__(/*! ./SemanticContext */ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/SemanticContext.js").Predicate;
+var Predicate = __webpack_require__(/*! ./SemanticContext */ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/SemanticContext.js").Predicate;
 
-var PrecedencePredicate = __webpack_require__(/*! ./SemanticContext */ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/SemanticContext.js").PrecedencePredicate;
+var PrecedencePredicate = __webpack_require__(/*! ./SemanticContext */ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/SemanticContext.js").PrecedencePredicate;
 
 function Transition(target) {
   // The target of this transition.
@@ -48583,10 +48338,10 @@ exports.AbstractPredicateTransition = AbstractPredicateTransition;
 
 /***/ }),
 
-/***/ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/index.js":
-/*!*********************************************************************!*\
-  !*** ./node_modules/solidity-parser-antlr/dist/antlr4/atn/index.js ***!
-  \*********************************************************************/
+/***/ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/index.js":
+/*!*************************************************************************!*\
+  !*** ./node_modules/solidity-parser-diligence/dist/antlr4/atn/index.js ***!
+  \*************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -48597,18 +48352,18 @@ exports.AbstractPredicateTransition = AbstractPredicateTransition;
  * can be found in the LICENSE.txt file in the project root.
  */
 
-exports.ATN = __webpack_require__(/*! ./ATN */ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/ATN.js").ATN;
-exports.ATNDeserializer = __webpack_require__(/*! ./ATNDeserializer */ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/ATNDeserializer.js").ATNDeserializer;
-exports.LexerATNSimulator = __webpack_require__(/*! ./LexerATNSimulator */ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/LexerATNSimulator.js").LexerATNSimulator;
-exports.ParserATNSimulator = __webpack_require__(/*! ./ParserATNSimulator */ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/ParserATNSimulator.js").ParserATNSimulator;
-exports.PredictionMode = __webpack_require__(/*! ./PredictionMode */ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/PredictionMode.js").PredictionMode;
+exports.ATN = __webpack_require__(/*! ./ATN */ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/ATN.js").ATN;
+exports.ATNDeserializer = __webpack_require__(/*! ./ATNDeserializer */ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/ATNDeserializer.js").ATNDeserializer;
+exports.LexerATNSimulator = __webpack_require__(/*! ./LexerATNSimulator */ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/LexerATNSimulator.js").LexerATNSimulator;
+exports.ParserATNSimulator = __webpack_require__(/*! ./ParserATNSimulator */ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/ParserATNSimulator.js").ParserATNSimulator;
+exports.PredictionMode = __webpack_require__(/*! ./PredictionMode */ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/PredictionMode.js").PredictionMode;
 
 /***/ }),
 
-/***/ "./node_modules/solidity-parser-antlr/dist/antlr4/dfa/DFA.js":
-/*!*******************************************************************!*\
-  !*** ./node_modules/solidity-parser-antlr/dist/antlr4/dfa/DFA.js ***!
-  \*******************************************************************/
+/***/ "./node_modules/solidity-parser-diligence/dist/antlr4/dfa/DFA.js":
+/*!***********************************************************************!*\
+  !*** ./node_modules/solidity-parser-diligence/dist/antlr4/dfa/DFA.js ***!
+  \***********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -48620,17 +48375,17 @@ exports.PredictionMode = __webpack_require__(/*! ./PredictionMode */ "./node_mod
  * can be found in the LICENSE.txt file in the project root.
  */
 
-var Set = __webpack_require__(/*! ../Utils */ "./node_modules/solidity-parser-antlr/dist/antlr4/Utils.js").Set;
+var Set = __webpack_require__(/*! ../Utils */ "./node_modules/solidity-parser-diligence/dist/antlr4/Utils.js").Set;
 
-var DFAState = __webpack_require__(/*! ./DFAState */ "./node_modules/solidity-parser-antlr/dist/antlr4/dfa/DFAState.js").DFAState;
+var DFAState = __webpack_require__(/*! ./DFAState */ "./node_modules/solidity-parser-diligence/dist/antlr4/dfa/DFAState.js").DFAState;
 
-var StarLoopEntryState = __webpack_require__(/*! ../atn/ATNState */ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/ATNState.js").StarLoopEntryState;
+var StarLoopEntryState = __webpack_require__(/*! ../atn/ATNState */ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/ATNState.js").StarLoopEntryState;
 
-var ATNConfigSet = __webpack_require__(/*! ./../atn/ATNConfigSet */ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/ATNConfigSet.js").ATNConfigSet;
+var ATNConfigSet = __webpack_require__(/*! ./../atn/ATNConfigSet */ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/ATNConfigSet.js").ATNConfigSet;
 
-var DFASerializer = __webpack_require__(/*! ./DFASerializer */ "./node_modules/solidity-parser-antlr/dist/antlr4/dfa/DFASerializer.js").DFASerializer;
+var DFASerializer = __webpack_require__(/*! ./DFASerializer */ "./node_modules/solidity-parser-diligence/dist/antlr4/dfa/DFASerializer.js").DFASerializer;
 
-var LexerDFASerializer = __webpack_require__(/*! ./DFASerializer */ "./node_modules/solidity-parser-antlr/dist/antlr4/dfa/DFASerializer.js").LexerDFASerializer;
+var LexerDFASerializer = __webpack_require__(/*! ./DFASerializer */ "./node_modules/solidity-parser-diligence/dist/antlr4/dfa/DFASerializer.js").LexerDFASerializer;
 
 function DFA(atnStartState, decision) {
   if (decision === undefined) {
@@ -48781,10 +48536,10 @@ exports.DFA = DFA;
 
 /***/ }),
 
-/***/ "./node_modules/solidity-parser-antlr/dist/antlr4/dfa/DFASerializer.js":
-/*!*****************************************************************************!*\
-  !*** ./node_modules/solidity-parser-antlr/dist/antlr4/dfa/DFASerializer.js ***!
-  \*****************************************************************************/
+/***/ "./node_modules/solidity-parser-diligence/dist/antlr4/dfa/DFASerializer.js":
+/*!*********************************************************************************!*\
+  !*** ./node_modules/solidity-parser-diligence/dist/antlr4/dfa/DFASerializer.js ***!
+  \*********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -48876,10 +48631,10 @@ exports.LexerDFASerializer = LexerDFASerializer;
 
 /***/ }),
 
-/***/ "./node_modules/solidity-parser-antlr/dist/antlr4/dfa/DFAState.js":
-/*!************************************************************************!*\
-  !*** ./node_modules/solidity-parser-antlr/dist/antlr4/dfa/DFAState.js ***!
-  \************************************************************************/
+/***/ "./node_modules/solidity-parser-diligence/dist/antlr4/dfa/DFAState.js":
+/*!****************************************************************************!*\
+  !*** ./node_modules/solidity-parser-diligence/dist/antlr4/dfa/DFAState.js ***!
+  \****************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -48892,9 +48647,9 @@ exports.LexerDFASerializer = LexerDFASerializer;
  */
 ///
 
-var ATNConfigSet = __webpack_require__(/*! ./../atn/ATNConfigSet */ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/ATNConfigSet.js").ATNConfigSet;
+var ATNConfigSet = __webpack_require__(/*! ./../atn/ATNConfigSet */ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/ATNConfigSet.js").ATNConfigSet;
 
-var Utils = __webpack_require__(/*! ./../Utils */ "./node_modules/solidity-parser-antlr/dist/antlr4/Utils.js");
+var Utils = __webpack_require__(/*! ./../Utils */ "./node_modules/solidity-parser-diligence/dist/antlr4/Utils.js");
 
 var Hash = Utils.Hash;
 var Set = Utils.Set; // Map a predicate to a predicted alternative.///
@@ -49039,10 +48794,10 @@ exports.PredPrediction = PredPrediction;
 
 /***/ }),
 
-/***/ "./node_modules/solidity-parser-antlr/dist/antlr4/dfa/index.js":
-/*!*********************************************************************!*\
-  !*** ./node_modules/solidity-parser-antlr/dist/antlr4/dfa/index.js ***!
-  \*********************************************************************/
+/***/ "./node_modules/solidity-parser-diligence/dist/antlr4/dfa/index.js":
+/*!*************************************************************************!*\
+  !*** ./node_modules/solidity-parser-diligence/dist/antlr4/dfa/index.js ***!
+  \*************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -49053,17 +48808,17 @@ exports.PredPrediction = PredPrediction;
  * can be found in the LICENSE.txt file in the project root.
  */
 
-exports.DFA = __webpack_require__(/*! ./DFA */ "./node_modules/solidity-parser-antlr/dist/antlr4/dfa/DFA.js").DFA;
-exports.DFASerializer = __webpack_require__(/*! ./DFASerializer */ "./node_modules/solidity-parser-antlr/dist/antlr4/dfa/DFASerializer.js").DFASerializer;
-exports.LexerDFASerializer = __webpack_require__(/*! ./DFASerializer */ "./node_modules/solidity-parser-antlr/dist/antlr4/dfa/DFASerializer.js").LexerDFASerializer;
-exports.PredPrediction = __webpack_require__(/*! ./DFAState */ "./node_modules/solidity-parser-antlr/dist/antlr4/dfa/DFAState.js").PredPrediction;
+exports.DFA = __webpack_require__(/*! ./DFA */ "./node_modules/solidity-parser-diligence/dist/antlr4/dfa/DFA.js").DFA;
+exports.DFASerializer = __webpack_require__(/*! ./DFASerializer */ "./node_modules/solidity-parser-diligence/dist/antlr4/dfa/DFASerializer.js").DFASerializer;
+exports.LexerDFASerializer = __webpack_require__(/*! ./DFASerializer */ "./node_modules/solidity-parser-diligence/dist/antlr4/dfa/DFASerializer.js").LexerDFASerializer;
+exports.PredPrediction = __webpack_require__(/*! ./DFAState */ "./node_modules/solidity-parser-diligence/dist/antlr4/dfa/DFAState.js").PredPrediction;
 
 /***/ }),
 
-/***/ "./node_modules/solidity-parser-antlr/dist/antlr4/error/DiagnosticErrorListener.js":
-/*!*****************************************************************************************!*\
-  !*** ./node_modules/solidity-parser-antlr/dist/antlr4/error/DiagnosticErrorListener.js ***!
-  \*****************************************************************************************/
+/***/ "./node_modules/solidity-parser-diligence/dist/antlr4/error/DiagnosticErrorListener.js":
+/*!*********************************************************************************************!*\
+  !*** ./node_modules/solidity-parser-diligence/dist/antlr4/error/DiagnosticErrorListener.js ***!
+  \*********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -49094,11 +48849,11 @@ exports.PredPrediction = __webpack_require__(/*! ./DFAState */ "./node_modules/s
 // this situation occurs.</li>
 // </ul>
 
-var BitSet = __webpack_require__(/*! ./../Utils */ "./node_modules/solidity-parser-antlr/dist/antlr4/Utils.js").BitSet;
+var BitSet = __webpack_require__(/*! ./../Utils */ "./node_modules/solidity-parser-diligence/dist/antlr4/Utils.js").BitSet;
 
-var ErrorListener = __webpack_require__(/*! ./ErrorListener */ "./node_modules/solidity-parser-antlr/dist/antlr4/error/ErrorListener.js").ErrorListener;
+var ErrorListener = __webpack_require__(/*! ./ErrorListener */ "./node_modules/solidity-parser-diligence/dist/antlr4/error/ErrorListener.js").ErrorListener;
 
-var Interval = __webpack_require__(/*! ./../IntervalSet */ "./node_modules/solidity-parser-antlr/dist/antlr4/IntervalSet.js").Interval;
+var Interval = __webpack_require__(/*! ./../IntervalSet */ "./node_modules/solidity-parser-diligence/dist/antlr4/IntervalSet.js").Interval;
 
 function DiagnosticErrorListener(exactOnly) {
   ErrorListener.call(this);
@@ -49177,10 +48932,10 @@ exports.DiagnosticErrorListener = DiagnosticErrorListener;
 
 /***/ }),
 
-/***/ "./node_modules/solidity-parser-antlr/dist/antlr4/error/ErrorListener.js":
-/*!*******************************************************************************!*\
-  !*** ./node_modules/solidity-parser-antlr/dist/antlr4/error/ErrorListener.js ***!
-  \*******************************************************************************/
+/***/ "./node_modules/solidity-parser-diligence/dist/antlr4/error/ErrorListener.js":
+/*!***********************************************************************************!*\
+  !*** ./node_modules/solidity-parser-diligence/dist/antlr4/error/ErrorListener.js ***!
+  \***********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -49278,10 +49033,10 @@ exports.ProxyErrorListener = ProxyErrorListener;
 
 /***/ }),
 
-/***/ "./node_modules/solidity-parser-antlr/dist/antlr4/error/ErrorStrategy.js":
-/*!*******************************************************************************!*\
-  !*** ./node_modules/solidity-parser-antlr/dist/antlr4/error/ErrorStrategy.js ***!
-  \*******************************************************************************/
+/***/ "./node_modules/solidity-parser-diligence/dist/antlr4/error/ErrorStrategy.js":
+/*!***********************************************************************************!*\
+  !*** ./node_modules/solidity-parser-diligence/dist/antlr4/error/ErrorStrategy.js ***!
+  \***********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -49294,20 +49049,20 @@ exports.ProxyErrorListener = ProxyErrorListener;
  */
 //
 
-var Token = __webpack_require__(/*! ./../Token */ "./node_modules/solidity-parser-antlr/dist/antlr4/Token.js").Token;
+var Token = __webpack_require__(/*! ./../Token */ "./node_modules/solidity-parser-diligence/dist/antlr4/Token.js").Token;
 
-var Errors = __webpack_require__(/*! ./Errors */ "./node_modules/solidity-parser-antlr/dist/antlr4/error/Errors.js");
+var Errors = __webpack_require__(/*! ./Errors */ "./node_modules/solidity-parser-diligence/dist/antlr4/error/Errors.js");
 
 var NoViableAltException = Errors.NoViableAltException;
 var InputMismatchException = Errors.InputMismatchException;
 var FailedPredicateException = Errors.FailedPredicateException;
 var ParseCancellationException = Errors.ParseCancellationException;
 
-var ATNState = __webpack_require__(/*! ./../atn/ATNState */ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/ATNState.js").ATNState;
+var ATNState = __webpack_require__(/*! ./../atn/ATNState */ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/ATNState.js").ATNState;
 
-var Interval = __webpack_require__(/*! ./../IntervalSet */ "./node_modules/solidity-parser-antlr/dist/antlr4/IntervalSet.js").Interval;
+var Interval = __webpack_require__(/*! ./../IntervalSet */ "./node_modules/solidity-parser-diligence/dist/antlr4/IntervalSet.js").Interval;
 
-var IntervalSet = __webpack_require__(/*! ./../IntervalSet */ "./node_modules/solidity-parser-antlr/dist/antlr4/IntervalSet.js").IntervalSet;
+var IntervalSet = __webpack_require__(/*! ./../IntervalSet */ "./node_modules/solidity-parser-diligence/dist/antlr4/IntervalSet.js").IntervalSet;
 
 function ErrorStrategy() {}
 
@@ -50068,10 +49823,10 @@ exports.DefaultErrorStrategy = DefaultErrorStrategy;
 
 /***/ }),
 
-/***/ "./node_modules/solidity-parser-antlr/dist/antlr4/error/Errors.js":
-/*!************************************************************************!*\
-  !*** ./node_modules/solidity-parser-antlr/dist/antlr4/error/Errors.js ***!
-  \************************************************************************/
+/***/ "./node_modules/solidity-parser-diligence/dist/antlr4/error/Errors.js":
+/*!****************************************************************************!*\
+  !*** ./node_modules/solidity-parser-diligence/dist/antlr4/error/Errors.js ***!
+  \****************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -50087,7 +49842,7 @@ exports.DefaultErrorStrategy = DefaultErrorStrategy;
 //  in the input, where it is in the ATN, the rule invocation stack,
 //  and what kind of problem occurred.
 
-var PredicateTransition = __webpack_require__(/*! ./../atn/Transition */ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/Transition.js").PredicateTransition;
+var PredicateTransition = __webpack_require__(/*! ./../atn/Transition */ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/Transition.js").PredicateTransition;
 
 function RecognitionException(params) {
   Error.call(this);
@@ -50269,10 +50024,10 @@ exports.ParseCancellationException = ParseCancellationException;
 
 /***/ }),
 
-/***/ "./node_modules/solidity-parser-antlr/dist/antlr4/error/index.js":
-/*!***********************************************************************!*\
-  !*** ./node_modules/solidity-parser-antlr/dist/antlr4/error/index.js ***!
-  \***********************************************************************/
+/***/ "./node_modules/solidity-parser-diligence/dist/antlr4/error/index.js":
+/*!***************************************************************************!*\
+  !*** ./node_modules/solidity-parser-diligence/dist/antlr4/error/index.js ***!
+  \***************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -50283,21 +50038,21 @@ exports.ParseCancellationException = ParseCancellationException;
  * can be found in the LICENSE.txt file in the project root.
  */
 
-exports.RecognitionException = __webpack_require__(/*! ./Errors */ "./node_modules/solidity-parser-antlr/dist/antlr4/error/Errors.js").RecognitionException;
-exports.NoViableAltException = __webpack_require__(/*! ./Errors */ "./node_modules/solidity-parser-antlr/dist/antlr4/error/Errors.js").NoViableAltException;
-exports.LexerNoViableAltException = __webpack_require__(/*! ./Errors */ "./node_modules/solidity-parser-antlr/dist/antlr4/error/Errors.js").LexerNoViableAltException;
-exports.InputMismatchException = __webpack_require__(/*! ./Errors */ "./node_modules/solidity-parser-antlr/dist/antlr4/error/Errors.js").InputMismatchException;
-exports.FailedPredicateException = __webpack_require__(/*! ./Errors */ "./node_modules/solidity-parser-antlr/dist/antlr4/error/Errors.js").FailedPredicateException;
-exports.DiagnosticErrorListener = __webpack_require__(/*! ./DiagnosticErrorListener */ "./node_modules/solidity-parser-antlr/dist/antlr4/error/DiagnosticErrorListener.js").DiagnosticErrorListener;
-exports.BailErrorStrategy = __webpack_require__(/*! ./ErrorStrategy */ "./node_modules/solidity-parser-antlr/dist/antlr4/error/ErrorStrategy.js").BailErrorStrategy;
-exports.ErrorListener = __webpack_require__(/*! ./ErrorListener */ "./node_modules/solidity-parser-antlr/dist/antlr4/error/ErrorListener.js").ErrorListener;
+exports.RecognitionException = __webpack_require__(/*! ./Errors */ "./node_modules/solidity-parser-diligence/dist/antlr4/error/Errors.js").RecognitionException;
+exports.NoViableAltException = __webpack_require__(/*! ./Errors */ "./node_modules/solidity-parser-diligence/dist/antlr4/error/Errors.js").NoViableAltException;
+exports.LexerNoViableAltException = __webpack_require__(/*! ./Errors */ "./node_modules/solidity-parser-diligence/dist/antlr4/error/Errors.js").LexerNoViableAltException;
+exports.InputMismatchException = __webpack_require__(/*! ./Errors */ "./node_modules/solidity-parser-diligence/dist/antlr4/error/Errors.js").InputMismatchException;
+exports.FailedPredicateException = __webpack_require__(/*! ./Errors */ "./node_modules/solidity-parser-diligence/dist/antlr4/error/Errors.js").FailedPredicateException;
+exports.DiagnosticErrorListener = __webpack_require__(/*! ./DiagnosticErrorListener */ "./node_modules/solidity-parser-diligence/dist/antlr4/error/DiagnosticErrorListener.js").DiagnosticErrorListener;
+exports.BailErrorStrategy = __webpack_require__(/*! ./ErrorStrategy */ "./node_modules/solidity-parser-diligence/dist/antlr4/error/ErrorStrategy.js").BailErrorStrategy;
+exports.ErrorListener = __webpack_require__(/*! ./ErrorListener */ "./node_modules/solidity-parser-diligence/dist/antlr4/error/ErrorListener.js").ErrorListener;
 
 /***/ }),
 
-/***/ "./node_modules/solidity-parser-antlr/dist/antlr4/index.js":
-/*!*****************************************************************!*\
-  !*** ./node_modules/solidity-parser-antlr/dist/antlr4/index.js ***!
-  \*****************************************************************/
+/***/ "./node_modules/solidity-parser-diligence/dist/antlr4/index.js":
+/*!*********************************************************************!*\
+  !*** ./node_modules/solidity-parser-diligence/dist/antlr4/index.js ***!
+  \*********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -50308,34 +50063,34 @@ exports.ErrorListener = __webpack_require__(/*! ./ErrorListener */ "./node_modul
  * can be found in the LICENSE.txt file in the project root.
  */
 
-exports.atn = __webpack_require__(/*! ./atn/index */ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/index.js");
-exports.codepointat = __webpack_require__(/*! ./polyfills/codepointat */ "./node_modules/solidity-parser-antlr/dist/antlr4/polyfills/codepointat.js");
-exports.dfa = __webpack_require__(/*! ./dfa/index */ "./node_modules/solidity-parser-antlr/dist/antlr4/dfa/index.js");
-exports.fromcodepoint = __webpack_require__(/*! ./polyfills/fromcodepoint */ "./node_modules/solidity-parser-antlr/dist/antlr4/polyfills/fromcodepoint.js");
-exports.tree = __webpack_require__(/*! ./tree/index */ "./node_modules/solidity-parser-antlr/dist/antlr4/tree/index.js");
-exports.error = __webpack_require__(/*! ./error/index */ "./node_modules/solidity-parser-antlr/dist/antlr4/error/index.js");
-exports.Token = __webpack_require__(/*! ./Token */ "./node_modules/solidity-parser-antlr/dist/antlr4/Token.js").Token;
-exports.CharStreams = __webpack_require__(/*! ./CharStreams */ "./node_modules/solidity-parser-antlr/dist/antlr4/CharStreams.js").CharStreams;
-exports.CommonToken = __webpack_require__(/*! ./Token */ "./node_modules/solidity-parser-antlr/dist/antlr4/Token.js").CommonToken;
-exports.InputStream = __webpack_require__(/*! ./InputStream */ "./node_modules/solidity-parser-antlr/dist/antlr4/InputStream.js").InputStream;
-exports.FileStream = __webpack_require__(/*! ./FileStream */ "./node_modules/solidity-parser-antlr/dist/antlr4/FileStream.js").FileStream;
-exports.CommonTokenStream = __webpack_require__(/*! ./CommonTokenStream */ "./node_modules/solidity-parser-antlr/dist/antlr4/CommonTokenStream.js").CommonTokenStream;
-exports.Lexer = __webpack_require__(/*! ./Lexer */ "./node_modules/solidity-parser-antlr/dist/antlr4/Lexer.js").Lexer;
-exports.Parser = __webpack_require__(/*! ./Parser */ "./node_modules/solidity-parser-antlr/dist/antlr4/Parser.js").Parser;
+exports.atn = __webpack_require__(/*! ./atn/index */ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/index.js");
+exports.codepointat = __webpack_require__(/*! ./polyfills/codepointat */ "./node_modules/solidity-parser-diligence/dist/antlr4/polyfills/codepointat.js");
+exports.dfa = __webpack_require__(/*! ./dfa/index */ "./node_modules/solidity-parser-diligence/dist/antlr4/dfa/index.js");
+exports.fromcodepoint = __webpack_require__(/*! ./polyfills/fromcodepoint */ "./node_modules/solidity-parser-diligence/dist/antlr4/polyfills/fromcodepoint.js");
+exports.tree = __webpack_require__(/*! ./tree/index */ "./node_modules/solidity-parser-diligence/dist/antlr4/tree/index.js");
+exports.error = __webpack_require__(/*! ./error/index */ "./node_modules/solidity-parser-diligence/dist/antlr4/error/index.js");
+exports.Token = __webpack_require__(/*! ./Token */ "./node_modules/solidity-parser-diligence/dist/antlr4/Token.js").Token;
+exports.CharStreams = __webpack_require__(/*! ./CharStreams */ "./node_modules/solidity-parser-diligence/dist/antlr4/CharStreams.js").CharStreams;
+exports.CommonToken = __webpack_require__(/*! ./Token */ "./node_modules/solidity-parser-diligence/dist/antlr4/Token.js").CommonToken;
+exports.InputStream = __webpack_require__(/*! ./InputStream */ "./node_modules/solidity-parser-diligence/dist/antlr4/InputStream.js").InputStream;
+exports.FileStream = __webpack_require__(/*! ./FileStream */ "./node_modules/solidity-parser-diligence/dist/antlr4/FileStream.js").FileStream;
+exports.CommonTokenStream = __webpack_require__(/*! ./CommonTokenStream */ "./node_modules/solidity-parser-diligence/dist/antlr4/CommonTokenStream.js").CommonTokenStream;
+exports.Lexer = __webpack_require__(/*! ./Lexer */ "./node_modules/solidity-parser-diligence/dist/antlr4/Lexer.js").Lexer;
+exports.Parser = __webpack_require__(/*! ./Parser */ "./node_modules/solidity-parser-diligence/dist/antlr4/Parser.js").Parser;
 
-var pc = __webpack_require__(/*! ./PredictionContext */ "./node_modules/solidity-parser-antlr/dist/antlr4/PredictionContext.js");
+var pc = __webpack_require__(/*! ./PredictionContext */ "./node_modules/solidity-parser-diligence/dist/antlr4/PredictionContext.js");
 
 exports.PredictionContextCache = pc.PredictionContextCache;
-exports.ParserRuleContext = __webpack_require__(/*! ./ParserRuleContext */ "./node_modules/solidity-parser-antlr/dist/antlr4/ParserRuleContext.js").ParserRuleContext;
-exports.Interval = __webpack_require__(/*! ./IntervalSet */ "./node_modules/solidity-parser-antlr/dist/antlr4/IntervalSet.js").Interval;
-exports.Utils = __webpack_require__(/*! ./Utils */ "./node_modules/solidity-parser-antlr/dist/antlr4/Utils.js");
+exports.ParserRuleContext = __webpack_require__(/*! ./ParserRuleContext */ "./node_modules/solidity-parser-diligence/dist/antlr4/ParserRuleContext.js").ParserRuleContext;
+exports.Interval = __webpack_require__(/*! ./IntervalSet */ "./node_modules/solidity-parser-diligence/dist/antlr4/IntervalSet.js").Interval;
+exports.Utils = __webpack_require__(/*! ./Utils */ "./node_modules/solidity-parser-diligence/dist/antlr4/Utils.js");
 
 /***/ }),
 
-/***/ "./node_modules/solidity-parser-antlr/dist/antlr4/polyfills/codepointat.js":
-/*!*********************************************************************************!*\
-  !*** ./node_modules/solidity-parser-antlr/dist/antlr4/polyfills/codepointat.js ***!
-  \*********************************************************************************/
+/***/ "./node_modules/solidity-parser-diligence/dist/antlr4/polyfills/codepointat.js":
+/*!*************************************************************************************!*\
+  !*** ./node_modules/solidity-parser-diligence/dist/antlr4/polyfills/codepointat.js ***!
+  \*************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -50412,10 +50167,10 @@ if (!String.prototype.codePointAt) {
 
 /***/ }),
 
-/***/ "./node_modules/solidity-parser-antlr/dist/antlr4/polyfills/fromcodepoint.js":
-/*!***********************************************************************************!*\
-  !*** ./node_modules/solidity-parser-antlr/dist/antlr4/polyfills/fromcodepoint.js ***!
-  \***********************************************************************************/
+/***/ "./node_modules/solidity-parser-diligence/dist/antlr4/polyfills/fromcodepoint.js":
+/*!***************************************************************************************!*\
+  !*** ./node_modules/solidity-parser-diligence/dist/antlr4/polyfills/fromcodepoint.js ***!
+  \***************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -50499,10 +50254,10 @@ if (!String.fromCodePoint) {
 
 /***/ }),
 
-/***/ "./node_modules/solidity-parser-antlr/dist/antlr4/tree/Tree.js":
-/*!*********************************************************************!*\
-  !*** ./node_modules/solidity-parser-antlr/dist/antlr4/tree/Tree.js ***!
-  \*********************************************************************/
+/***/ "./node_modules/solidity-parser-diligence/dist/antlr4/tree/Tree.js":
+/*!*************************************************************************!*\
+  !*** ./node_modules/solidity-parser-diligence/dist/antlr4/tree/Tree.js ***!
+  \*************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -50517,13 +50272,13 @@ if (!String.fromCodePoint) {
 //  It is the most abstract interface for all the trees used by ANTLR.
 ///
 
-var Token = __webpack_require__(/*! ./../Token */ "./node_modules/solidity-parser-antlr/dist/antlr4/Token.js").Token;
+var Token = __webpack_require__(/*! ./../Token */ "./node_modules/solidity-parser-diligence/dist/antlr4/Token.js").Token;
 
-var Interval = __webpack_require__(/*! ./../IntervalSet */ "./node_modules/solidity-parser-antlr/dist/antlr4/IntervalSet.js").Interval;
+var Interval = __webpack_require__(/*! ./../IntervalSet */ "./node_modules/solidity-parser-diligence/dist/antlr4/IntervalSet.js").Interval;
 
 var INVALID_INTERVAL = new Interval(-1, -2);
 
-var Utils = __webpack_require__(/*! ../Utils.js */ "./node_modules/solidity-parser-antlr/dist/antlr4/Utils.js");
+var Utils = __webpack_require__(/*! ../Utils.js */ "./node_modules/solidity-parser-diligence/dist/antlr4/Utils.js");
 
 function Tree() {
   return this;
@@ -50733,10 +50488,10 @@ exports.INVALID_INTERVAL = INVALID_INTERVAL;
 
 /***/ }),
 
-/***/ "./node_modules/solidity-parser-antlr/dist/antlr4/tree/Trees.js":
-/*!**********************************************************************!*\
-  !*** ./node_modules/solidity-parser-antlr/dist/antlr4/tree/Trees.js ***!
-  \**********************************************************************/
+/***/ "./node_modules/solidity-parser-diligence/dist/antlr4/tree/Trees.js":
+/*!**************************************************************************!*\
+  !*** ./node_modules/solidity-parser-diligence/dist/antlr4/tree/Trees.js ***!
+  \**************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -50747,21 +50502,21 @@ exports.INVALID_INTERVAL = INVALID_INTERVAL;
  * can be found in the LICENSE.txt file in the project root.
  */
 
-var Utils = __webpack_require__(/*! ./../Utils */ "./node_modules/solidity-parser-antlr/dist/antlr4/Utils.js");
+var Utils = __webpack_require__(/*! ./../Utils */ "./node_modules/solidity-parser-diligence/dist/antlr4/Utils.js");
 
-var Token = __webpack_require__(/*! ./../Token */ "./node_modules/solidity-parser-antlr/dist/antlr4/Token.js").Token;
+var Token = __webpack_require__(/*! ./../Token */ "./node_modules/solidity-parser-diligence/dist/antlr4/Token.js").Token;
 
-var RuleNode = __webpack_require__(/*! ./Tree */ "./node_modules/solidity-parser-antlr/dist/antlr4/tree/Tree.js").RuleNode;
+var RuleNode = __webpack_require__(/*! ./Tree */ "./node_modules/solidity-parser-diligence/dist/antlr4/tree/Tree.js").RuleNode;
 
-var ErrorNode = __webpack_require__(/*! ./Tree */ "./node_modules/solidity-parser-antlr/dist/antlr4/tree/Tree.js").ErrorNode;
+var ErrorNode = __webpack_require__(/*! ./Tree */ "./node_modules/solidity-parser-diligence/dist/antlr4/tree/Tree.js").ErrorNode;
 
-var TerminalNode = __webpack_require__(/*! ./Tree */ "./node_modules/solidity-parser-antlr/dist/antlr4/tree/Tree.js").TerminalNode;
+var TerminalNode = __webpack_require__(/*! ./Tree */ "./node_modules/solidity-parser-diligence/dist/antlr4/tree/Tree.js").TerminalNode;
 
-var ParserRuleContext = __webpack_require__(/*! ./../ParserRuleContext */ "./node_modules/solidity-parser-antlr/dist/antlr4/ParserRuleContext.js").ParserRuleContext;
+var ParserRuleContext = __webpack_require__(/*! ./../ParserRuleContext */ "./node_modules/solidity-parser-diligence/dist/antlr4/ParserRuleContext.js").ParserRuleContext;
 
-var RuleContext = __webpack_require__(/*! ./../RuleContext */ "./node_modules/solidity-parser-antlr/dist/antlr4/RuleContext.js").RuleContext;
+var RuleContext = __webpack_require__(/*! ./../RuleContext */ "./node_modules/solidity-parser-diligence/dist/antlr4/RuleContext.js").RuleContext;
 
-var INVALID_ALT_NUMBER = __webpack_require__(/*! ./../atn/ATN */ "./node_modules/solidity-parser-antlr/dist/antlr4/atn/ATN.js").INVALID_ALT_NUMBER;
+var INVALID_ALT_NUMBER = __webpack_require__(/*! ./../atn/ATN */ "./node_modules/solidity-parser-diligence/dist/antlr4/atn/ATN.js").INVALID_ALT_NUMBER;
 /** A set of utility routines useful for all kinds of ANTLR trees. */
 
 
@@ -50912,10 +50667,10 @@ exports.Trees = Trees;
 
 /***/ }),
 
-/***/ "./node_modules/solidity-parser-antlr/dist/antlr4/tree/index.js":
-/*!**********************************************************************!*\
-  !*** ./node_modules/solidity-parser-antlr/dist/antlr4/tree/index.js ***!
-  \**********************************************************************/
+/***/ "./node_modules/solidity-parser-diligence/dist/antlr4/tree/index.js":
+/*!**************************************************************************!*\
+  !*** ./node_modules/solidity-parser-diligence/dist/antlr4/tree/index.js ***!
+  \**************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -50926,9 +50681,9 @@ exports.Trees = Trees;
  * can be found in the LICENSE.txt file in the project root.
  */
 
-var Tree = __webpack_require__(/*! ./Tree */ "./node_modules/solidity-parser-antlr/dist/antlr4/tree/Tree.js");
+var Tree = __webpack_require__(/*! ./Tree */ "./node_modules/solidity-parser-diligence/dist/antlr4/tree/Tree.js");
 
-exports.Trees = __webpack_require__(/*! ./Trees */ "./node_modules/solidity-parser-antlr/dist/antlr4/tree/Trees.js").Trees;
+exports.Trees = __webpack_require__(/*! ./Trees */ "./node_modules/solidity-parser-diligence/dist/antlr4/tree/Trees.js").Trees;
 exports.RuleNode = Tree.RuleNode;
 exports.ParseTreeListener = Tree.ParseTreeListener;
 exports.ParseTreeVisitor = Tree.ParseTreeVisitor;
@@ -50936,10 +50691,10 @@ exports.ParseTreeWalker = Tree.ParseTreeWalker;
 
 /***/ }),
 
-/***/ "./node_modules/solidity-parser-antlr/dist/index.js":
-/*!**********************************************************!*\
-  !*** ./node_modules/solidity-parser-antlr/dist/index.js ***!
-  \**********************************************************/
+/***/ "./node_modules/solidity-parser-diligence/dist/index.js":
+/*!**************************************************************!*\
+  !*** ./node_modules/solidity-parser-diligence/dist/index.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -50952,19 +50707,19 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
   return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
 };
 
-var antlr4 = __webpack_require__(/*! ./antlr4/index */ "./node_modules/solidity-parser-antlr/dist/antlr4/index.js");
+var antlr4 = __webpack_require__(/*! ./antlr4/index */ "./node_modules/solidity-parser-diligence/dist/antlr4/index.js");
 
-var _require = __webpack_require__(/*! ./lib/SolidityLexer */ "./node_modules/solidity-parser-antlr/dist/lib/SolidityLexer.js"),
+var _require = __webpack_require__(/*! ./lib/SolidityLexer */ "./node_modules/solidity-parser-diligence/dist/lib/SolidityLexer.js"),
     SolidityLexer = _require.SolidityLexer;
 
-var _require2 = __webpack_require__(/*! ./lib/SolidityParser */ "./node_modules/solidity-parser-antlr/dist/lib/SolidityParser.js"),
+var _require2 = __webpack_require__(/*! ./lib/SolidityParser */ "./node_modules/solidity-parser-diligence/dist/lib/SolidityParser.js"),
     SolidityParser = _require2.SolidityParser;
 
-var ASTBuilder = __webpack_require__(/*! ./ASTBuilder */ "./node_modules/solidity-parser-antlr/dist/ASTBuilder.js");
+var ASTBuilder = __webpack_require__(/*! ./ASTBuilder */ "./node_modules/solidity-parser-diligence/dist/ASTBuilder.js");
 
-var ErrorListener = __webpack_require__(/*! ./ErrorListener */ "./node_modules/solidity-parser-antlr/dist/ErrorListener.js");
+var ErrorListener = __webpack_require__(/*! ./ErrorListener */ "./node_modules/solidity-parser-diligence/dist/ErrorListener.js");
 
-var _require3 = __webpack_require__(/*! ./tokens */ "./node_modules/solidity-parser-antlr/dist/tokens.js"),
+var _require3 = __webpack_require__(/*! ./tokens */ "./node_modules/solidity-parser-diligence/dist/tokens.js"),
     buildTokenList = _require3.buildTokenList;
 
 function ParserError(args) {
@@ -50988,7 +50743,7 @@ ParserError.prototype.name = 'ParserError';
 
 function tokenize(input, options) {
   options = options || {};
-  var chars = antlr4.CharStreams.fromString(input);
+  var chars = new antlr4.InputStream(input);
   var lexer = new SolidityLexer(chars);
   var tokens = new antlr4.CommonTokenStream(lexer);
   return buildTokenList(tokens.tokenSource.getAllTokens(), options);
@@ -50996,7 +50751,7 @@ function tokenize(input, options) {
 
 function parse(input, options) {
   options = options || {};
-  var chars = antlr4.CharStreams.fromString(input);
+  var chars = new antlr4.InputStream(input);
   var listener = new ErrorListener();
   var lexer = new SolidityLexer(chars);
   lexer.removeErrorListeners();
@@ -51036,7 +50791,7 @@ function parse(input, options) {
 }
 
 function _isASTNode(node) {
-  return !!node && (typeof node === 'undefined' ? 'undefined' : _typeof(node)) === 'object' && node.hasOwnProperty('type');
+  return !!node && (typeof node === 'undefined' ? 'undefined' : _typeof(node)) === 'object' && Object.prototype.hasOwnProperty.call(node, 'type');
 }
 
 function visit(node, visitor) {
@@ -51056,7 +50811,7 @@ function visit(node, visitor) {
   if (cont === false) return;
 
   for (var prop in node) {
-    if (node.hasOwnProperty(prop)) {
+    if (Object.prototype.hasOwnProperty.call(node, prop)) {
       visit(node[prop], visitor);
     }
   }
@@ -51075,10 +50830,10 @@ exports.ParserError = ParserError;
 
 /***/ }),
 
-/***/ "./node_modules/solidity-parser-antlr/dist/lib/SolidityLexer.js":
-/*!**********************************************************************!*\
-  !*** ./node_modules/solidity-parser-antlr/dist/lib/SolidityLexer.js ***!
-  \**********************************************************************/
+/***/ "./node_modules/solidity-parser-diligence/dist/lib/SolidityLexer.js":
+/*!**************************************************************************!*\
+  !*** ./node_modules/solidity-parser-diligence/dist/lib/SolidityLexer.js ***!
+  \**************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -51086,9 +50841,9 @@ exports.ParserError = ParserError;
  // Generated from solidity-antlr4/Solidity.g4 by ANTLR 4.7.2
 // jshint ignore: start
 
-var antlr4 = __webpack_require__(/*! ../antlr4/index */ "./node_modules/solidity-parser-antlr/dist/antlr4/index.js");
+var antlr4 = __webpack_require__(/*! ../antlr4/index */ "./node_modules/solidity-parser-diligence/dist/antlr4/index.js");
 
-var serializedATN = ["\x03\u608B\uA72A\u8133\uB9ED\u417C\u3BE7\u7786\u5964", "\x02z\u06BD\b\x01\x04\x02\t\x02\x04\x03\t\x03\x04", "\x04\t\x04\x04\x05\t\x05\x04\x06\t\x06\x04\x07\t", "\x07\x04\b\t\b\x04\t\t\t\x04\n\t\n\x04\x0B\t\x0B\x04", "\f\t\f\x04\r\t\r\x04\x0E\t\x0E\x04\x0F\t\x0F\x04\x10", "\t\x10\x04\x11\t\x11\x04\x12\t\x12\x04\x13\t\x13", "\x04\x14\t\x14\x04\x15\t\x15\x04\x16\t\x16\x04\x17", "\t\x17\x04\x18\t\x18\x04\x19\t\x19\x04\x1A\t\x1A", "\x04\x1B\t\x1B\x04\x1C\t\x1C\x04\x1D\t\x1D\x04\x1E", "\t\x1E\x04\x1F\t\x1F\x04 \t \x04!\t!\x04\"\t\"\x04#", "\t#\x04$\t$\x04%\t%\x04&\t&\x04'\t'\x04(\t(\x04)\t)\x04", "*\t*\x04+\t+\x04,\t,\x04-\t-\x04.\t.\x04/\t/\x040\t0\x04", "1\t1\x042\t2\x043\t3\x044\t4\x045\t5\x046\t6\x047\t7\x04", "8\t8\x049\t9\x04:\t:\x04;\t;\x04<\t<\x04=\t=\x04>\t>\x04", "?\t?\x04@\t@\x04A\tA\x04B\tB\x04C\tC\x04D\tD\x04E\tE\x04", "F\tF\x04G\tG\x04H\tH\x04I\tI\x04J\tJ\x04K\tK\x04L\tL\x04", "M\tM\x04N\tN\x04O\tO\x04P\tP\x04Q\tQ\x04R\tR\x04S\tS\x04", "T\tT\x04U\tU\x04V\tV\x04W\tW\x04X\tX\x04Y\tY\x04Z\tZ\x04", "[\t[\x04\\\t\\\x04]\t]\x04^\t^\x04_\t_\x04`\t`\x04a\ta\x04", "b\tb\x04c\tc\x04d\td\x04e\te\x04f\tf\x04g\tg\x04h\th\x04", "i\ti\x04j\tj\x04k\tk\x04l\tl\x04m\tm\x04n\tn\x04o\to\x04", "p\tp\x04q\tq\x04r\tr\x04s\ts\x04t\tt\x04u\tu\x04v\tv\x04", "w\tw\x04x\tx\x04y\ty\x04z\tz\x04{\t{\x04|\t|\x04}\t}\x04", "~\t~\x04\x7F\t\x7F\x04\x80\t\x80\x04\x81\t\x81\x03", "\x02\x03\x02\x03\x02\x03\x02\x03\x02\x03\x02\x03", "\x02\x03\x03\x03\x03\x03\x04\x03\x04\x03\x05\x03", "\x05\x03\x06\x03\x06\x03\x06\x03\x07\x03\x07\x03", "\b\x03\b\x03\t\x03\t\x03\t\x03\n\x03\n\x03\x0B\x03", "\x0B\x03\x0B\x03\f\x03\f\x03\f\x03\f\x03\f\x03\f\x03", "\f\x03\r\x03\r\x03\x0E\x03\x0E\x03\x0E\x03\x0E\x03", "\x0E\x03\x0F\x03\x0F\x03\x10\x03\x10\x03\x11\x03", "\x11\x03\x12\x03\x12\x03\x12\x03\x12\x03\x12\x03", "\x12\x03\x12\x03\x12\x03\x12\x03\x13\x03\x13\x03", "\x13\x03\x13\x03\x13\x03\x13\x03\x13\x03\x13\x03", "\x13\x03\x13\x03\x14\x03\x14\x03\x14\x03\x14\x03", "\x14\x03\x14\x03\x14\x03\x14\x03\x15\x03\x15\x03", "\x15\x03\x16\x03\x16\x03\x17\x03\x17\x03\x18\x03", "\x18\x03\x18\x03\x18\x03\x18\x03\x18\x03\x19\x03", "\x19\x03\x19\x03\x19\x03\x1A\x03\x1A\x03\x1A\x03", "\x1A\x03\x1A\x03\x1A\x03\x1A\x03\x1B\x03\x1B\x03", "\x1B\x03\x1B\x03\x1B\x03\x1B\x03\x1B\x03\x1B\x03", "\x1B\x03\x1B\x03\x1B\x03\x1B\x03\x1C\x03\x1C\x03", "\x1C\x03\x1C\x03\x1C\x03\x1C\x03\x1C\x03\x1C\x03", "\x1C\x03\x1D\x03\x1D\x03\x1D\x03\x1D\x03\x1D\x03", "\x1D\x03\x1D\x03\x1D\x03\x1D\x03\x1E\x03\x1E\x03", "\x1E\x03\x1E\x03\x1E\x03\x1E\x03\x1E\x03\x1E\x03", "\x1F\x03\x1F\x03\x1F\x03\x1F\x03\x1F\x03\x1F\x03", " \x03 \x03 \x03 \x03 \x03!\x03!\x03\"\x03\"\x03#\x03", "#\x03#\x03#\x03#\x03#\x03#\x03#\x03$\x03$\x03%\x03", "%\x03%\x03%\x03%\x03%\x03%\x03%\x03&\x03&\x03&\x03", "'\x03'\x03'\x03'\x03'\x03'\x03'\x03(\x03(\x03", "(\x03(\x03(\x03(\x03(\x03(\x03)\x03)\x03)\x03)\x03", ")\x03)\x03)\x03)\x03)\x03*\x03*\x03*\x03+\x03+\x03", "+\x03+\x03+\x03,\x03,\x03,\x03,\x03,\x03,\x03-\x03", "-\x03-\x03-\x03-\x03-\x03-\x03-\x03-\x03.\x03.\x03", ".\x03/\x03/\x03/\x03/\x03/\x03/\x03/\x030\x030\x03", "0\x030\x030\x030\x031\x031\x031\x031\x031\x032\x03", "2\x032\x032\x033\x033\x033\x033\x033\x034\x034\x03", "4\x034\x034\x034\x034\x035\x035\x035\x035\x035\x03", "6\x036\x036\x037\x037\x037\x038\x038\x038\x038\x03", "9\x039\x03:\x03:\x03;\x03;\x03;\x03;\x03;\x03;\x03", "<\x03<\x03<\x03<\x03<\x03<\x03<\x03=\x03=\x03>\x03", ">\x03>\x03?\x03?\x03@\x03@\x03A\x03A\x03A\x03B\x03", "B\x03B\x03C\x03C\x03D\x03D\x03E\x03E\x03E\x03F\x03", "F\x03F\x03G\x03G\x03G\x03H\x03H\x03H\x03I\x03I\x03", "J\x03J\x03K\x03K\x03K\x03L\x03L\x03L\x03M\x03M\x03", "M\x03N\x03N\x03N\x03N\x03O\x03O\x03O\x03O\x03P\x03", "P\x03P\x03Q\x03Q\x03Q\x03R\x03R\x03R\x03S\x03S\x03", "S\x03T\x03T\x03T\x03U\x03U\x03U\x03U\x03V\x03V\x03", "V\x03W\x03W\x03W\x03X\x03X\x03X\x03X\x03X\x03X\x03", "X\x03Y\x03Y\x03Y\x03Y\x03Y\x03Z\x03Z\x03Z\x03Z\x03", "Z\x03Z\x03Z\x03Z\x03[\x03[\x03[\x03\\\x03\\\x03\\", "\x03\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03", "\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03", "\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03", "\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03", "\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03", "\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03", "\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03", "\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03", "\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03", "\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03", "\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03", "\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03", "\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03", "\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03", "\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03", "\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03", "\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03", "\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03", "\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03", "\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03\\\x03\\\x05", "\\\u033F\n\\\x03]\x03]\x03]\x03]\x03]\x03]\x03]\x03", "]\x03]\x03]\x03]\x03]\x03]\x03]\x03]\x03]\x03]\x03", "]\x03]\x03]\x03]\x03]\x03]\x03]\x03]\x03]\x03]\x03", "]\x03]\x03]\x03]\x03]\x03]\x03]\x03]\x03]\x03]\x03", "]\x03]\x03]\x03]\x03]\x03]\x03]\x03]\x03]\x03]\x03", "]\x03]\x03]\x03]\x03]\x03]\x03]\x03]\x03]\x03]\x03", "]\x03]\x03]\x03]\x03]\x03]\x03]\x03]\x03]\x03]\x03", "]\x03]\x03]\x03]\x03]\x03]\x03]\x03]\x03]\x03]\x03", "]\x03]\x03]\x03]\x03]\x03]\x03]\x03]\x03]\x03]\x03", "]\x03]\x03]\x03]\x03]\x03]\x03]\x03]\x03]\x03]\x03", "]\x03]\x03]\x03]\x03]\x03]\x03]\x03]\x03]\x03]\x03", "]\x03]\x03]\x03]\x03]\x03]\x03]\x03]\x03]\x03]\x03", "]\x03]\x03]\x03]\x03]\x03]\x03]\x03]\x03]\x03]\x03", "]\x03]\x03]\x03]\x03]\x03]\x03]\x03]\x03]\x03]\x03", "]\x03]\x03]\x03]\x03]\x03]\x03]\x03]\x03]\x03]\x03", "]\x03]\x03]\x03]\x03]\x03]\x03]\x03]\x03]\x03]\x03", "]\x03]\x03]\x03]\x03]\x03]\x03]\x03]\x03]\x03]\x03", "]\x03]\x03]\x03]\x03]\x03]\x03]\x03]\x03]\x03]\x03", "]\x03]\x03]\x03]\x03]\x03]\x03]\x03]\x03]\x03]\x03", "]\x03]\x03]\x03]\x03]\x03]\x03]\x03]\x03]\x03]\x03", "]\x03]\x03]\x03]\x03]\x03]\x03]\x03]\x03]\x03]\x03", "]\x03]\x03]\x03]\x03]\x03]\x03]\x03]\x05]\u0418\n]\x03", "^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x03", "^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x03", "^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x03", "^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x03", "^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x03", "^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x03", "^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x03", "^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x03", "^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x03", "^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x03", "^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x03", "^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x03", "^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x03", "^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x03", "^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x03", "^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x03", "^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x03", "^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x03", "^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x03", "^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x03", "^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x03", "^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x03^\x05", "^\u04F6\n^\x03_\x03_\x03_\x03_\x03_\x03_\x03_\x03_\x03", "_\x03_\x03_\x03_\x06_\u0504\n_\r_\x0E_\u0505\x03_\x03", "_\x06_\u050A\n_\r_\x0E_\u050B\x05_\u050E\n_\x03`\x03`\x03", "`\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03", "`\x03`\x06`\u051E\n`\r`\x0E`\u051F\x03`\x03`\x06`\u0524", "\n`\r`\x0E`\u0525\x05`\u0528\n`\x03a\x06a\u052B\na\ra\x0E", "a\u052C\x03a\x03a\x06a\u0531\na\ra\x0Ea\u0532\x03a\x03a", "\x06a\u0537\na\ra\x0Ea\u0538\x03b\x03b\x03b\x03b\x03b", "\x03b\x03b\x03b\x03b\x05b\u0544\nb\x03c\x03c\x05c\u0548", "\nc\x03c\x03c\x05c\u054C\nc\x03c\x03c\x05c\u0550\nc\x03", "d\x03d\x05d\u0554\nd\x03d\x07d\u0557\nd\fd\x0Ed\u055A\x0B", "d\x03e\x03e\x03e\x03e\x03f\x03f\x05f\u0562\nf\x03f\x07", "f\u0565\nf\ff\x0Ef\u0568\x0Bf\x03g\x03g\x03g\x03g\x03", "g\x03g\x03g\x03g\x03g\x03g\x03g\x03g\x03g\x03g\x03", "g\x03g\x03g\x03g\x03g\x03g\x03g\x03g\x03g\x03g\x03", "g\x03g\x03g\x03g\x03g\x03g\x03g\x03g\x03g\x03g\x03", "g\x03g\x03g\x03g\x03g\x03g\x03g\x03g\x03g\x03g\x03", "g\x03g\x03g\x03g\x03g\x03g\x03g\x03g\x05g\u059E\ng\x03", "h\x03h\x03h\x03h\x03h\x03h\x07h\u05A6\nh\fh\x0Eh\u05A9", "\x0Bh\x03h\x03h\x03h\x07h\u05AE\nh\fh\x0Eh\u05B1\x0Bh", "\x03h\x05h\u05B4\nh\x03i\x03i\x03i\x03j\x03j\x03k\x03", "k\x03k\x03k\x03k\x03k\x03k\x03k\x03k\x03k\x03k\x03", "k\x03k\x03k\x03k\x03k\x03k\x03k\x03k\x03k\x03k\x03", "k\x03k\x03k\x03k\x03k\x03k\x03k\x03k\x03k\x03k\x03", "k\x03k\x03k\x03k\x03k\x03k\x03k\x03k\x03k\x03k\x03", "k\x03k\x03k\x03k\x03k\x03k\x03k\x03k\x03k\x03k\x03", "k\x03k\x03k\x03k\x03k\x03k\x03k\x03k\x03k\x03k\x03", "k\x03k\x03k\x03k\x03k\x03k\x03k\x03k\x03k\x03k\x03", "k\x03k\x03k\x03k\x03k\x03k\x03k\x03k\x03k\x03k\x03", "k\x03k\x03k\x03k\x03k\x03k\x03k\x05k\u0613\nk\x03l\x03", "l\x03l\x03l\x03l\x03l\x03l\x03l\x03l\x03l\x03m\x03", "m\x03m\x03m\x03m\x03m\x03n\x03n\x03n\x03n\x03n\x03", "n\x03n\x03n\x03n\x03o\x03o\x03o\x03o\x03o\x03o\x03", "o\x03o\x03o\x03p\x03p\x03p\x03p\x03p\x03p\x03p\x03", "p\x03p\x03q\x03q\x03q\x03q\x03q\x03q\x03q\x03q\x03", "r\x03r\x03r\x03r\x03r\x03r\x03r\x03r\x03r\x03s\x03", "s\x03s\x03s\x03s\x03s\x03s\x03s\x03t\x03t\x03t\x03", "t\x03t\x03t\x03t\x03t\x03u\x03u\x03u\x03u\x03u\x03", "u\x03u\x03v\x03v\x03v\x03v\x03v\x03w\x03w\x03w\x03", "w\x03w\x03x\x03x\x03x\x03x\x03x\x03y\x03y\x07y\u0679", "\ny\fy\x0Ey\u067C\x0By\x03z\x03z\x03{\x03{\x03|\x03", "|\x07|\u0684\n|\f|\x0E|\u0687\x0B|\x03|\x03|\x03|\x07", "|\u068C\n|\f|\x0E|\u068F\x0B|\x03|\x05|\u0692\n|\x03}\x03", "}\x03}\x05}\u0697\n}\x03~\x03~\x03~\x05~\u069C\n~\x03", "\x7F\x06\x7F\u069F\n\x7F\r\x7F\x0E\x7F\u06A0\x03\x7F", "\x03\x7F\x03\x80\x03\x80\x03\x80\x03\x80\x07\x80", "\u06A9\n\x80\f\x80\x0E\x80\u06AC\x0B\x80\x03\x80\x03", "\x80\x03\x80\x03\x80\x03\x80\x03\x81\x03\x81\x03", "\x81\x03\x81\x07\x81\u06B7\n\x81\f\x81\x0E\x81\u06BA", "\x0B\x81\x03\x81\x03\x81\x03\u06AA\x02\x82\x03\x03", "\x05\x04\x07\x05\t\x06\x0B\x07\r\b\x0F\t\x11\n\x13", "\x0B\x15\f\x17\r\x19\x0E\x1B\x0F\x1D\x10\x1F\x11", "!\x12#\x13%\x14'\x15)\x16+\x17-\x18/\x191\x1A3\x1B", "5\x1C7\x1D9\x1E;\x1F= ?!A\"C#E$G%I&K'M(O)Q*S+U,W-Y.[/]0_1a", "2c3e4g5i6k7m8o9q:s;u<w=y>{?}@\x7FA\x81B\x83C\x85D\x87E\x89", "F\x8BG\x8DH\x8FI\x91J\x93K\x95L\x97M\x99N\x9BO\x9D", "P\x9FQ\xA1R\xA3S\xA5T\xA7U\xA9V\xABW\xADX\xAFY\xB1", "Z\xB3[\xB5\\\xB7]\xB9^\xBB_\xBD`\xBFa\xC1b\xC3c\xC5", "d\xC7\x02\xC9e\xCB\x02\xCDf\xCFg\xD1\x02\xD3\x02", "\xD5h\xD7i\xD9j\xDBk\xDDl\xDFm\xE1n\xE3o\xE5p\xE7", "q\xE9r\xEBs\xEDt\xEFu\xF1v\xF3\x02\xF5\x02\xF7w", "\xF9\x02\xFB\x02\xFDx\xFFy\u0101z\x03\x02\f\x03\x02", "2;\x04\x02GGgg\x04\x02ZZzz\x05\x022;CHch\x06\x02&&C", "\\aac|\x07\x02&&2;C\\aac|\x06\x02\f\f\x0F\x0F$$^^\x06", "\x02\f\f\x0F\x0F))^^\x05\x02\x0B\f\x0E\x0F\"\"\x04", "\x02\f\f\x0F\x0F\x02\u074A\x02\x03\x03\x02\x02\x02", "\x02\x05\x03\x02\x02\x02\x02\x07\x03\x02\x02\x02", "\x02\t\x03\x02\x02\x02\x02\x0B\x03\x02\x02\x02", "\x02\r\x03\x02\x02\x02\x02\x0F\x03\x02\x02\x02", "\x02\x11\x03\x02\x02\x02\x02\x13\x03\x02\x02\x02", "\x02\x15\x03\x02\x02\x02\x02\x17\x03\x02\x02\x02", "\x02\x19\x03\x02\x02\x02\x02\x1B\x03\x02\x02\x02", "\x02\x1D\x03\x02\x02\x02\x02\x1F\x03\x02\x02\x02", "\x02!\x03\x02\x02\x02\x02#\x03\x02\x02\x02\x02", "%\x03\x02\x02\x02\x02'\x03\x02\x02\x02\x02)\x03", "\x02\x02\x02\x02+\x03\x02\x02\x02\x02-\x03\x02", "\x02\x02\x02/\x03\x02\x02\x02\x021\x03\x02\x02", "\x02\x023\x03\x02\x02\x02\x025\x03\x02\x02\x02", "\x027\x03\x02\x02\x02\x029\x03\x02\x02\x02\x02", ";\x03\x02\x02\x02\x02=\x03\x02\x02\x02\x02?\x03", "\x02\x02\x02\x02A\x03\x02\x02\x02\x02C\x03\x02", "\x02\x02\x02E\x03\x02\x02\x02\x02G\x03\x02\x02", "\x02\x02I\x03\x02\x02\x02\x02K\x03\x02\x02\x02", "\x02M\x03\x02\x02\x02\x02O\x03\x02\x02\x02\x02", "Q\x03\x02\x02\x02\x02S\x03\x02\x02\x02\x02U\x03", "\x02\x02\x02\x02W\x03\x02\x02\x02\x02Y\x03\x02", "\x02\x02\x02[\x03\x02\x02\x02\x02]\x03\x02\x02", "\x02\x02_\x03\x02\x02\x02\x02a\x03\x02\x02\x02", "\x02c\x03\x02\x02\x02\x02e\x03\x02\x02\x02\x02", "g\x03\x02\x02\x02\x02i\x03\x02\x02\x02\x02k\x03", "\x02\x02\x02\x02m\x03\x02\x02\x02\x02o\x03\x02", "\x02\x02\x02q\x03\x02\x02\x02\x02s\x03\x02\x02", "\x02\x02u\x03\x02\x02\x02\x02w\x03\x02\x02\x02", "\x02y\x03\x02\x02\x02\x02{\x03\x02\x02\x02\x02", "}\x03\x02\x02\x02\x02\x7F\x03\x02\x02\x02\x02", "\x81\x03\x02\x02\x02\x02\x83\x03\x02\x02\x02\x02", "\x85\x03\x02\x02\x02\x02\x87\x03\x02\x02\x02\x02", "\x89\x03\x02\x02\x02\x02\x8B\x03\x02\x02\x02\x02", "\x8D\x03\x02\x02\x02\x02\x8F\x03\x02\x02\x02\x02", "\x91\x03\x02\x02\x02\x02\x93\x03\x02\x02\x02\x02", "\x95\x03\x02\x02\x02\x02\x97\x03\x02\x02\x02\x02", "\x99\x03\x02\x02\x02\x02\x9B\x03\x02\x02\x02\x02", "\x9D\x03\x02\x02\x02\x02\x9F\x03\x02\x02\x02\x02", "\xA1\x03\x02\x02\x02\x02\xA3\x03\x02\x02\x02\x02", "\xA5\x03\x02\x02\x02\x02\xA7\x03\x02\x02\x02\x02", "\xA9\x03\x02\x02\x02\x02\xAB\x03\x02\x02\x02\x02", "\xAD\x03\x02\x02\x02\x02\xAF\x03\x02\x02\x02\x02", "\xB1\x03\x02\x02\x02\x02\xB3\x03\x02\x02\x02\x02", "\xB5\x03\x02\x02\x02\x02\xB7\x03\x02\x02\x02\x02", "\xB9\x03\x02\x02\x02\x02\xBB\x03\x02\x02\x02\x02", "\xBD\x03\x02\x02\x02\x02\xBF\x03\x02\x02\x02\x02", "\xC1\x03\x02\x02\x02\x02\xC3\x03\x02\x02\x02\x02", "\xC5\x03\x02\x02\x02\x02\xC9\x03\x02\x02\x02\x02", "\xCD\x03\x02\x02\x02\x02\xCF\x03\x02\x02\x02\x02", "\xD5\x03\x02\x02\x02\x02\xD7\x03\x02\x02\x02\x02", "\xD9\x03\x02\x02\x02\x02\xDB\x03\x02\x02\x02\x02", "\xDD\x03\x02\x02\x02\x02\xDF\x03\x02\x02\x02\x02", "\xE1\x03\x02\x02\x02\x02\xE3\x03\x02\x02\x02\x02", "\xE5\x03\x02\x02\x02\x02\xE7\x03\x02\x02\x02\x02", "\xE9\x03\x02\x02\x02\x02\xEB\x03\x02\x02\x02\x02", "\xED\x03\x02\x02\x02\x02\xEF\x03\x02\x02\x02\x02", "\xF1\x03\x02\x02\x02\x02\xF7\x03\x02\x02\x02\x02", "\xFD\x03\x02\x02\x02\x02\xFF\x03\x02\x02\x02\x02", "\u0101\x03\x02\x02\x02\x03\u0103\x03\x02\x02\x02\x05", "\u010A\x03\x02\x02\x02\x07\u010C\x03\x02\x02\x02\t", "\u010E\x03\x02\x02\x02\x0B\u0110\x03\x02\x02\x02\r", "\u0113\x03\x02\x02\x02\x0F\u0115\x03\x02\x02\x02\x11", "\u0117\x03\x02\x02\x02\x13\u011A\x03\x02\x02\x02\x15", "\u011C\x03\x02\x02\x02\x17\u011F\x03\x02\x02\x02\x19", "\u0126\x03\x02\x02\x02\x1B\u0128\x03\x02\x02\x02\x1D", "\u012D\x03\x02\x02\x02\x1F\u012F\x03\x02\x02\x02!", "\u0131\x03\x02\x02\x02#\u0133\x03\x02\x02\x02%\u013C", "\x03\x02\x02\x02'\u0146\x03\x02\x02\x02)\u014E\x03", "\x02\x02\x02+\u0151\x03\x02\x02\x02-\u0153\x03\x02", "\x02\x02/\u0155\x03\x02\x02\x021\u015B\x03\x02\x02", "\x023\u015F\x03\x02\x02\x025\u0166\x03\x02\x02\x02", "7\u0172\x03\x02\x02\x029\u017B\x03\x02\x02\x02;\u0184", "\x03\x02\x02\x02=\u018C\x03\x02\x02\x02?\u0192\x03", "\x02\x02\x02A\u0197\x03\x02\x02\x02C\u0199\x03\x02", "\x02\x02E\u019B\x03\x02\x02\x02G\u01A3\x03\x02\x02", "\x02I\u01A5\x03\x02\x02\x02K\u01AD\x03\x02\x02\x02", "M\u01B0\x03\x02\x02\x02O\u01B7\x03\x02\x02\x02Q\u01BF", "\x03\x02\x02\x02S\u01C8\x03\x02\x02\x02U\u01CB\x03", "\x02\x02\x02W\u01D0\x03\x02\x02\x02Y\u01D6\x03\x02", "\x02\x02[\u01DF\x03\x02\x02\x02]\u01E2\x03\x02\x02", "\x02_\u01E9\x03\x02\x02\x02a\u01EF\x03\x02\x02\x02", "c\u01F4\x03\x02\x02\x02e\u01F8\x03\x02\x02\x02g\u01FD", "\x03\x02\x02\x02i\u0204\x03\x02\x02\x02k\u0209\x03", "\x02\x02\x02m\u020C\x03\x02\x02\x02o\u020F\x03\x02", "\x02\x02q\u0213\x03\x02\x02\x02s\u0215\x03\x02\x02", "\x02u\u0217\x03\x02\x02\x02w\u021D\x03\x02\x02\x02", "y\u0224\x03\x02\x02\x02{\u0226\x03\x02\x02\x02}\u0229", "\x03\x02\x02\x02\x7F\u022B\x03\x02\x02\x02\x81\u022D", "\x03\x02\x02\x02\x83\u0230\x03\x02\x02\x02\x85\u0233", "\x03\x02\x02\x02\x87\u0235\x03\x02\x02\x02\x89\u0237", "\x03\x02\x02\x02\x8B\u023A\x03\x02\x02\x02\x8D\u023D", "\x03\x02\x02\x02\x8F\u0240\x03\x02\x02\x02\x91\u0243", "\x03\x02\x02\x02\x93\u0245\x03\x02\x02\x02\x95\u0247", "\x03\x02\x02\x02\x97\u024A\x03\x02\x02\x02\x99\u024D", "\x03\x02\x02\x02\x9B\u0250\x03\x02\x02\x02\x9D\u0254", "\x03\x02\x02\x02\x9F\u0258\x03\x02\x02\x02\xA1\u025B", "\x03\x02\x02\x02\xA3\u025E\x03\x02\x02\x02\xA5\u0261", "\x03\x02\x02\x02\xA7\u0264\x03\x02\x02\x02\xA9\u0267", "\x03\x02\x02\x02\xAB\u026B\x03\x02\x02\x02\xAD\u026E", "\x03\x02\x02\x02\xAF\u0271\x03\x02\x02\x02\xB1\u0278", "\x03\x02\x02\x02\xB3\u027D\x03\x02\x02\x02\xB5\u0285", "\x03\x02\x02\x02\xB7\u033E\x03\x02\x02\x02\xB9\u0417", "\x03\x02\x02\x02\xBB\u04F5\x03\x02\x02\x02\xBD\u050D", "\x03\x02\x02\x02\xBF\u0527\x03\x02\x02\x02\xC1\u052A", "\x03\x02\x02\x02\xC3\u0543\x03\x02\x02\x02\xC5\u054B", "\x03\x02\x02\x02\xC7\u0551\x03\x02\x02\x02\xC9\u055B", "\x03\x02\x02\x02\xCB\u055F\x03\x02\x02\x02\xCD\u059D", "\x03\x02\x02\x02\xCF\u059F\x03\x02\x02\x02\xD1\u05B5", "\x03\x02\x02\x02\xD3\u05B8\x03\x02\x02\x02\xD5\u0612", "\x03\x02\x02\x02\xD7\u0614\x03\x02\x02\x02\xD9\u061E", "\x03\x02\x02\x02\xDB\u0624\x03\x02\x02\x02\xDD\u062D", "\x03\x02\x02\x02\xDF\u0636\x03\x02\x02\x02\xE1\u063F", "\x03\x02\x02\x02\xE3\u0647\x03\x02\x02\x02\xE5\u0650", "\x03\x02\x02\x02\xE7\u0658\x03\x02\x02\x02\xE9\u0660", "\x03\x02\x02\x02\xEB\u0667\x03\x02\x02\x02\xED\u066C", "\x03\x02\x02\x02\xEF\u0671\x03\x02\x02\x02\xF1\u0676", "\x03\x02\x02\x02\xF3\u067D\x03\x02\x02\x02\xF5\u067F", "\x03\x02\x02\x02\xF7\u0691\x03\x02\x02\x02\xF9\u0696", "\x03\x02\x02\x02\xFB\u069B\x03\x02\x02\x02\xFD\u069E", "\x03\x02\x02\x02\xFF\u06A4\x03\x02\x02\x02\u0101\u06B2", "\x03\x02\x02\x02\u0103\u0104\x07r\x02\x02\u0104\u0105", "\x07t\x02\x02\u0105\u0106\x07c\x02\x02\u0106\u0107\x07", "i\x02\x02\u0107\u0108\x07o\x02\x02\u0108\u0109\x07c\x02", "\x02\u0109\x04\x03\x02\x02\x02\u010A\u010B\x07=\x02", "\x02\u010B\x06\x03\x02\x02\x02\u010C\u010D\x07`\x02", "\x02\u010D\b\x03\x02\x02\x02\u010E\u010F\x07\x80\x02", "\x02\u010F\n\x03\x02\x02\x02\u0110\u0111\x07@\x02\x02", "\u0111\u0112\x07?\x02\x02\u0112\f\x03\x02\x02\x02\u0113", "\u0114\x07@\x02\x02\u0114\x0E\x03\x02\x02\x02\u0115", "\u0116\x07>\x02\x02\u0116\x10\x03\x02\x02\x02\u0117", "\u0118\x07>\x02\x02\u0118\u0119\x07?\x02\x02\u0119\x12", "\x03\x02\x02\x02\u011A\u011B\x07?\x02\x02\u011B\x14", "\x03\x02\x02\x02\u011C\u011D\x07c\x02\x02\u011D\u011E", "\x07u\x02\x02\u011E\x16\x03\x02\x02\x02\u011F\u0120", "\x07k\x02\x02\u0120\u0121\x07o\x02\x02\u0121\u0122\x07", "r\x02\x02\u0122\u0123\x07q\x02\x02\u0123\u0124\x07t\x02", "\x02\u0124\u0125\x07v\x02\x02\u0125\x18\x03\x02\x02", "\x02\u0126\u0127\x07,\x02\x02\u0127\x1A\x03\x02\x02", "\x02\u0128\u0129\x07h\x02\x02\u0129\u012A\x07t\x02\x02", "\u012A\u012B\x07q\x02\x02\u012B\u012C\x07o\x02\x02\u012C", "\x1C\x03\x02\x02\x02\u012D\u012E\x07}\x02\x02\u012E", "\x1E\x03\x02\x02\x02\u012F\u0130\x07.\x02\x02\u0130", " \x03\x02\x02\x02\u0131\u0132\x07\x7F\x02\x02\u0132", "\"\x03\x02\x02\x02\u0133\u0134\x07e\x02\x02\u0134\u0135", "\x07q\x02\x02\u0135\u0136\x07p\x02\x02\u0136\u0137\x07", "v\x02\x02\u0137\u0138\x07t\x02\x02\u0138\u0139\x07c\x02", "\x02\u0139\u013A\x07e\x02\x02\u013A\u013B\x07v\x02\x02", "\u013B$\x03\x02\x02\x02\u013C\u013D\x07k\x02\x02\u013D", "\u013E\x07p\x02\x02\u013E\u013F\x07v\x02\x02\u013F\u0140", "\x07g\x02\x02\u0140\u0141\x07t\x02\x02\u0141\u0142\x07", "h\x02\x02\u0142\u0143\x07c\x02\x02\u0143\u0144\x07e\x02", "\x02\u0144\u0145\x07g\x02\x02\u0145&\x03\x02\x02\x02", "\u0146\u0147\x07n\x02\x02\u0147\u0148\x07k\x02\x02\u0148", "\u0149\x07d\x02\x02\u0149\u014A\x07t\x02\x02\u014A\u014B", "\x07c\x02\x02\u014B\u014C\x07t\x02\x02\u014C\u014D\x07", "{\x02\x02\u014D(\x03\x02\x02\x02\u014E\u014F\x07k\x02", "\x02\u014F\u0150\x07u\x02\x02\u0150*\x03\x02\x02\x02", "\u0151\u0152\x07*\x02\x02\u0152,\x03\x02\x02\x02\u0153", "\u0154\x07+\x02\x02\u0154.\x03\x02\x02\x02\u0155\u0156", "\x07w\x02\x02\u0156\u0157\x07u\x02\x02\u0157\u0158\x07", "k\x02\x02\u0158\u0159\x07p\x02\x02\u0159\u015A\x07i\x02", "\x02\u015A0\x03\x02\x02\x02\u015B\u015C\x07h\x02\x02", "\u015C\u015D\x07q\x02\x02\u015D\u015E\x07t\x02\x02\u015E", "2\x03\x02\x02\x02\u015F\u0160\x07u\x02\x02\u0160\u0161", "\x07v\x02\x02\u0161\u0162\x07t\x02\x02\u0162\u0163\x07", "w\x02\x02\u0163\u0164\x07e\x02\x02\u0164\u0165\x07v\x02", "\x02\u01654\x03\x02\x02\x02\u0166\u0167\x07e\x02\x02", "\u0167\u0168\x07q\x02\x02\u0168\u0169\x07p\x02\x02\u0169", "\u016A\x07u\x02\x02\u016A\u016B\x07v\x02\x02\u016B\u016C", "\x07t\x02\x02\u016C\u016D\x07w\x02\x02\u016D\u016E\x07", "e\x02\x02\u016E\u016F\x07v\x02\x02\u016F\u0170\x07q\x02", "\x02\u0170\u0171\x07t\x02\x02\u01716\x03\x02\x02\x02", "\u0172\u0173\x07o\x02\x02\u0173\u0174\x07q\x02\x02\u0174", "\u0175\x07f\x02\x02\u0175\u0176\x07k\x02\x02\u0176\u0177", "\x07h\x02\x02\u0177\u0178\x07k\x02\x02\u0178\u0179\x07", "g\x02\x02\u0179\u017A\x07t\x02\x02\u017A8\x03\x02\x02", "\x02\u017B\u017C\x07h\x02\x02\u017C\u017D\x07w\x02\x02", "\u017D\u017E\x07p\x02\x02\u017E\u017F\x07e\x02\x02\u017F", "\u0180\x07v\x02\x02\u0180\u0181\x07k\x02\x02\u0181\u0182", "\x07q\x02\x02\u0182\u0183\x07p\x02\x02\u0183:\x03\x02", "\x02\x02\u0184\u0185\x07t\x02\x02\u0185\u0186\x07g\x02", "\x02\u0186\u0187\x07v\x02\x02\u0187\u0188\x07w\x02\x02", "\u0188\u0189\x07t\x02\x02\u0189\u018A\x07p\x02\x02\u018A", "\u018B\x07u\x02\x02\u018B<\x03\x02\x02\x02\u018C\u018D", "\x07g\x02\x02\u018D\u018E\x07x\x02\x02\u018E\u018F\x07", "g\x02\x02\u018F\u0190\x07p\x02\x02\u0190\u0191\x07v\x02", "\x02\u0191>\x03\x02\x02\x02\u0192\u0193\x07g\x02\x02", "\u0193\u0194\x07p\x02\x02\u0194\u0195\x07w\x02\x02\u0195", "\u0196\x07o\x02\x02\u0196@\x03\x02\x02\x02\u0197\u0198", "\x07]\x02\x02\u0198B\x03\x02\x02\x02\u0199\u019A\x07", "_\x02\x02\u019AD\x03\x02\x02\x02\u019B\u019C\x07c\x02", "\x02\u019C\u019D\x07f\x02\x02\u019D\u019E\x07f\x02\x02", "\u019E\u019F\x07t\x02\x02\u019F\u01A0\x07g\x02\x02\u01A0", "\u01A1\x07u\x02\x02\u01A1\u01A2\x07u\x02\x02\u01A2F\x03", "\x02\x02\x02\u01A3\u01A4\x070\x02\x02\u01A4H\x03\x02", "\x02\x02\u01A5\u01A6\x07o\x02\x02\u01A6\u01A7\x07c\x02", "\x02\u01A7\u01A8\x07r\x02\x02\u01A8\u01A9\x07r\x02\x02", "\u01A9\u01AA\x07k\x02\x02\u01AA\u01AB\x07p\x02\x02\u01AB", "\u01AC\x07i\x02\x02\u01ACJ\x03\x02\x02\x02\u01AD\u01AE", "\x07?\x02\x02\u01AE\u01AF\x07@\x02\x02\u01AFL\x03\x02", "\x02\x02\u01B0\u01B1\x07o\x02\x02\u01B1\u01B2\x07g\x02", "\x02\u01B2\u01B3\x07o\x02\x02\u01B3\u01B4\x07q\x02\x02", "\u01B4\u01B5\x07t\x02\x02\u01B5\u01B6\x07{\x02\x02\u01B6", "N\x03\x02\x02\x02\u01B7\u01B8\x07u\x02\x02\u01B8\u01B9", "\x07v\x02\x02\u01B9\u01BA\x07q\x02\x02\u01BA\u01BB\x07", "t\x02\x02\u01BB\u01BC\x07c\x02\x02\u01BC\u01BD\x07i\x02", "\x02\u01BD\u01BE\x07g\x02\x02\u01BEP\x03\x02\x02\x02", "\u01BF\u01C0\x07e\x02\x02\u01C0\u01C1\x07c\x02\x02\u01C1", "\u01C2\x07n\x02\x02\u01C2\u01C3\x07n\x02\x02\u01C3\u01C4", "\x07f\x02\x02\u01C4\u01C5\x07c\x02\x02\u01C5\u01C6\x07", "v\x02\x02\u01C6\u01C7\x07c\x02\x02\u01C7R\x03\x02\x02", "\x02\u01C8\u01C9\x07k\x02\x02\u01C9\u01CA\x07h\x02\x02", "\u01CAT\x03\x02\x02\x02\u01CB\u01CC\x07g\x02\x02\u01CC", "\u01CD\x07n\x02\x02\u01CD\u01CE\x07u\x02\x02\u01CE\u01CF", "\x07g\x02\x02\u01CFV\x03\x02\x02\x02\u01D0\u01D1\x07", "y\x02\x02\u01D1\u01D2\x07j\x02\x02\u01D2\u01D3\x07k\x02", "\x02\u01D3\u01D4\x07n\x02\x02\u01D4\u01D5\x07g\x02\x02", "\u01D5X\x03\x02\x02\x02\u01D6\u01D7\x07c\x02\x02\u01D7", "\u01D8\x07u\x02\x02\u01D8\u01D9\x07u\x02\x02\u01D9\u01DA", "\x07g\x02\x02\u01DA\u01DB\x07o\x02\x02\u01DB\u01DC\x07", "d\x02\x02\u01DC\u01DD\x07n\x02\x02\u01DD\u01DE\x07{\x02", "\x02\u01DEZ\x03\x02\x02\x02\u01DF\u01E0\x07f\x02\x02", "\u01E0\u01E1\x07q\x02\x02\u01E1\\\x03\x02\x02\x02\u01E2", "\u01E3\x07t\x02\x02\u01E3\u01E4\x07g\x02\x02\u01E4\u01E5", "\x07v\x02\x02\u01E5\u01E6\x07w\x02\x02\u01E6\u01E7\x07", "t\x02\x02\u01E7\u01E8\x07p\x02\x02\u01E8^\x03\x02\x02", "\x02\u01E9\u01EA\x07v\x02\x02\u01EA\u01EB\x07j\x02\x02", "\u01EB\u01EC\x07t\x02\x02\u01EC\u01ED\x07q\x02\x02\u01ED", "\u01EE\x07y\x02\x02\u01EE`\x03\x02\x02\x02\u01EF\u01F0", "\x07g\x02\x02\u01F0\u01F1\x07o\x02\x02\u01F1\u01F2\x07", "k\x02\x02\u01F2\u01F3\x07v\x02\x02\u01F3b\x03\x02\x02", "\x02\u01F4\u01F5\x07x\x02\x02\u01F5\u01F6\x07c\x02\x02", "\u01F6\u01F7\x07t\x02\x02\u01F7d\x03\x02\x02\x02\u01F8", "\u01F9\x07d\x02\x02\u01F9\u01FA\x07q\x02\x02\u01FA\u01FB", "\x07q\x02\x02\u01FB\u01FC\x07n\x02\x02\u01FCf\x03\x02", "\x02\x02\u01FD\u01FE\x07u\x02\x02\u01FE\u01FF\x07v\x02", "\x02\u01FF\u0200\x07t\x02\x02\u0200\u0201\x07k\x02\x02", "\u0201\u0202\x07p\x02\x02\u0202\u0203\x07i\x02\x02\u0203", "h\x03\x02\x02\x02\u0204\u0205\x07d\x02\x02\u0205\u0206", "\x07{\x02\x02\u0206\u0207\x07v\x02\x02\u0207\u0208\x07", "g\x02\x02\u0208j\x03\x02\x02\x02\u0209\u020A\x07-\x02", "\x02\u020A\u020B\x07-\x02\x02\u020Bl\x03\x02\x02\x02", "\u020C\u020D\x07/\x02\x02\u020D\u020E\x07/\x02\x02\u020E", "n\x03\x02\x02\x02\u020F\u0210\x07p\x02\x02\u0210\u0211", "\x07g\x02\x02\u0211\u0212\x07y\x02\x02\u0212p\x03\x02", "\x02\x02\u0213\u0214\x07-\x02\x02\u0214r\x03\x02\x02", "\x02\u0215\u0216\x07/\x02\x02\u0216t\x03\x02\x02\x02", "\u0217\u0218\x07c\x02\x02\u0218\u0219\x07h\x02\x02\u0219", "\u021A\x07v\x02\x02\u021A\u021B\x07g\x02\x02\u021B\u021C", "\x07t\x02\x02\u021Cv\x03\x02\x02\x02\u021D\u021E\x07", "f\x02\x02\u021E\u021F\x07g\x02\x02\u021F\u0220\x07n\x02", "\x02\u0220\u0221\x07g\x02\x02\u0221\u0222\x07v\x02\x02", "\u0222\u0223\x07g\x02\x02\u0223x\x03\x02\x02\x02\u0224", "\u0225\x07#\x02\x02\u0225z\x03\x02\x02\x02\u0226\u0227", "\x07,\x02\x02\u0227\u0228\x07,\x02\x02\u0228|\x03\x02", "\x02\x02\u0229\u022A\x071\x02\x02\u022A~\x03\x02\x02", "\x02\u022B\u022C\x07'\x02\x02\u022C\x80\x03\x02\x02", "\x02\u022D\u022E\x07>\x02\x02\u022E\u022F\x07>\x02\x02", "\u022F\x82\x03\x02\x02\x02\u0230\u0231\x07@\x02\x02", "\u0231\u0232\x07@\x02\x02\u0232\x84\x03\x02\x02\x02", "\u0233\u0234\x07(\x02\x02\u0234\x86\x03\x02\x02\x02", "\u0235\u0236\x07~\x02\x02\u0236\x88\x03\x02\x02\x02", "\u0237\u0238\x07?\x02\x02\u0238\u0239\x07?\x02\x02\u0239", "\x8A\x03\x02\x02\x02\u023A\u023B\x07#\x02\x02\u023B", "\u023C\x07?\x02\x02\u023C\x8C\x03\x02\x02\x02\u023D", "\u023E\x07(\x02\x02\u023E\u023F\x07(\x02\x02\u023F\x8E", "\x03\x02\x02\x02\u0240\u0241\x07~\x02\x02\u0241\u0242", "\x07~\x02\x02\u0242\x90\x03\x02\x02\x02\u0243\u0244", "\x07A\x02\x02\u0244\x92\x03\x02\x02\x02\u0245\u0246", "\x07<\x02\x02\u0246\x94\x03\x02\x02\x02\u0247\u0248", "\x07~\x02\x02\u0248\u0249\x07?\x02\x02\u0249\x96\x03", "\x02\x02\x02\u024A\u024B\x07`\x02\x02\u024B\u024C\x07", "?\x02\x02\u024C\x98\x03\x02\x02\x02\u024D\u024E\x07", "(\x02\x02\u024E\u024F\x07?\x02\x02\u024F\x9A\x03\x02", "\x02\x02\u0250\u0251\x07>\x02\x02\u0251\u0252\x07>\x02", "\x02\u0252\u0253\x07?\x02\x02\u0253\x9C\x03\x02\x02", "\x02\u0254\u0255\x07@\x02\x02\u0255\u0256\x07@\x02\x02", "\u0256\u0257\x07?\x02\x02\u0257\x9E\x03\x02\x02\x02", "\u0258\u0259\x07-\x02\x02\u0259\u025A\x07?\x02\x02\u025A", "\xA0\x03\x02\x02\x02\u025B\u025C\x07/\x02\x02\u025C", "\u025D\x07?\x02\x02\u025D\xA2\x03\x02\x02\x02\u025E", "\u025F\x07,\x02\x02\u025F\u0260\x07?\x02\x02\u0260\xA4", "\x03\x02\x02\x02\u0261\u0262\x071\x02\x02\u0262\u0263", "\x07?\x02\x02\u0263\xA6\x03\x02\x02\x02\u0264\u0265", "\x07'\x02\x02\u0265\u0266\x07?\x02\x02\u0266\xA8\x03", "\x02\x02\x02\u0267\u0268\x07n\x02\x02\u0268\u0269\x07", "g\x02\x02\u0269\u026A\x07v\x02\x02\u026A\xAA\x03\x02", "\x02\x02\u026B\u026C\x07<\x02\x02\u026C\u026D\x07?\x02", "\x02\u026D\xAC\x03\x02\x02\x02\u026E\u026F\x07?\x02", "\x02\u026F\u0270\x07<\x02\x02\u0270\xAE\x03\x02\x02", "\x02\u0271\u0272\x07u\x02\x02\u0272\u0273\x07y\x02\x02", "\u0273\u0274\x07k\x02\x02\u0274\u0275\x07v\x02\x02\u0275", "\u0276\x07e\x02\x02\u0276\u0277\x07j\x02\x02\u0277\xB0", "\x03\x02\x02\x02\u0278\u0279\x07e\x02\x02\u0279\u027A", "\x07c\x02\x02\u027A\u027B\x07u\x02\x02\u027B\u027C\x07", "g\x02\x02\u027C\xB2\x03\x02\x02\x02\u027D\u027E\x07", "f\x02\x02\u027E\u027F\x07g\x02\x02\u027F\u0280\x07h\x02", "\x02\u0280\u0281\x07c\x02\x02\u0281\u0282\x07w\x02\x02", "\u0282\u0283\x07n\x02\x02\u0283\u0284\x07v\x02\x02\u0284", "\xB4\x03\x02\x02\x02\u0285\u0286\x07/\x02\x02\u0286", "\u0287\x07@\x02\x02\u0287\xB6\x03\x02\x02\x02\u0288", "\u0289\x07k\x02\x02\u0289\u028A\x07p\x02\x02\u028A\u033F", "\x07v\x02\x02\u028B\u028C\x07k\x02\x02\u028C\u028D\x07", "p\x02\x02\u028D\u028E\x07v\x02\x02\u028E\u033F\x07:\x02", "\x02\u028F\u0290\x07k\x02\x02\u0290\u0291\x07p\x02\x02", "\u0291\u0292\x07v\x02\x02\u0292\u0293\x073\x02\x02\u0293", "\u033F\x078\x02\x02\u0294\u0295\x07k\x02\x02\u0295\u0296", "\x07p\x02\x02\u0296\u0297\x07v\x02\x02\u0297\u0298\x07", "4\x02\x02\u0298\u033F\x076\x02\x02\u0299\u029A\x07k\x02", "\x02\u029A\u029B\x07p\x02\x02\u029B\u029C\x07v\x02\x02", "\u029C\u029D\x075\x02\x02\u029D\u033F\x074\x02\x02\u029E", "\u029F\x07k\x02\x02\u029F\u02A0\x07p\x02\x02\u02A0\u02A1", "\x07v\x02\x02\u02A1\u02A2\x076\x02\x02\u02A2\u033F\x07", "2\x02\x02\u02A3\u02A4\x07k\x02\x02\u02A4\u02A5\x07p\x02", "\x02\u02A5\u02A6\x07v\x02\x02\u02A6\u02A7\x076\x02\x02", "\u02A7\u033F\x07:\x02\x02\u02A8\u02A9\x07k\x02\x02\u02A9", "\u02AA\x07p\x02\x02\u02AA\u02AB\x07v\x02\x02\u02AB\u02AC", "\x077\x02\x02\u02AC\u033F\x078\x02\x02\u02AD\u02AE\x07", "k\x02\x02\u02AE\u02AF\x07p\x02\x02\u02AF\u02B0\x07v\x02", "\x02\u02B0\u02B1\x078\x02\x02\u02B1\u033F\x076\x02\x02", "\u02B2\u02B3\x07k\x02\x02\u02B3\u02B4\x07p\x02\x02\u02B4", "\u02B5\x07v\x02\x02\u02B5\u02B6\x079\x02\x02\u02B6\u033F", "\x074\x02\x02\u02B7\u02B8\x07k\x02\x02\u02B8\u02B9\x07", "p\x02\x02\u02B9\u02BA\x07v\x02\x02\u02BA\u02BB\x07:\x02", "\x02\u02BB\u033F\x072\x02\x02\u02BC\u02BD\x07k\x02\x02", "\u02BD\u02BE\x07p\x02\x02\u02BE\u02BF\x07v\x02\x02\u02BF", "\u02C0\x07:\x02\x02\u02C0\u033F\x07:\x02\x02\u02C1\u02C2", "\x07k\x02\x02\u02C2\u02C3\x07p\x02\x02\u02C3\u02C4\x07", "v\x02\x02\u02C4\u02C5\x07;\x02\x02\u02C5\u033F\x078\x02", "\x02\u02C6\u02C7\x07k\x02\x02\u02C7\u02C8\x07p\x02\x02", "\u02C8\u02C9\x07v\x02\x02\u02C9\u02CA\x073\x02\x02\u02CA", "\u02CB\x072\x02\x02\u02CB\u033F\x076\x02\x02\u02CC\u02CD", "\x07k\x02\x02\u02CD\u02CE\x07p\x02\x02\u02CE\u02CF\x07", "v\x02\x02\u02CF\u02D0\x073\x02\x02\u02D0\u02D1\x073\x02", "\x02\u02D1\u033F\x074\x02\x02\u02D2\u02D3\x07k\x02\x02", "\u02D3\u02D4\x07p\x02\x02\u02D4\u02D5\x07v\x02\x02\u02D5", "\u02D6\x073\x02\x02\u02D6\u02D7\x074\x02\x02\u02D7\u033F", "\x072\x02\x02\u02D8\u02D9\x07k\x02\x02\u02D9\u02DA\x07", "p\x02\x02\u02DA\u02DB\x07v\x02\x02\u02DB\u02DC\x073\x02", "\x02\u02DC\u02DD\x074\x02\x02\u02DD\u033F\x07:\x02\x02", "\u02DE\u02DF\x07k\x02\x02\u02DF\u02E0\x07p\x02\x02\u02E0", "\u02E1\x07v\x02\x02\u02E1\u02E2\x073\x02\x02\u02E2\u02E3", "\x075\x02\x02\u02E3\u033F\x078\x02\x02\u02E4\u02E5\x07", "k\x02\x02\u02E5\u02E6\x07p\x02\x02\u02E6\u02E7\x07v\x02", "\x02\u02E7\u02E8\x073\x02\x02\u02E8\u02E9\x076\x02\x02", "\u02E9\u033F\x076\x02\x02\u02EA\u02EB\x07k\x02\x02\u02EB", "\u02EC\x07p\x02\x02\u02EC\u02ED\x07v\x02\x02\u02ED\u02EE", "\x073\x02\x02\u02EE\u02EF\x077\x02\x02\u02EF\u033F\x07", "4\x02\x02\u02F0\u02F1\x07k\x02\x02\u02F1\u02F2\x07p\x02", "\x02\u02F2\u02F3\x07v\x02\x02\u02F3\u02F4\x073\x02\x02", "\u02F4\u02F5\x078\x02\x02\u02F5\u033F\x072\x02\x02\u02F6", "\u02F7\x07k\x02\x02\u02F7\u02F8\x07p\x02\x02\u02F8\u02F9", "\x07v\x02\x02\u02F9\u02FA\x073\x02\x02\u02FA\u02FB\x07", "8\x02\x02\u02FB\u033F\x07:\x02\x02\u02FC\u02FD\x07k\x02", "\x02\u02FD\u02FE\x07p\x02\x02\u02FE\u02FF\x07v\x02\x02", "\u02FF\u0300\x073\x02\x02\u0300\u0301\x079\x02\x02\u0301", "\u033F\x078\x02\x02\u0302\u0303\x07k\x02\x02\u0303\u0304", "\x07p\x02\x02\u0304\u0305\x07v\x02\x02\u0305\u0306\x07", "3\x02\x02\u0306\u0307\x07:\x02\x02\u0307\u033F\x076\x02", "\x02\u0308\u0309\x07k\x02\x02\u0309\u030A\x07p\x02\x02", "\u030A\u030B\x07v\x02\x02\u030B\u030C\x073\x02\x02\u030C", "\u030D\x07;\x02\x02\u030D\u033F\x074\x02\x02\u030E\u030F", "\x07k\x02\x02\u030F\u0310\x07p\x02\x02\u0310\u0311\x07", "v\x02\x02\u0311\u0312\x074\x02\x02\u0312\u0313\x072\x02", "\x02\u0313\u033F\x072\x02\x02\u0314\u0315\x07k\x02\x02", "\u0315\u0316\x07p\x02\x02\u0316\u0317\x07v\x02\x02\u0317", "\u0318\x074\x02\x02\u0318\u0319\x072\x02\x02\u0319\u033F", "\x07:\x02\x02\u031A\u031B\x07k\x02\x02\u031B\u031C\x07", "p\x02\x02\u031C\u031D\x07v\x02\x02\u031D\u031E\x074\x02", "\x02\u031E\u031F\x073\x02\x02\u031F\u033F\x078\x02\x02", "\u0320\u0321\x07k\x02\x02\u0321\u0322\x07p\x02\x02\u0322", "\u0323\x07v\x02\x02\u0323\u0324\x074\x02\x02\u0324\u0325", "\x074\x02\x02\u0325\u033F\x076\x02\x02\u0326\u0327\x07", "k\x02\x02\u0327\u0328\x07p\x02\x02\u0328\u0329\x07v\x02", "\x02\u0329\u032A\x074\x02\x02\u032A\u032B\x075\x02\x02", "\u032B\u033F\x074\x02\x02\u032C\u032D\x07k\x02\x02\u032D", "\u032E\x07p\x02\x02\u032E\u032F\x07v\x02\x02\u032F\u0330", "\x074\x02\x02\u0330\u0331\x076\x02\x02\u0331\u033F\x07", "2\x02\x02\u0332\u0333\x07k\x02\x02\u0333\u0334\x07p\x02", "\x02\u0334\u0335\x07v\x02\x02\u0335\u0336\x074\x02\x02", "\u0336\u0337\x076\x02\x02\u0337\u033F\x07:\x02\x02\u0338", "\u0339\x07k\x02\x02\u0339\u033A\x07p\x02\x02\u033A\u033B", "\x07v\x02\x02\u033B\u033C\x074\x02\x02\u033C\u033D\x07", "7\x02\x02\u033D\u033F\x078\x02\x02\u033E\u0288\x03\x02", "\x02\x02\u033E\u028B\x03\x02\x02\x02\u033E\u028F\x03\x02", "\x02\x02\u033E\u0294\x03\x02\x02\x02\u033E\u0299\x03\x02", "\x02\x02\u033E\u029E\x03\x02\x02\x02\u033E\u02A3\x03\x02", "\x02\x02\u033E\u02A8\x03\x02\x02\x02\u033E\u02AD\x03\x02", "\x02\x02\u033E\u02B2\x03\x02\x02\x02\u033E\u02B7\x03\x02", "\x02\x02\u033E\u02BC\x03\x02\x02\x02\u033E\u02C1\x03\x02", "\x02\x02\u033E\u02C6\x03\x02\x02\x02\u033E\u02CC\x03\x02", "\x02\x02\u033E\u02D2\x03\x02\x02\x02\u033E\u02D8\x03\x02", "\x02\x02\u033E\u02DE\x03\x02\x02\x02\u033E\u02E4\x03\x02", "\x02\x02\u033E\u02EA\x03\x02\x02\x02\u033E\u02F0\x03\x02", "\x02\x02\u033E\u02F6\x03\x02\x02\x02\u033E\u02FC\x03\x02", "\x02\x02\u033E\u0302\x03\x02\x02\x02\u033E\u0308\x03\x02", "\x02\x02\u033E\u030E\x03\x02\x02\x02\u033E\u0314\x03\x02", "\x02\x02\u033E\u031A\x03\x02\x02\x02\u033E\u0320\x03\x02", "\x02\x02\u033E\u0326\x03\x02\x02\x02\u033E\u032C\x03\x02", "\x02\x02\u033E\u0332\x03\x02\x02\x02\u033E\u0338\x03\x02", "\x02\x02\u033F\xB8\x03\x02\x02\x02\u0340\u0341\x07w", "\x02\x02\u0341\u0342\x07k\x02\x02\u0342\u0343\x07p\x02", "\x02\u0343\u0418\x07v\x02\x02\u0344\u0345\x07w\x02\x02", "\u0345\u0346\x07k\x02\x02\u0346\u0347\x07p\x02\x02\u0347", "\u0348\x07v\x02\x02\u0348\u0418\x07:\x02\x02\u0349\u034A", "\x07w\x02\x02\u034A\u034B\x07k\x02\x02\u034B\u034C\x07", "p\x02\x02\u034C\u034D\x07v\x02\x02\u034D\u034E\x073\x02", "\x02\u034E\u0418\x078\x02\x02\u034F\u0350\x07w\x02\x02", "\u0350\u0351\x07k\x02\x02\u0351\u0352\x07p\x02\x02\u0352", "\u0353\x07v\x02\x02\u0353\u0354\x074\x02\x02\u0354\u0418", "\x076\x02\x02\u0355\u0356\x07w\x02\x02\u0356\u0357\x07", "k\x02\x02\u0357\u0358\x07p\x02\x02\u0358\u0359\x07v\x02", "\x02\u0359\u035A\x075\x02\x02\u035A\u0418\x074\x02\x02", "\u035B\u035C\x07w\x02\x02\u035C\u035D\x07k\x02\x02\u035D", "\u035E\x07p\x02\x02\u035E\u035F\x07v\x02\x02\u035F\u0360", "\x076\x02\x02\u0360\u0418\x072\x02\x02\u0361\u0362\x07", "w\x02\x02\u0362\u0363\x07k\x02\x02\u0363\u0364\x07p\x02", "\x02\u0364\u0365\x07v\x02\x02\u0365\u0366\x076\x02\x02", "\u0366\u0418\x07:\x02\x02\u0367\u0368\x07w\x02\x02\u0368", "\u0369\x07k\x02\x02\u0369\u036A\x07p\x02\x02\u036A\u036B", "\x07v\x02\x02\u036B\u036C\x077\x02\x02\u036C\u0418\x07", "8\x02\x02\u036D\u036E\x07w\x02\x02\u036E\u036F\x07k\x02", "\x02\u036F\u0370\x07p\x02\x02\u0370\u0371\x07v\x02\x02", "\u0371\u0372\x078\x02\x02\u0372\u0418\x076\x02\x02\u0373", "\u0374\x07w\x02\x02\u0374\u0375\x07k\x02\x02\u0375\u0376", "\x07p\x02\x02\u0376\u0377\x07v\x02\x02\u0377\u0378\x07", "9\x02\x02\u0378\u0418\x074\x02\x02\u0379\u037A\x07w\x02", "\x02\u037A\u037B\x07k\x02\x02\u037B\u037C\x07p\x02\x02", "\u037C\u037D\x07v\x02\x02\u037D\u037E\x07:\x02\x02\u037E", "\u0418\x072\x02\x02\u037F\u0380\x07w\x02\x02\u0380\u0381", "\x07k\x02\x02\u0381\u0382\x07p\x02\x02\u0382\u0383\x07", "v\x02\x02\u0383\u0384\x07:\x02\x02\u0384\u0418\x07:\x02", "\x02\u0385\u0386\x07w\x02\x02\u0386\u0387\x07k\x02\x02", "\u0387\u0388\x07p\x02\x02\u0388\u0389\x07v\x02\x02\u0389", "\u038A\x07;\x02\x02\u038A\u0418\x078\x02\x02\u038B\u038C", "\x07w\x02\x02\u038C\u038D\x07k\x02\x02\u038D\u038E\x07", "p\x02\x02\u038E\u038F\x07v\x02\x02\u038F\u0390\x073\x02", "\x02\u0390\u0391\x072\x02\x02\u0391\u0418\x076\x02\x02", "\u0392\u0393\x07w\x02\x02\u0393\u0394\x07k\x02\x02\u0394", "\u0395\x07p\x02\x02\u0395\u0396\x07v\x02\x02\u0396\u0397", "\x073\x02\x02\u0397\u0398\x073\x02\x02\u0398\u0418\x07", "4\x02\x02\u0399\u039A\x07w\x02\x02\u039A\u039B\x07k\x02", "\x02\u039B\u039C\x07p\x02\x02\u039C\u039D\x07v\x02\x02", "\u039D\u039E\x073\x02\x02\u039E\u039F\x074\x02\x02\u039F", "\u0418\x072\x02\x02\u03A0\u03A1\x07w\x02\x02\u03A1\u03A2", "\x07k\x02\x02\u03A2\u03A3\x07p\x02\x02\u03A3\u03A4\x07", "v\x02\x02\u03A4\u03A5\x073\x02\x02\u03A5\u03A6\x074\x02", "\x02\u03A6\u0418\x07:\x02\x02\u03A7\u03A8\x07w\x02\x02", "\u03A8\u03A9\x07k\x02\x02\u03A9\u03AA\x07p\x02\x02\u03AA", "\u03AB\x07v\x02\x02\u03AB\u03AC\x073\x02\x02\u03AC\u03AD", "\x075\x02\x02\u03AD\u0418\x078\x02\x02\u03AE\u03AF\x07", "w\x02\x02\u03AF\u03B0\x07k\x02\x02\u03B0\u03B1\x07p\x02", "\x02\u03B1\u03B2\x07v\x02\x02\u03B2\u03B3\x073\x02\x02", "\u03B3\u03B4\x076\x02\x02\u03B4\u0418\x076\x02\x02\u03B5", "\u03B6\x07w\x02\x02\u03B6\u03B7\x07k\x02\x02\u03B7\u03B8", "\x07p\x02\x02\u03B8\u03B9\x07v\x02\x02\u03B9\u03BA\x07", "3\x02\x02\u03BA\u03BB\x077\x02\x02\u03BB\u0418\x074\x02", "\x02\u03BC\u03BD\x07w\x02\x02\u03BD\u03BE\x07k\x02\x02", "\u03BE\u03BF\x07p\x02\x02\u03BF\u03C0\x07v\x02\x02\u03C0", "\u03C1\x073\x02\x02\u03C1\u03C2\x078\x02\x02\u03C2\u0418", "\x072\x02\x02\u03C3\u03C4\x07w\x02\x02\u03C4\u03C5\x07", "k\x02\x02\u03C5\u03C6\x07p\x02\x02\u03C6\u03C7\x07v\x02", "\x02\u03C7\u03C8\x073\x02\x02\u03C8\u03C9\x078\x02\x02", "\u03C9\u0418\x07:\x02\x02\u03CA\u03CB\x07w\x02\x02\u03CB", "\u03CC\x07k\x02\x02\u03CC\u03CD\x07p\x02\x02\u03CD\u03CE", "\x07v\x02\x02\u03CE\u03CF\x073\x02\x02\u03CF\u03D0\x07", "9\x02\x02\u03D0\u0418\x078\x02\x02\u03D1\u03D2\x07w\x02", "\x02\u03D2\u03D3\x07k\x02\x02\u03D3\u03D4\x07p\x02\x02", "\u03D4\u03D5\x07v\x02\x02\u03D5\u03D6\x073\x02\x02\u03D6", "\u03D7\x07:\x02\x02\u03D7\u0418\x076\x02\x02\u03D8\u03D9", "\x07w\x02\x02\u03D9\u03DA\x07k\x02\x02\u03DA\u03DB\x07", "p\x02\x02\u03DB\u03DC\x07v\x02\x02\u03DC\u03DD\x073\x02", "\x02\u03DD\u03DE\x07;\x02\x02\u03DE\u0418\x074\x02\x02", "\u03DF\u03E0\x07w\x02\x02\u03E0\u03E1\x07k\x02\x02\u03E1", "\u03E2\x07p\x02\x02\u03E2\u03E3\x07v\x02\x02\u03E3\u03E4", "\x074\x02\x02\u03E4\u03E5\x072\x02\x02\u03E5\u0418\x07", "2\x02\x02\u03E6\u03E7\x07w\x02\x02\u03E7\u03E8\x07k\x02", "\x02\u03E8\u03E9\x07p\x02\x02\u03E9\u03EA\x07v\x02\x02", "\u03EA\u03EB\x074\x02\x02\u03EB\u03EC\x072\x02\x02\u03EC", "\u0418\x07:\x02\x02\u03ED\u03EE\x07w\x02\x02\u03EE\u03EF", "\x07k\x02\x02\u03EF\u03F0\x07p\x02\x02\u03F0\u03F1\x07", "v\x02\x02\u03F1\u03F2\x074\x02\x02\u03F2\u03F3\x073\x02", "\x02\u03F3\u0418\x078\x02\x02\u03F4\u03F5\x07w\x02\x02", "\u03F5\u03F6\x07k\x02\x02\u03F6\u03F7\x07p\x02\x02\u03F7", "\u03F8\x07v\x02\x02\u03F8\u03F9\x074\x02\x02\u03F9\u03FA", "\x074\x02\x02\u03FA\u0418\x076\x02\x02\u03FB\u03FC\x07", "w\x02\x02\u03FC\u03FD\x07k\x02\x02\u03FD\u03FE\x07p\x02", "\x02\u03FE\u03FF\x07v\x02\x02\u03FF\u0400\x074\x02\x02", "\u0400\u0401\x075\x02\x02\u0401\u0418\x074\x02\x02\u0402", "\u0403\x07w\x02\x02\u0403\u0404\x07k\x02\x02\u0404\u0405", "\x07p\x02\x02\u0405\u0406\x07v\x02\x02\u0406\u0407\x07", "4\x02\x02\u0407\u0408\x076\x02\x02\u0408\u0418\x072\x02", "\x02\u0409\u040A\x07w\x02\x02\u040A\u040B\x07k\x02\x02", "\u040B\u040C\x07p\x02\x02\u040C\u040D\x07v\x02\x02\u040D", "\u040E\x074\x02\x02\u040E\u040F\x076\x02\x02\u040F\u0418", "\x07:\x02\x02\u0410\u0411\x07w\x02\x02\u0411\u0412\x07", "k\x02\x02\u0412\u0413\x07p\x02\x02\u0413\u0414\x07v\x02", "\x02\u0414\u0415\x074\x02\x02\u0415\u0416\x077\x02\x02", "\u0416\u0418\x078\x02\x02\u0417\u0340\x03\x02\x02\x02", "\u0417\u0344\x03\x02\x02\x02\u0417\u0349\x03\x02\x02\x02", "\u0417\u034F\x03\x02\x02\x02\u0417\u0355\x03\x02\x02\x02", "\u0417\u035B\x03\x02\x02\x02\u0417\u0361\x03\x02\x02\x02", "\u0417\u0367\x03\x02\x02\x02\u0417\u036D\x03\x02\x02\x02", "\u0417\u0373\x03\x02\x02\x02\u0417\u0379\x03\x02\x02\x02", "\u0417\u037F\x03\x02\x02\x02\u0417\u0385\x03\x02\x02\x02", "\u0417\u038B\x03\x02\x02\x02\u0417\u0392\x03\x02\x02\x02", "\u0417\u0399\x03\x02\x02\x02\u0417\u03A0\x03\x02\x02\x02", "\u0417\u03A7\x03\x02\x02\x02\u0417\u03AE\x03\x02\x02\x02", "\u0417\u03B5\x03\x02\x02\x02\u0417\u03BC\x03\x02\x02\x02", "\u0417\u03C3\x03\x02\x02\x02\u0417\u03CA\x03\x02\x02\x02", "\u0417\u03D1\x03\x02\x02\x02\u0417\u03D8\x03\x02\x02\x02", "\u0417\u03DF\x03\x02\x02\x02\u0417\u03E6\x03\x02\x02\x02", "\u0417\u03ED\x03\x02\x02\x02\u0417\u03F4\x03\x02\x02\x02", "\u0417\u03FB\x03\x02\x02\x02\u0417\u0402\x03\x02\x02\x02", "\u0417\u0409\x03\x02\x02\x02\u0417\u0410\x03\x02\x02\x02", "\u0418\xBA\x03\x02\x02\x02\u0419\u041A\x07d\x02\x02", "\u041A\u041B\x07{\x02\x02\u041B\u041C\x07v\x02\x02\u041C", "\u041D\x07g\x02\x02\u041D\u04F6\x07u\x02\x02\u041E\u041F", "\x07d\x02\x02\u041F\u0420\x07{\x02\x02\u0420\u0421\x07", "v\x02\x02\u0421\u0422\x07g\x02\x02\u0422\u0423\x07u\x02", "\x02\u0423\u04F6\x073\x02\x02\u0424\u0425\x07d\x02\x02", "\u0425\u0426\x07{\x02\x02\u0426\u0427\x07v\x02\x02\u0427", "\u0428\x07g\x02\x02\u0428\u0429\x07u\x02\x02\u0429\u04F6", "\x074\x02\x02\u042A\u042B\x07d\x02\x02\u042B\u042C\x07", "{\x02\x02\u042C\u042D\x07v\x02\x02\u042D\u042E\x07g\x02", "\x02\u042E\u042F\x07u\x02\x02\u042F\u04F6\x075\x02\x02", "\u0430\u0431\x07d\x02\x02\u0431\u0432\x07{\x02\x02\u0432", "\u0433\x07v\x02\x02\u0433\u0434\x07g\x02\x02\u0434\u0435", "\x07u\x02\x02\u0435\u04F6\x076\x02\x02\u0436\u0437\x07", "d\x02\x02\u0437\u0438\x07{\x02\x02\u0438\u0439\x07v\x02", "\x02\u0439\u043A\x07g\x02\x02\u043A\u043B\x07u\x02\x02", "\u043B\u04F6\x077\x02\x02\u043C\u043D\x07d\x02\x02\u043D", "\u043E\x07{\x02\x02\u043E\u043F\x07v\x02\x02\u043F\u0440", "\x07g\x02\x02\u0440\u0441\x07u\x02\x02\u0441\u04F6\x07", "8\x02\x02\u0442\u0443\x07d\x02\x02\u0443\u0444\x07{\x02", "\x02\u0444\u0445\x07v\x02\x02\u0445\u0446\x07g\x02\x02", "\u0446\u0447\x07u\x02\x02\u0447\u04F6\x079\x02\x02\u0448", "\u0449\x07d\x02\x02\u0449\u044A\x07{\x02\x02\u044A\u044B", "\x07v\x02\x02\u044B\u044C\x07g\x02\x02\u044C\u044D\x07", "u\x02\x02\u044D\u04F6\x07:\x02\x02\u044E\u044F\x07d\x02", "\x02\u044F\u0450\x07{\x02\x02\u0450\u0451\x07v\x02\x02", "\u0451\u0452\x07g\x02\x02\u0452\u0453\x07u\x02\x02\u0453", "\u04F6\x07;\x02\x02\u0454\u0455\x07d\x02\x02\u0455\u0456", "\x07{\x02\x02\u0456\u0457\x07v\x02\x02\u0457\u0458\x07", "g\x02\x02\u0458\u0459\x07u\x02\x02\u0459\u045A\x073\x02", "\x02\u045A\u04F6\x072\x02\x02\u045B\u045C\x07d\x02\x02", "\u045C\u045D\x07{\x02\x02\u045D\u045E\x07v\x02\x02\u045E", "\u045F\x07g\x02\x02\u045F\u0460\x07u\x02\x02\u0460\u0461", "\x073\x02\x02\u0461\u04F6\x073\x02\x02\u0462\u0463\x07", "d\x02\x02\u0463\u0464\x07{\x02\x02\u0464\u0465\x07v\x02", "\x02\u0465\u0466\x07g\x02\x02\u0466\u0467\x07u\x02\x02", "\u0467\u0468\x073\x02\x02\u0468\u04F6\x074\x02\x02\u0469", "\u046A\x07d\x02\x02\u046A\u046B\x07{\x02\x02\u046B\u046C", "\x07v\x02\x02\u046C\u046D\x07g\x02\x02\u046D\u046E\x07", "u\x02\x02\u046E\u046F\x073\x02\x02\u046F\u04F6\x075\x02", "\x02\u0470\u0471\x07d\x02\x02\u0471\u0472\x07{\x02\x02", "\u0472\u0473\x07v\x02\x02\u0473\u0474\x07g\x02\x02\u0474", "\u0475\x07u\x02\x02\u0475\u0476\x073\x02\x02\u0476\u04F6", "\x076\x02\x02\u0477\u0478\x07d\x02\x02\u0478\u0479\x07", "{\x02\x02\u0479\u047A\x07v\x02\x02\u047A\u047B\x07g\x02", "\x02\u047B\u047C\x07u\x02\x02\u047C\u047D\x073\x02\x02", "\u047D\u04F6\x077\x02\x02\u047E\u047F\x07d\x02\x02\u047F", "\u0480\x07{\x02\x02\u0480\u0481\x07v\x02\x02\u0481\u0482", "\x07g\x02\x02\u0482\u0483\x07u\x02\x02\u0483\u0484\x07", "3\x02\x02\u0484\u04F6\x078\x02\x02\u0485\u0486\x07d\x02", "\x02\u0486\u0487\x07{\x02\x02\u0487\u0488\x07v\x02\x02", "\u0488\u0489\x07g\x02\x02\u0489\u048A\x07u\x02\x02\u048A", "\u048B\x073\x02\x02\u048B\u04F6\x079\x02\x02\u048C\u048D", "\x07d\x02\x02\u048D\u048E\x07{\x02\x02\u048E\u048F\x07", "v\x02\x02\u048F\u0490\x07g\x02\x02\u0490\u0491\x07u\x02", "\x02\u0491\u0492\x073\x02\x02\u0492\u04F6\x07:\x02\x02", "\u0493\u0494\x07d\x02\x02\u0494\u0495\x07{\x02\x02\u0495", "\u0496\x07v\x02\x02\u0496\u0497\x07g\x02\x02\u0497\u0498", "\x07u\x02\x02\u0498\u0499\x073\x02\x02\u0499\u04F6\x07", ";\x02\x02\u049A\u049B\x07d\x02\x02\u049B\u049C\x07{\x02", "\x02\u049C\u049D\x07v\x02\x02\u049D\u049E\x07g\x02\x02", "\u049E\u049F\x07u\x02\x02\u049F\u04A0\x074\x02\x02\u04A0", "\u04F6\x072\x02\x02\u04A1\u04A2\x07d\x02\x02\u04A2\u04A3", "\x07{\x02\x02\u04A3\u04A4\x07v\x02\x02\u04A4\u04A5\x07", "g\x02\x02\u04A5\u04A6\x07u\x02\x02\u04A6\u04A7\x074\x02", "\x02\u04A7\u04F6\x073\x02\x02\u04A8\u04A9\x07d\x02\x02", "\u04A9\u04AA\x07{\x02\x02\u04AA\u04AB\x07v\x02\x02\u04AB", "\u04AC\x07g\x02\x02\u04AC\u04AD\x07u\x02\x02\u04AD\u04AE", "\x074\x02\x02\u04AE\u04F6\x074\x02\x02\u04AF\u04B0\x07", "d\x02\x02\u04B0\u04B1\x07{\x02\x02\u04B1\u04B2\x07v\x02", "\x02\u04B2\u04B3\x07g\x02\x02\u04B3\u04B4\x07u\x02\x02", "\u04B4\u04B5\x074\x02\x02\u04B5\u04F6\x075\x02\x02\u04B6", "\u04B7\x07d\x02\x02\u04B7\u04B8\x07{\x02\x02\u04B8\u04B9", "\x07v\x02\x02\u04B9\u04BA\x07g\x02\x02\u04BA\u04BB\x07", "u\x02\x02\u04BB\u04BC\x074\x02\x02\u04BC\u04F6\x076\x02", "\x02\u04BD\u04BE\x07d\x02\x02\u04BE\u04BF\x07{\x02\x02", "\u04BF\u04C0\x07v\x02\x02\u04C0\u04C1\x07g\x02\x02\u04C1", "\u04C2\x07u\x02\x02\u04C2\u04C3\x074\x02\x02\u04C3\u04F6", "\x077\x02\x02\u04C4\u04C5\x07d\x02\x02\u04C5\u04C6\x07", "{\x02\x02\u04C6\u04C7\x07v\x02\x02\u04C7\u04C8\x07g\x02", "\x02\u04C8\u04C9\x07u\x02\x02\u04C9\u04CA\x074\x02\x02", "\u04CA\u04F6\x078\x02\x02\u04CB\u04CC\x07d\x02\x02\u04CC", "\u04CD\x07{\x02\x02\u04CD\u04CE\x07v\x02\x02\u04CE\u04CF", "\x07g\x02\x02\u04CF\u04D0\x07u\x02\x02\u04D0\u04D1\x07", "4\x02\x02\u04D1\u04F6\x079\x02\x02\u04D2\u04D3\x07d\x02", "\x02\u04D3\u04D4\x07{\x02\x02\u04D4\u04D5\x07v\x02\x02", "\u04D5\u04D6\x07g\x02\x02\u04D6\u04D7\x07u\x02\x02\u04D7", "\u04D8\x074\x02\x02\u04D8\u04F6\x07:\x02\x02\u04D9\u04DA", "\x07d\x02\x02\u04DA\u04DB\x07{\x02\x02\u04DB\u04DC\x07", "v\x02\x02\u04DC\u04DD\x07g\x02\x02\u04DD\u04DE\x07u\x02", "\x02\u04DE\u04DF\x074\x02\x02\u04DF\u04F6\x07;\x02\x02", "\u04E0\u04E1\x07d\x02\x02\u04E1\u04E2\x07{\x02\x02\u04E2", "\u04E3\x07v\x02\x02\u04E3\u04E4\x07g\x02\x02\u04E4\u04E5", "\x07u\x02\x02\u04E5\u04E6\x075\x02\x02\u04E6\u04F6\x07", "2\x02\x02\u04E7\u04E8\x07d\x02\x02\u04E8\u04E9\x07{\x02", "\x02\u04E9\u04EA\x07v\x02\x02\u04EA\u04EB\x07g\x02\x02", "\u04EB\u04EC\x07u\x02\x02\u04EC\u04ED\x075\x02\x02\u04ED", "\u04F6\x073\x02\x02\u04EE\u04EF\x07d\x02\x02\u04EF\u04F0", "\x07{\x02\x02\u04F0\u04F1\x07v\x02\x02\u04F1\u04F2\x07", "g\x02\x02\u04F2\u04F3\x07u\x02\x02\u04F3\u04F4\x075\x02", "\x02\u04F4\u04F6\x074\x02\x02\u04F5\u0419\x03\x02\x02", "\x02\u04F5\u041E\x03\x02\x02\x02\u04F5\u0424\x03\x02\x02", "\x02\u04F5\u042A\x03\x02\x02\x02\u04F5\u0430\x03\x02\x02", "\x02\u04F5\u0436\x03\x02\x02\x02\u04F5\u043C\x03\x02\x02", "\x02\u04F5\u0442\x03\x02\x02\x02\u04F5\u0448\x03\x02\x02", "\x02\u04F5\u044E\x03\x02\x02\x02\u04F5\u0454\x03\x02\x02", "\x02\u04F5\u045B\x03\x02\x02\x02\u04F5\u0462\x03\x02\x02", "\x02\u04F5\u0469\x03\x02\x02\x02\u04F5\u0470\x03\x02\x02", "\x02\u04F5\u0477\x03\x02\x02\x02\u04F5\u047E\x03\x02\x02", "\x02\u04F5\u0485\x03\x02\x02\x02\u04F5\u048C\x03\x02\x02", "\x02\u04F5\u0493\x03\x02\x02\x02\u04F5\u049A\x03\x02\x02", "\x02\u04F5\u04A1\x03\x02\x02\x02\u04F5\u04A8\x03\x02\x02", "\x02\u04F5\u04AF\x03\x02\x02\x02\u04F5\u04B6\x03\x02\x02", "\x02\u04F5\u04BD\x03\x02\x02\x02\u04F5\u04C4\x03\x02\x02", "\x02\u04F5\u04CB\x03\x02\x02\x02\u04F5\u04D2\x03\x02\x02", "\x02\u04F5\u04D9\x03\x02\x02\x02\u04F5\u04E0\x03\x02\x02", "\x02\u04F5\u04E7\x03\x02\x02\x02\u04F5\u04EE\x03\x02\x02", "\x02\u04F6\xBC\x03\x02\x02\x02\u04F7\u04F8\x07h\x02", "\x02\u04F8\u04F9\x07k\x02\x02\u04F9\u04FA\x07z\x02\x02", "\u04FA\u04FB\x07g\x02\x02\u04FB\u050E\x07f\x02\x02\u04FC", "\u04FD\x07h\x02\x02\u04FD\u04FE\x07k\x02\x02\u04FE\u04FF", "\x07z\x02\x02\u04FF\u0500\x07g\x02\x02\u0500\u0501\x07", "f\x02\x02\u0501\u0503\x03\x02\x02\x02\u0502\u0504\t\x02", "\x02\x02\u0503\u0502\x03\x02\x02\x02\u0504\u0505\x03\x02", "\x02\x02\u0505\u0503\x03\x02\x02\x02\u0505\u0506\x03\x02", "\x02\x02\u0506\u0507\x03\x02\x02\x02\u0507\u0509\x07z", "\x02\x02\u0508\u050A\t\x02\x02\x02\u0509\u0508\x03\x02", "\x02\x02\u050A\u050B\x03\x02\x02\x02\u050B\u0509\x03\x02", "\x02\x02\u050B\u050C\x03\x02\x02\x02\u050C\u050E\x03\x02", "\x02\x02\u050D\u04F7\x03\x02\x02\x02\u050D\u04FC\x03\x02", "\x02\x02\u050E\xBE\x03\x02\x02\x02\u050F\u0510\x07w", "\x02\x02\u0510\u0511\x07h\x02\x02\u0511\u0512\x07k\x02", "\x02\u0512\u0513\x07z\x02\x02\u0513\u0514\x07g\x02\x02", "\u0514\u0528\x07f\x02\x02\u0515\u0516\x07w\x02\x02\u0516", "\u0517\x07h\x02\x02\u0517\u0518\x07k\x02\x02\u0518\u0519", "\x07z\x02\x02\u0519\u051A\x07g\x02\x02\u051A\u051B\x07", "f\x02\x02\u051B\u051D\x03\x02\x02\x02\u051C\u051E\t\x02", "\x02\x02\u051D\u051C\x03\x02\x02\x02\u051E\u051F\x03\x02", "\x02\x02\u051F\u051D\x03\x02\x02\x02\u051F\u0520\x03\x02", "\x02\x02\u0520\u0521\x03\x02\x02\x02\u0521\u0523\x07z", "\x02\x02\u0522\u0524\t\x02\x02\x02\u0523\u0522\x03\x02", "\x02\x02\u0524\u0525\x03\x02\x02\x02\u0525\u0523\x03\x02", "\x02\x02\u0525\u0526\x03\x02\x02\x02\u0526\u0528\x03\x02", "\x02\x02\u0527\u050F\x03\x02\x02\x02\u0527\u0515\x03\x02", "\x02\x02\u0528\xC0\x03\x02\x02\x02\u0529\u052B\t\x02", "\x02\x02\u052A\u0529\x03\x02\x02\x02\u052B\u052C\x03\x02", "\x02\x02\u052C\u052A\x03\x02\x02\x02\u052C\u052D\x03\x02", "\x02\x02\u052D\u052E\x03\x02\x02\x02\u052E\u0530\x070", "\x02\x02\u052F\u0531\t\x02\x02\x02\u0530\u052F\x03\x02", "\x02\x02\u0531\u0532\x03\x02\x02\x02\u0532\u0530\x03\x02", "\x02\x02\u0532\u0533\x03\x02\x02\x02\u0533\u0534\x03\x02", "\x02\x02\u0534\u0536\x070\x02\x02\u0535\u0537\t\x02\x02", "\x02\u0536\u0535\x03\x02\x02\x02\u0537\u0538\x03\x02\x02", "\x02\u0538\u0536\x03\x02\x02\x02\u0538\u0539\x03\x02\x02", "\x02\u0539\xC2\x03\x02\x02\x02\u053A\u053B\x07v\x02", "\x02\u053B\u053C\x07t\x02\x02\u053C\u053D\x07w\x02\x02", "\u053D\u0544\x07g\x02\x02\u053E\u053F\x07h\x02\x02\u053F", "\u0540\x07c\x02\x02\u0540\u0541\x07n\x02\x02\u0541\u0542", "\x07u\x02\x02\u0542\u0544\x07g\x02\x02\u0543\u053A\x03", "\x02\x02\x02\u0543\u053E\x03\x02\x02\x02\u0544\xC4\x03", "\x02\x02\x02\u0545\u054C\x05\xC7d\x02\u0546\u0548\x05", "\xC7d\x02\u0547\u0546\x03\x02\x02\x02\u0547\u0548\x03", "\x02\x02\x02\u0548\u0549\x03\x02\x02\x02\u0549\u054A\x07", "0\x02\x02\u054A\u054C\x05\xC7d\x02\u054B\u0545\x03\x02", "\x02\x02\u054B\u0547\x03\x02\x02\x02\u054C\u054F\x03\x02", "\x02\x02\u054D\u054E\t\x03\x02\x02\u054E\u0550\x05\xC7", "d\x02\u054F\u054D\x03\x02\x02\x02\u054F\u0550\x03\x02", "\x02\x02\u0550\xC6\x03\x02\x02\x02\u0551\u0558\t\x02", "\x02\x02\u0552\u0554\x07a\x02\x02\u0553\u0552\x03\x02", "\x02\x02\u0553\u0554\x03\x02\x02\x02\u0554\u0555\x03\x02", "\x02\x02\u0555\u0557\t\x02\x02\x02\u0556\u0553\x03\x02", "\x02\x02\u0557\u055A\x03\x02\x02\x02\u0558\u0556\x03\x02", "\x02\x02\u0558\u0559\x03\x02\x02\x02\u0559\xC8\x03\x02", "\x02\x02\u055A\u0558\x03\x02\x02\x02\u055B\u055C\x072", "\x02\x02\u055C\u055D\t\x04\x02\x02\u055D\u055E\x05\xCB", "f\x02\u055E\xCA\x03\x02\x02\x02\u055F\u0566\x05\xD3", "j\x02\u0560\u0562\x07a\x02\x02\u0561\u0560\x03\x02\x02", "\x02\u0561\u0562\x03\x02\x02\x02\u0562\u0563\x03\x02\x02", "\x02\u0563\u0565\x05\xD3j\x02\u0564\u0561\x03\x02\x02", "\x02\u0565\u0568\x03\x02\x02\x02\u0566\u0564\x03\x02\x02", "\x02\u0566\u0567\x03\x02\x02\x02\u0567\xCC\x03\x02\x02", "\x02\u0568\u0566\x03\x02\x02\x02\u0569\u056A\x07y\x02", "\x02\u056A\u056B\x07g\x02\x02\u056B\u059E\x07k\x02\x02", "\u056C\u056D\x07u\x02\x02\u056D\u056E\x07|\x02\x02\u056E", "\u056F\x07c\x02\x02\u056F\u0570\x07d\x02\x02\u0570\u059E", "\x07q\x02\x02\u0571\u0572\x07h\x02\x02\u0572\u0573\x07", "k\x02\x02\u0573\u0574\x07p\x02\x02\u0574\u0575\x07p\x02", "\x02\u0575\u0576\x07g\x02\x02\u0576\u059E\x07{\x02\x02", "\u0577\u0578\x07g\x02\x02\u0578\u0579\x07v\x02\x02\u0579", "\u057A\x07j\x02\x02\u057A\u057B\x07g\x02\x02\u057B\u059E", "\x07t\x02\x02\u057C\u057D\x07u\x02\x02\u057D\u057E\x07", "g\x02\x02\u057E\u057F\x07e\x02\x02\u057F\u0580\x07q\x02", "\x02\u0580\u0581\x07p\x02\x02\u0581\u0582\x07f\x02\x02", "\u0582\u059E\x07u\x02\x02\u0583\u0584\x07o\x02\x02\u0584", "\u0585\x07k\x02\x02\u0585\u0586\x07p\x02\x02\u0586\u0587", "\x07w\x02\x02\u0587\u0588\x07v\x02\x02\u0588\u0589\x07", "g\x02\x02\u0589\u059E\x07u\x02\x02\u058A\u058B\x07j\x02", "\x02\u058B\u058C\x07q\x02\x02\u058C\u058D\x07w\x02\x02", "\u058D\u058E\x07t\x02\x02\u058E\u059E\x07u\x02\x02\u058F", "\u0590\x07f\x02\x02\u0590\u0591\x07c\x02\x02\u0591\u0592", "\x07{\x02\x02\u0592\u059E\x07u\x02\x02\u0593\u0594\x07", "y\x02\x02\u0594\u0595\x07g\x02\x02\u0595\u0596\x07g\x02", "\x02\u0596\u0597\x07m\x02\x02\u0597\u059E\x07u\x02\x02", "\u0598\u0599\x07{\x02\x02\u0599\u059A\x07g\x02\x02\u059A", "\u059B\x07c\x02\x02\u059B\u059C\x07t\x02\x02\u059C\u059E", "\x07u\x02\x02\u059D\u0569\x03\x02\x02\x02\u059D\u056C", "\x03\x02\x02\x02\u059D\u0571\x03\x02\x02\x02\u059D\u0577", "\x03\x02\x02\x02\u059D\u057C\x03\x02\x02\x02\u059D\u0583", "\x03\x02\x02\x02\u059D\u058A\x03\x02\x02\x02\u059D\u058F", "\x03\x02\x02\x02\u059D\u0593\x03\x02\x02\x02\u059D\u0598", "\x03\x02\x02\x02\u059E\xCE\x03\x02\x02\x02\u059F\u05A0", "\x07j\x02\x02\u05A0\u05A1\x07g\x02\x02\u05A1\u05A2\x07", "z\x02\x02\u05A2\u05B3\x03\x02\x02\x02\u05A3\u05A7\x07", "$\x02\x02\u05A4\u05A6\x05\xD1i\x02\u05A5\u05A4\x03\x02", "\x02\x02\u05A6\u05A9\x03\x02\x02\x02\u05A7\u05A5\x03\x02", "\x02\x02\u05A7\u05A8\x03\x02\x02\x02\u05A8\u05AA\x03\x02", "\x02\x02\u05A9\u05A7\x03\x02\x02\x02\u05AA\u05B4\x07$", "\x02\x02\u05AB\u05AF\x07)\x02\x02\u05AC\u05AE\x05\xD1", "i\x02\u05AD\u05AC\x03\x02\x02\x02\u05AE\u05B1\x03\x02", "\x02\x02\u05AF\u05AD\x03\x02\x02\x02\u05AF\u05B0\x03\x02", "\x02\x02\u05B0\u05B2\x03\x02\x02\x02\u05B1\u05AF\x03\x02", "\x02\x02\u05B2\u05B4\x07)\x02\x02\u05B3\u05A3\x03\x02", "\x02\x02\u05B3\u05AB\x03\x02\x02\x02\u05B4\xD0\x03\x02", "\x02\x02\u05B5\u05B6\x05\xD3j\x02\u05B6\u05B7\x05\xD3", "j\x02\u05B7\xD2\x03\x02\x02\x02\u05B8\u05B9\t\x05\x02", "\x02\u05B9\xD4\x03\x02\x02\x02\u05BA\u05BB\x07c\x02", "\x02\u05BB\u05BC\x07d\x02\x02\u05BC\u05BD\x07u\x02\x02", "\u05BD\u05BE\x07v\x02\x02\u05BE\u05BF\x07t\x02\x02\u05BF", "\u05C0\x07c\x02\x02\u05C0\u05C1\x07e\x02\x02\u05C1\u0613", "\x07v\x02\x02\u05C2\u05C3\x07c\x02\x02\u05C3\u05C4\x07", "h\x02\x02\u05C4\u05C5\x07v\x02\x02\u05C5\u05C6\x07g\x02", "\x02\u05C6\u0613\x07t\x02\x02\u05C7\u05C8\x07e\x02\x02", "\u05C8\u05C9\x07c\x02\x02\u05C9\u05CA\x07u\x02\x02\u05CA", "\u0613\x07g\x02\x02\u05CB\u05CC\x07e\x02\x02\u05CC\u05CD", "\x07c\x02\x02\u05CD\u05CE\x07v\x02\x02\u05CE\u05CF\x07", "e\x02\x02\u05CF\u0613\x07j\x02\x02\u05D0\u05D1\x07f\x02", "\x02\u05D1\u05D2\x07g\x02\x02\u05D2\u05D3\x07h\x02\x02", "\u05D3\u05D4\x07c\x02\x02\u05D4\u05D5\x07w\x02\x02\u05D5", "\u05D6\x07n\x02\x02\u05D6\u0613\x07v\x02\x02\u05D7\u05D8", "\x07h\x02\x02\u05D8\u05D9\x07k\x02\x02\u05D9\u05DA\x07", "p\x02\x02\u05DA\u05DB\x07c\x02\x02\u05DB\u0613\x07n\x02", "\x02\u05DC\u05DD\x07k\x02\x02\u05DD\u0613\x07p\x02\x02", "\u05DE\u05DF\x07k\x02\x02\u05DF\u05E0\x07p\x02\x02\u05E0", "\u05E1\x07n\x02\x02\u05E1\u05E2\x07k\x02\x02\u05E2\u05E3", "\x07p\x02\x02\u05E3\u0613\x07g\x02\x02\u05E4\u05E5\x07", "n\x02\x02\u05E5\u05E6\x07g\x02\x02\u05E6\u0613\x07v\x02", "\x02\u05E7\u05E8\x07o\x02\x02\u05E8\u05E9\x07c\x02\x02", "\u05E9\u05EA\x07v\x02\x02\u05EA\u05EB\x07e\x02\x02\u05EB", "\u0613\x07j\x02\x02\u05EC\u05ED\x07p\x02\x02\u05ED\u05EE", "\x07w\x02\x02\u05EE\u05EF\x07n\x02\x02\u05EF\u0613\x07", "n\x02\x02\u05F0\u05F1\x07q\x02\x02\u05F1\u0613\x07h\x02", "\x02\u05F2\u05F3\x07t\x02\x02\u05F3\u05F4\x07g\x02\x02", "\u05F4\u05F5\x07n\x02\x02\u05F5\u05F6\x07q\x02\x02\u05F6", "\u05F7\x07e\x02\x02\u05F7\u05F8\x07c\x02\x02\u05F8\u05F9", "\x07v\x02\x02\u05F9\u05FA\x07c\x02\x02\u05FA\u05FB\x07", "d\x02\x02\u05FB\u05FC\x07n\x02\x02\u05FC\u0613\x07g\x02", "\x02\u05FD\u05FE\x07u\x02\x02\u05FE\u05FF\x07v\x02\x02", "\u05FF\u0600\x07c\x02\x02\u0600\u0601\x07v\x02\x02\u0601", "\u0602\x07k\x02\x02\u0602\u0613\x07e\x02\x02\u0603\u0604", "\x07u\x02\x02\u0604\u0605\x07y\x02\x02\u0605\u0606\x07", "k\x02\x02\u0606\u0607\x07v\x02\x02\u0607\u0608\x07e\x02", "\x02\u0608\u0613\x07j\x02\x02\u0609\u060A\x07v\x02\x02", "\u060A\u060B\x07t\x02\x02\u060B\u0613\x07{\x02\x02\u060C", "\u060D\x07v\x02\x02\u060D\u060E\x07{\x02\x02\u060E\u060F", "\x07r\x02\x02\u060F\u0610\x07g\x02\x02\u0610\u0611\x07", "q\x02\x02\u0611\u0613\x07h\x02\x02\u0612\u05BA\x03\x02", "\x02\x02\u0612\u05C2\x03\x02\x02\x02\u0612\u05C7\x03\x02", "\x02\x02\u0612\u05CB\x03\x02\x02\x02\u0612\u05D0\x03\x02", "\x02\x02\u0612\u05D7\x03\x02\x02\x02\u0612\u05DC\x03\x02", "\x02\x02\u0612\u05DE\x03\x02\x02\x02\u0612\u05E4\x03\x02", "\x02\x02\u0612\u05E7\x03\x02\x02\x02\u0612\u05EC\x03\x02", "\x02\x02\u0612\u05F0\x03\x02\x02\x02\u0612\u05F2\x03\x02", "\x02\x02\u0612\u05FD\x03\x02\x02\x02\u0612\u0603\x03\x02", "\x02\x02\u0612\u0609\x03\x02\x02\x02\u0612\u060C\x03\x02", "\x02\x02\u0613\xD6\x03\x02\x02\x02\u0614\u0615\x07c", "\x02\x02\u0615\u0616\x07p\x02\x02\u0616\u0617\x07q\x02", "\x02\u0617\u0618\x07p\x02\x02\u0618\u0619\x07{\x02\x02", "\u0619\u061A\x07o\x02\x02\u061A\u061B\x07q\x02\x02\u061B", "\u061C\x07w\x02\x02\u061C\u061D\x07u\x02\x02\u061D\xD8", "\x03\x02\x02\x02\u061E\u061F\x07d\x02\x02\u061F\u0620", "\x07t\x02\x02\u0620\u0621\x07g\x02\x02\u0621\u0622\x07", "c\x02\x02\u0622\u0623\x07m\x02\x02\u0623\xDA\x03\x02", "\x02\x02\u0624\u0625\x07e\x02\x02\u0625\u0626\x07q\x02", "\x02\u0626\u0627\x07p\x02\x02\u0627\u0628\x07u\x02\x02", "\u0628\u0629\x07v\x02\x02\u0629\u062A\x07c\x02\x02\u062A", "\u062B\x07p\x02\x02\u062B\u062C\x07v\x02\x02\u062C\xDC", "\x03\x02\x02\x02\u062D\u062E\x07e\x02\x02\u062E\u062F", "\x07q\x02\x02\u062F\u0630\x07p\x02\x02\u0630\u0631\x07", "v\x02\x02\u0631\u0632\x07k\x02\x02\u0632\u0633\x07p\x02", "\x02\u0633\u0634\x07w\x02\x02\u0634\u0635\x07g\x02\x02", "\u0635\xDE\x03\x02\x02\x02\u0636\u0637\x07g\x02\x02", "\u0637\u0638\x07z\x02\x02\u0638\u0639\x07v\x02\x02\u0639", "\u063A\x07g\x02\x02\u063A\u063B\x07t\x02\x02\u063B\u063C", "\x07p\x02\x02\u063C\u063D\x07c\x02\x02\u063D\u063E\x07", "n\x02\x02\u063E\xE0\x03\x02\x02\x02\u063F\u0640\x07", "k\x02\x02\u0640\u0641\x07p\x02\x02\u0641\u0642\x07f\x02", "\x02\u0642\u0643\x07g\x02\x02\u0643\u0644\x07z\x02\x02", "\u0644\u0645\x07g\x02\x02\u0645\u0646\x07f\x02\x02\u0646", "\xE2\x03\x02\x02\x02\u0647\u0648\x07k\x02\x02\u0648", "\u0649\x07p\x02\x02\u0649\u064A\x07v\x02\x02\u064A\u064B", "\x07g\x02\x02\u064B\u064C\x07t\x02\x02\u064C\u064D\x07", "p\x02\x02\u064D\u064E\x07c\x02\x02\u064E\u064F\x07n\x02", "\x02\u064F\xE4\x03\x02\x02\x02\u0650\u0651\x07r\x02", "\x02\u0651\u0652\x07c\x02\x02\u0652\u0653\x07{\x02\x02", "\u0653\u0654\x07c\x02\x02\u0654\u0655\x07d\x02\x02\u0655", "\u0656\x07n\x02\x02\u0656\u0657\x07g\x02\x02\u0657\xE6", "\x03\x02\x02\x02\u0658\u0659\x07r\x02\x02\u0659\u065A", "\x07t\x02\x02\u065A\u065B\x07k\x02\x02\u065B\u065C\x07", "x\x02\x02\u065C\u065D\x07c\x02\x02\u065D\u065E\x07v\x02", "\x02\u065E\u065F\x07g\x02\x02\u065F\xE8\x03\x02\x02", "\x02\u0660\u0661\x07r\x02\x02\u0661\u0662\x07w\x02\x02", "\u0662\u0663\x07d\x02\x02\u0663\u0664\x07n\x02\x02\u0664", "\u0665\x07k\x02\x02\u0665\u0666\x07e\x02\x02\u0666\xEA", "\x03\x02\x02\x02\u0667\u0668\x07r\x02\x02\u0668\u0669", "\x07w\x02\x02\u0669\u066A\x07t\x02\x02\u066A\u066B\x07", "g\x02\x02\u066B\xEC\x03\x02\x02\x02\u066C\u066D\x07", "v\x02\x02\u066D\u066E\x07{\x02\x02\u066E\u066F\x07r\x02", "\x02\u066F\u0670\x07g\x02\x02\u0670\xEE\x03\x02\x02", "\x02\u0671\u0672\x07x\x02\x02\u0672\u0673\x07k\x02\x02", "\u0673\u0674\x07g\x02\x02\u0674\u0675\x07y\x02\x02\u0675", "\xF0\x03\x02\x02\x02\u0676\u067A\x05\xF3z\x02\u0677", "\u0679\x05\xF5{\x02\u0678\u0677\x03\x02\x02\x02\u0679", "\u067C\x03\x02\x02\x02\u067A\u0678\x03\x02\x02\x02\u067A", "\u067B\x03\x02\x02\x02\u067B\xF2\x03\x02\x02\x02\u067C", "\u067A\x03\x02\x02\x02\u067D\u067E\t\x06\x02\x02\u067E", "\xF4\x03\x02\x02\x02\u067F\u0680\t\x07\x02\x02\u0680", "\xF6\x03\x02\x02\x02\u0681\u0685\x07$\x02\x02\u0682", "\u0684\x05\xF9}\x02\u0683\u0682\x03\x02\x02\x02\u0684", "\u0687\x03\x02\x02\x02\u0685\u0683\x03\x02\x02\x02\u0685", "\u0686\x03\x02\x02\x02\u0686\u0688\x03\x02\x02\x02\u0687", "\u0685\x03\x02\x02\x02\u0688\u0692\x07$\x02\x02\u0689", "\u068D\x07)\x02\x02\u068A\u068C\x05\xFB~\x02\u068B\u068A", "\x03\x02\x02\x02\u068C\u068F\x03\x02\x02\x02\u068D\u068B", "\x03\x02\x02\x02\u068D\u068E\x03\x02\x02\x02\u068E\u0690", "\x03\x02\x02\x02\u068F\u068D\x03\x02\x02\x02\u0690\u0692", "\x07)\x02\x02\u0691\u0681\x03\x02\x02\x02\u0691\u0689", "\x03\x02\x02\x02\u0692\xF8\x03\x02\x02\x02\u0693\u0697", "\n\b\x02\x02\u0694\u0695\x07^\x02\x02\u0695\u0697\x0B\x02", "\x02\x02\u0696\u0693\x03\x02\x02\x02\u0696\u0694\x03\x02", "\x02\x02\u0697\xFA\x03\x02\x02\x02\u0698\u069C\n\t\x02", "\x02\u0699\u069A\x07^\x02\x02\u069A\u069C\x0B\x02\x02", "\x02\u069B\u0698\x03\x02\x02\x02\u069B\u0699\x03\x02\x02", "\x02\u069C\xFC\x03\x02\x02\x02\u069D\u069F\t\n\x02\x02", "\u069E\u069D\x03\x02\x02\x02\u069F\u06A0\x03\x02\x02\x02", "\u06A0\u069E\x03\x02\x02\x02\u06A0\u06A1\x03\x02\x02\x02", "\u06A1\u06A2\x03\x02\x02\x02\u06A2\u06A3\b\x7F\x02\x02", "\u06A3\xFE\x03\x02\x02\x02\u06A4\u06A5\x071\x02\x02", "\u06A5\u06A6\x07,\x02\x02\u06A6\u06AA\x03\x02\x02\x02", "\u06A7\u06A9\x0B\x02\x02\x02\u06A8\u06A7\x03\x02\x02\x02", "\u06A9\u06AC\x03\x02\x02\x02\u06AA\u06AB\x03\x02\x02\x02", "\u06AA\u06A8\x03\x02\x02\x02\u06AB\u06AD\x03\x02\x02\x02", "\u06AC\u06AA\x03\x02\x02\x02\u06AD\u06AE\x07,\x02\x02", "\u06AE\u06AF\x071\x02\x02\u06AF\u06B0\x03\x02\x02\x02", "\u06B0\u06B1\b\x80\x03\x02\u06B1\u0100\x03\x02\x02\x02", "\u06B2\u06B3\x071\x02\x02\u06B3\u06B4\x071\x02\x02\u06B4", "\u06B8\x03\x02\x02\x02\u06B5\u06B7\n\x0B\x02\x02\u06B6", "\u06B5\x03\x02\x02\x02\u06B7\u06BA\x03\x02\x02\x02\u06B8", "\u06B6\x03\x02\x02\x02\u06B8\u06B9\x03\x02\x02\x02\u06B9", "\u06BB\x03\x02\x02\x02\u06BA\u06B8\x03\x02\x02\x02\u06BB", "\u06BC\b\x81\x03\x02\u06BC\u0102\x03\x02\x02\x02%\x02", "\u033E\u0417\u04F5\u0505\u050B\u050D\u051F\u0525\u0527\u052C\u0532\u0538", "\u0543\u0547\u054B\u054F\u0553\u0558\u0561\u0566\u059D\u05A7\u05AF\u05B3", "\u0612\u067A\u0685\u068D\u0691\u0696\u069B\u06A0\u06AA\u06B8\x04\b", "\x02\x02\x02\x03\x02"].join("");
+var serializedATN = ["\x03\u608B\uA72A\u8133\uB9ED\u417C\u3BE7\u7786\u5964", "\x02\x82\u0704\b\x01\x04\x02\t\x02\x04\x03\t\x03\x04", "\x04\t\x04\x04\x05\t\x05\x04\x06\t\x06\x04\x07\t", "\x07\x04\b\t\b\x04\t\t\t\x04\n\t\n\x04\x0B\t\x0B\x04", "\f\t\f\x04\r\t\r\x04\x0E\t\x0E\x04\x0F\t\x0F\x04\x10", "\t\x10\x04\x11\t\x11\x04\x12\t\x12\x04\x13\t\x13", "\x04\x14\t\x14\x04\x15\t\x15\x04\x16\t\x16\x04\x17", "\t\x17\x04\x18\t\x18\x04\x19\t\x19\x04\x1A\t\x1A", "\x04\x1B\t\x1B\x04\x1C\t\x1C\x04\x1D\t\x1D\x04\x1E", "\t\x1E\x04\x1F\t\x1F\x04 \t \x04!\t!\x04\"\t\"\x04#", "\t#\x04$\t$\x04%\t%\x04&\t&\x04'\t'\x04(\t(\x04)\t)\x04", "*\t*\x04+\t+\x04,\t,\x04-\t-\x04.\t.\x04/\t/\x040\t0\x04", "1\t1\x042\t2\x043\t3\x044\t4\x045\t5\x046\t6\x047\t7\x04", "8\t8\x049\t9\x04:\t:\x04;\t;\x04<\t<\x04=\t=\x04>\t>\x04", "?\t?\x04@\t@\x04A\tA\x04B\tB\x04C\tC\x04D\tD\x04E\tE\x04", "F\tF\x04G\tG\x04H\tH\x04I\tI\x04J\tJ\x04K\tK\x04L\tL\x04", "M\tM\x04N\tN\x04O\tO\x04P\tP\x04Q\tQ\x04R\tR\x04S\tS\x04", "T\tT\x04U\tU\x04V\tV\x04W\tW\x04X\tX\x04Y\tY\x04Z\tZ\x04", "[\t[\x04\\\t\\\x04]\t]\x04^\t^\x04_\t_\x04`\t`\x04a\ta\x04", "b\tb\x04c\tc\x04d\td\x04e\te\x04f\tf\x04g\tg\x04h\th\x04", "i\ti\x04j\tj\x04k\tk\x04l\tl\x04m\tm\x04n\tn\x04o\to\x04", "p\tp\x04q\tq\x04r\tr\x04s\ts\x04t\tt\x04u\tu\x04v\tv\x04", "w\tw\x04x\tx\x04y\ty\x04z\tz\x04{\t{\x04|\t|\x04}\t}\x04", "~\t~\x04\x7F\t\x7F\x04\x80\t\x80\x04\x81\t\x81\x04", "\x82\t\x82\x04\x83\t\x83\x04\x84\t\x84\x04\x85\t", "\x85\x04\x86\t\x86\x04\x87\t\x87\x04\x88\t\x88\x04", "\x89\t\x89\x03\x02\x03\x02\x03\x02\x03\x02\x03", "\x02\x03\x02\x03\x02\x03\x03\x03\x03\x03\x04\x03", "\x04\x03\x05\x03\x05\x03\x06\x03\x06\x03\x06\x03", "\x07\x03\x07\x03\b\x03\b\x03\t\x03\t\x03\t\x03\n\x03", "\n\x03\x0B\x03\x0B\x03\x0B\x03\f\x03\f\x03\f\x03", "\f\x03\f\x03\f\x03\f\x03\r\x03\r\x03\x0E\x03\x0E\x03", "\x0E\x03\x0E\x03\x0E\x03\x0F\x03\x0F\x03\x10\x03", "\x10\x03\x11\x03\x11\x03\x12\x03\x12\x03\x12\x03", "\x12\x03\x12\x03\x12\x03\x12\x03\x12\x03\x12\x03", "\x13\x03\x13\x03\x13\x03\x13\x03\x13\x03\x13\x03", "\x13\x03\x13\x03\x13\x03\x14\x03\x14\x03\x14\x03", "\x14\x03\x14\x03\x14\x03\x14\x03\x14\x03\x14\x03", "\x14\x03\x15\x03\x15\x03\x15\x03\x15\x03\x15\x03", "\x15\x03\x15\x03\x15\x03\x16\x03\x16\x03\x16\x03", "\x17\x03\x17\x03\x18\x03\x18\x03\x19\x03\x19\x03", "\x19\x03\x19\x03\x19\x03\x19\x03\x1A\x03\x1A\x03", "\x1A\x03\x1A\x03\x1B\x03\x1B\x03\x1B\x03\x1B\x03", "\x1B\x03\x1B\x03\x1B\x03\x1C\x03\x1C\x03\x1C\x03", "\x1C\x03\x1C\x03\x1C\x03\x1C\x03\x1C\x03\x1C\x03", "\x1D\x03\x1D\x03\x1D\x03\x1D\x03\x1D\x03\x1D\x03", "\x1D\x03\x1D\x03\x1D\x03\x1E\x03\x1E\x03\x1E\x03", "\x1E\x03\x1E\x03\x1E\x03\x1E\x03\x1E\x03\x1F\x03", "\x1F\x03\x1F\x03\x1F\x03\x1F\x03\x1F\x03 \x03", " \x03 \x03 \x03 \x03!\x03!\x03\"\x03\"\x03#\x03#\x03", "#\x03#\x03#\x03#\x03#\x03#\x03$\x03$\x03%\x03%\x03", "%\x03%\x03%\x03%\x03%\x03%\x03&\x03&\x03&\x03'\x03", "'\x03'\x03'\x03'\x03'\x03'\x03(\x03(\x03(\x03", "(\x03(\x03(\x03(\x03(\x03)\x03)\x03)\x03)\x03)\x03", ")\x03)\x03)\x03)\x03*\x03*\x03*\x03+\x03+\x03+\x03", "+\x03+\x03,\x03,\x03,\x03,\x03-\x03-\x03-\x03-\x03", "-\x03-\x03.\x03.\x03.\x03.\x03.\x03.\x03/\x03/\x03", "/\x03/\x03/\x03/\x03/\x03/\x03/\x030\x030\x030\x03", "1\x031\x031\x031\x031\x031\x031\x032\x032\x032\x03", "2\x032\x032\x033\x033\x033\x033\x033\x034\x034\x03", "4\x034\x035\x035\x035\x035\x035\x036\x036\x036\x03", "6\x036\x036\x036\x037\x037\x037\x037\x037\x038\x03", "8\x038\x039\x039\x039\x03:\x03:\x03:\x03:\x03;\x03", ";\x03<\x03<\x03=\x03=\x03>\x03>\x03>\x03>\x03>\x03", ">\x03?\x03?\x03?\x03?\x03?\x03?\x03?\x03@\x03@\x03", "A\x03A\x03A\x03B\x03B\x03C\x03C\x03D\x03D\x03D\x03", "E\x03E\x03E\x03F\x03F\x03G\x03G\x03H\x03H\x03H\x03", "I\x03I\x03I\x03J\x03J\x03J\x03K\x03K\x03K\x03L\x03", "L\x03M\x03M\x03M\x03N\x03N\x03N\x03O\x03O\x03O\x03", "P\x03P\x03P\x03P\x03Q\x03Q\x03Q\x03Q\x03R\x03R\x03", "R\x03S\x03S\x03S\x03T\x03T\x03T\x03U\x03U\x03U\x03", "V\x03V\x03V\x03W\x03W\x03W\x03W\x03X\x03X\x03X\x03", "Y\x03Y\x03Y\x03Z\x03Z\x03Z\x03Z\x03Z\x03Z\x03Z\x03", "[\x03[\x03[\x03[\x03[\x03\\\x03\\\x03\\\x03\\\x03", "\\\x03\\\x03\\\x03\\\x03]\x03]\x03]\x03^\x03^\x03", "^\x03^\x03^\x03^\x03^\x03^\x03^\x03_\x03_\x03_\x03", "_\x03_\x03_\x03_\x03_\x03_\x03_\x03_\x03_\x03_\x03", "_\x03_\x03_\x03_\x03_\x03_\x03_\x03_\x03_\x03_\x03", "_\x03_\x03_\x03_\x03_\x03_\x03_\x03_\x03_\x03_\x03", "_\x03_\x03_\x03_\x03_\x03_\x03_\x03_\x03_\x03_\x03", "_\x03_\x03_\x03_\x03_\x03_\x03_\x03_\x03_\x03_\x03", "_\x03_\x03_\x03_\x03_\x03_\x03_\x03_\x03_\x03_\x03", "_\x03_\x03_\x03_\x03_\x03_\x03_\x03_\x03_\x03_\x03", "_\x03_\x03_\x03_\x03_\x03_\x03_\x03_\x03_\x03_\x03", "_\x03_\x03_\x03_\x03_\x03_\x03_\x03_\x03_\x03_\x03", "_\x03_\x03_\x03_\x03_\x03_\x03_\x03_\x03_\x03_\x03", "_\x03_\x03_\x03_\x03_\x03_\x03_\x03_\x03_\x03_\x03", "_\x03_\x03_\x03_\x03_\x03_\x03_\x03_\x03_\x03_\x03", "_\x03_\x03_\x03_\x03_\x03_\x03_\x03_\x03_\x03_\x03", "_\x03_\x03_\x03_\x03_\x03_\x03_\x03_\x03_\x03_\x03", "_\x03_\x03_\x03_\x03_\x03_\x03_\x03_\x03_\x03_\x03", "_\x03_\x03_\x03_\x03_\x03_\x03_\x03_\x03_\x03_\x03", "_\x03_\x03_\x03_\x03_\x03_\x03_\x03_\x03_\x03_\x03", "_\x03_\x03_\x03_\x03_\x03_\x03_\x03_\x03_\x05_\u035F", "\n_\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03", "`\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03", "`\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03", "`\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03", "`\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03", "`\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03", "`\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03", "`\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03", "`\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03", "`\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03", "`\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03", "`\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03", "`\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03", "`\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03", "`\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03", "`\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03", "`\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03", "`\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03", "`\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03", "`\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03", "`\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03`\x03", "`\x03`\x03`\x03`\x03`\x03`\x05`\u0438\n`\x03a\x03a\x03", "a\x03a\x03a\x03a\x03a\x03a\x03a\x03a\x03a\x03a\x03", "a\x03a\x03a\x03a\x03a\x03a\x03a\x03a\x03a\x03a\x03", "a\x03a\x03a\x03a\x03a\x03a\x03a\x03a\x03a\x03a\x03", "a\x03a\x03a\x03a\x03a\x03a\x03a\x03a\x03a\x03a\x03", "a\x03a\x03a\x03a\x03a\x03a\x03a\x03a\x03a\x03a\x03", "a\x03a\x03a\x03a\x03a\x03a\x03a\x03a\x03a\x03a\x03", "a\x03a\x03a\x03a\x03a\x03a\x03a\x03a\x03a\x03a\x03", "a\x03a\x03a\x03a\x03a\x03a\x03a\x03a\x03a\x03a\x03", "a\x03a\x03a\x03a\x03a\x03a\x03a\x03a\x03a\x03a\x03", "a\x03a\x03a\x03a\x03a\x03a\x03a\x03a\x03a\x03a\x03", "a\x03a\x03a\x03a\x03a\x03a\x03a\x03a\x03a\x03a\x03", "a\x03a\x03a\x03a\x03a\x03a\x03a\x03a\x03a\x03a\x03", "a\x03a\x03a\x03a\x03a\x03a\x03a\x03a\x03a\x03a\x03", "a\x03a\x03a\x03a\x03a\x03a\x03a\x03a\x03a\x03a\x03", "a\x03a\x03a\x03a\x03a\x03a\x03a\x03a\x03a\x03a\x03", "a\x03a\x03a\x03a\x03a\x03a\x03a\x03a\x03a\x03a\x03", "a\x03a\x03a\x03a\x03a\x03a\x03a\x03a\x03a\x03a\x03", "a\x03a\x03a\x03a\x03a\x03a\x03a\x03a\x03a\x03a\x03", "a\x03a\x03a\x03a\x03a\x03a\x03a\x03a\x03a\x03a\x03", "a\x03a\x03a\x03a\x03a\x03a\x03a\x03a\x03a\x03a\x03", "a\x03a\x03a\x03a\x03a\x03a\x03a\x03a\x03a\x03a\x03", "a\x03a\x03a\x03a\x03a\x03a\x03a\x03a\x05a\u0516\na\x03", "b\x03b\x03b\x03b\x03b\x03b\x03b\x03b\x03b\x03b\x03", "b\x03b\x06b\u0524\nb\rb\x0Eb\u0525\x03b\x03b\x06b\u052A", "\nb\rb\x0Eb\u052B\x05b\u052E\nb\x03c\x03c\x03c\x03c\x03", "c\x03c\x03c\x03c\x03c\x03c\x03c\x03c\x03c\x03c\x06", "c\u053E\nc\rc\x0Ec\u053F\x03c\x03c\x06c\u0544\nc\rc\x0Ec\u0545", "\x05c\u0548\nc\x03d\x03d\x03d\x03d\x03d\x03d\x03d\x03", "d\x03d\x05d\u0553\nd\x03e\x03e\x05e\u0557\ne\x03e\x03", "e\x05e\u055B\ne\x03e\x03e\x05e\u055F\ne\x03f\x03f\x05", "f\u0563\nf\x03f\x07f\u0566\nf\ff\x0Ef\u0569\x0Bf\x03g\x03", "g\x03g\x03g\x03h\x03h\x05h\u0571\nh\x03h\x07h\u0574\n", "h\fh\x0Eh\u0577\x0Bh\x03i\x03i\x03i\x03i\x03i\x03i\x03", "i\x03i\x03i\x03i\x03i\x03i\x03i\x03i\x03i\x03i\x03", "i\x03i\x03i\x03i\x03i\x03i\x03i\x03i\x03i\x03i\x03", "i\x03i\x03i\x03i\x03i\x03i\x03i\x03i\x03i\x03i\x03", "i\x03i\x03i\x03i\x03i\x03i\x03i\x03i\x03i\x03i\x03", "i\x03i\x03i\x03i\x03i\x03i\x05i\u05AD\ni\x03j\x03j\x03", "j\x03j\x03j\x03j\x05j\u05B5\nj\x03j\x03j\x03j\x05j\u05BA", "\nj\x03j\x05j\u05BD\nj\x03k\x03k\x03k\x03l\x03l\x03", "m\x03m\x03m\x03m\x03m\x03m\x03m\x03m\x03m\x03m\x03", "m\x03m\x03m\x03m\x03m\x03m\x03m\x03m\x03m\x03m\x03", "m\x03m\x03m\x03m\x03m\x03m\x03m\x03m\x03m\x03m\x03", "m\x03m\x03m\x03m\x03m\x03m\x03m\x03m\x03m\x03m\x03", "m\x03m\x03m\x03m\x03m\x03m\x03m\x03m\x03m\x03m\x03", "m\x03m\x03m\x03m\x03m\x03m\x03m\x03m\x03m\x03m\x03", "m\x03m\x03m\x03m\x03m\x03m\x03m\x03m\x03m\x03m\x03", "m\x03m\x03m\x03m\x03m\x03m\x03m\x03m\x03m\x03m\x03", "m\x03m\x03m\x03m\x03m\x03m\x03m\x03m\x05m\u061C\nm\x03", "n\x03n\x03n\x03n\x03n\x03n\x03n\x03n\x03n\x03n\x03", "o\x03o\x03o\x03o\x03o\x03o\x03p\x03p\x03p\x03p\x03", "p\x03p\x03p\x03p\x03p\x03q\x03q\x03q\x03q\x03q\x03", "q\x03q\x03q\x03q\x03r\x03r\x03r\x03r\x03r\x03r\x03", "s\x03s\x03s\x03s\x03s\x03s\x03s\x03s\x03s\x03t\x03", "t\x03t\x03t\x03t\x03t\x03t\x03t\x03u\x03u\x03u\x03", "u\x03u\x03u\x03u\x03u\x03u\x03v\x03v\x03v\x03v\x03", "v\x03v\x03v\x03v\x03w\x03w\x03w\x03w\x03w\x03w\x03", "w\x03w\x03x\x03x\x03x\x03x\x03x\x03x\x03x\x03y\x03", "y\x03y\x03y\x03y\x03y\x03y\x03y\x03z\x03z\x03z\x03", "z\x03z\x03{\x03{\x03{\x03{\x03{\x03|\x03|\x03|\x03", "|\x03|\x03}\x03}\x03}\x03}\x03}\x03}\x03}\x03}\x03", "}\x03}\x03}\x03}\x03~\x03~\x03~\x03~\x03~\x03~\x03", "~\x03~\x03~\x03\x7F\x03\x7F\x03\x7F\x03\x7F\x03", "\x7F\x03\x7F\x03\x7F\x03\x7F\x03\x80\x03\x80\x07", "\x80\u06AD\n\x80\f\x80\x0E\x80\u06B0\x0B\x80\x03\x81", "\x03\x81\x03\x82\x03\x82\x03\x83\x03\x83\x07\x83", "\u06B8\n\x83\f\x83\x0E\x83\u06BB\x0B\x83\x03\x83\x03", "\x83\x03\x83\x07\x83\u06C0\n\x83\f\x83\x0E\x83\u06C3", "\x0B\x83\x03\x83\x05\x83\u06C6\n\x83\x03\x84\x03", "\x84\x03\x84\x05\x84\u06CB\n\x84\x03\x85\x03\x85", "\x03\x85\x05\x85\u06D0\n\x85\x03\x86\x06\x86\u06D3", "\n\x86\r\x86\x0E\x86\u06D4\x03\x86\x03\x86\x06\x86", "\u06D9\n\x86\r\x86\x0E\x86\u06DA\x03\x86\x03\x86\x06", "\x86\u06DF\n\x86\r\x86\x0E\x86\u06E0\x05\x86\u06E3\n\x86", "\x03\x87\x06\x87\u06E6\n\x87\r\x87\x0E\x87\u06E7\x03", "\x87\x03\x87\x03\x88\x03\x88\x03\x88\x03\x88\x07", "\x88\u06F0\n\x88\f\x88\x0E\x88\u06F3\x0B\x88\x03\x88", "\x03\x88\x03\x88\x03\x88\x03\x88\x03\x89\x03\x89", "\x03\x89\x03\x89\x07\x89\u06FE\n\x89\f\x89\x0E\x89", "\u0701\x0B\x89\x03\x89\x03\x89\x03\u06F1\x02\x8A\x03", "\x03\x05\x04\x07\x05\t\x06\x0B\x07\r\b\x0F\t\x11", "\n\x13\x0B\x15\f\x17\r\x19\x0E\x1B\x0F\x1D\x10\x1F", "\x11!\x12#\x13%\x14'\x15)\x16+\x17-\x18/\x191\x1A", "3\x1B5\x1C7\x1D9\x1E;\x1F= ?!A\"C#E$G%I&K'M(O)Q*S+U,W-Y.", "[/]0_1a2c3e4g5i6k7m8o9q:s;u<w=y>{?}@\x7FA\x81B\x83C\x85D\x87", "E\x89F\x8BG\x8DH\x8FI\x91J\x93K\x95L\x97M\x99N\x9B", "O\x9DP\x9FQ\xA1R\xA3S\xA5T\xA7U\xA9V\xABW\xADX\xAF", "Y\xB1Z\xB3[\xB5\\\xB7]\xB9^\xBB_\xBD`\xBFa\xC1b\xC3", "c\xC5d\xC7e\xC9f\xCB\x02\xCDg\xCF\x02\xD1h\xD3i", "\xD5\x02\xD7\x02\xD9j\xDBk\xDDl\xDFm\xE1n\xE3o\xE5", "p\xE7q\xE9r\xEBs\xEDt\xEFu\xF1v\xF3w\xF5x\xF7y\xF9", "z\xFB{\xFD|\xFF}\u0101\x02\u0103\x02\u0105~\u0107\x02\u0109", "\x02\u010B\x7F\u010D\x80\u010F\x81\u0111\x82\x03\x02\f", "\x03\x022;\x04\x02GGgg\x04\x02ZZzz\x05\x022;CHch\x06", "\x02&&C\\aac|\x07\x02&&2;C\\aac|\x06\x02\f\f\x0F\x0F$", "$^^\x06\x02\f\f\x0F\x0F))^^\x05\x02\x0B\f\x0E\x0F", "\"\"\x04\x02\f\f\x0F\x0F\x02\u0792\x02\x03\x03\x02", "\x02\x02\x02\x05\x03\x02\x02\x02\x02\x07\x03\x02", "\x02\x02\x02\t\x03\x02\x02\x02\x02\x0B\x03\x02", "\x02\x02\x02\r\x03\x02\x02\x02\x02\x0F\x03\x02", "\x02\x02\x02\x11\x03\x02\x02\x02\x02\x13\x03\x02", "\x02\x02\x02\x15\x03\x02\x02\x02\x02\x17\x03\x02", "\x02\x02\x02\x19\x03\x02\x02\x02\x02\x1B\x03\x02", "\x02\x02\x02\x1D\x03\x02\x02\x02\x02\x1F\x03\x02", "\x02\x02\x02!\x03\x02\x02\x02\x02#\x03\x02\x02", "\x02\x02%\x03\x02\x02\x02\x02'\x03\x02\x02\x02", "\x02)\x03\x02\x02\x02\x02+\x03\x02\x02\x02\x02", "-\x03\x02\x02\x02\x02/\x03\x02\x02\x02\x021\x03", "\x02\x02\x02\x023\x03\x02\x02\x02\x025\x03\x02", "\x02\x02\x027\x03\x02\x02\x02\x029\x03\x02\x02", "\x02\x02;\x03\x02\x02\x02\x02=\x03\x02\x02\x02", "\x02?\x03\x02\x02\x02\x02A\x03\x02\x02\x02\x02", "C\x03\x02\x02\x02\x02E\x03\x02\x02\x02\x02G\x03", "\x02\x02\x02\x02I\x03\x02\x02\x02\x02K\x03\x02", "\x02\x02\x02M\x03\x02\x02\x02\x02O\x03\x02\x02", "\x02\x02Q\x03\x02\x02\x02\x02S\x03\x02\x02\x02", "\x02U\x03\x02\x02\x02\x02W\x03\x02\x02\x02\x02", "Y\x03\x02\x02\x02\x02[\x03\x02\x02\x02\x02]\x03", "\x02\x02\x02\x02_\x03\x02\x02\x02\x02a\x03\x02", "\x02\x02\x02c\x03\x02\x02\x02\x02e\x03\x02\x02", "\x02\x02g\x03\x02\x02\x02\x02i\x03\x02\x02\x02", "\x02k\x03\x02\x02\x02\x02m\x03\x02\x02\x02\x02", "o\x03\x02\x02\x02\x02q\x03\x02\x02\x02\x02s\x03", "\x02\x02\x02\x02u\x03\x02\x02\x02\x02w\x03\x02", "\x02\x02\x02y\x03\x02\x02\x02\x02{\x03\x02\x02", "\x02\x02}\x03\x02\x02\x02\x02\x7F\x03\x02\x02", "\x02\x02\x81\x03\x02\x02\x02\x02\x83\x03\x02\x02", "\x02\x02\x85\x03\x02\x02\x02\x02\x87\x03\x02\x02", "\x02\x02\x89\x03\x02\x02\x02\x02\x8B\x03\x02\x02", "\x02\x02\x8D\x03\x02\x02\x02\x02\x8F\x03\x02\x02", "\x02\x02\x91\x03\x02\x02\x02\x02\x93\x03\x02\x02", "\x02\x02\x95\x03\x02\x02\x02\x02\x97\x03\x02\x02", "\x02\x02\x99\x03\x02\x02\x02\x02\x9B\x03\x02\x02", "\x02\x02\x9D\x03\x02\x02\x02\x02\x9F\x03\x02\x02", "\x02\x02\xA1\x03\x02\x02\x02\x02\xA3\x03\x02\x02", "\x02\x02\xA5\x03\x02\x02\x02\x02\xA7\x03\x02\x02", "\x02\x02\xA9\x03\x02\x02\x02\x02\xAB\x03\x02\x02", "\x02\x02\xAD\x03\x02\x02\x02\x02\xAF\x03\x02\x02", "\x02\x02\xB1\x03\x02\x02\x02\x02\xB3\x03\x02\x02", "\x02\x02\xB5\x03\x02\x02\x02\x02\xB7\x03\x02\x02", "\x02\x02\xB9\x03\x02\x02\x02\x02\xBB\x03\x02\x02", "\x02\x02\xBD\x03\x02\x02\x02\x02\xBF\x03\x02\x02", "\x02\x02\xC1\x03\x02\x02\x02\x02\xC3\x03\x02\x02", "\x02\x02\xC5\x03\x02\x02\x02\x02\xC7\x03\x02\x02", "\x02\x02\xC9\x03\x02\x02\x02\x02\xCD\x03\x02\x02", "\x02\x02\xD1\x03\x02\x02\x02\x02\xD3\x03\x02\x02", "\x02\x02\xD9\x03\x02\x02\x02\x02\xDB\x03\x02\x02", "\x02\x02\xDD\x03\x02\x02\x02\x02\xDF\x03\x02\x02", "\x02\x02\xE1\x03\x02\x02\x02\x02\xE3\x03\x02\x02", "\x02\x02\xE5\x03\x02\x02\x02\x02\xE7\x03\x02\x02", "\x02\x02\xE9\x03\x02\x02\x02\x02\xEB\x03\x02\x02", "\x02\x02\xED\x03\x02\x02\x02\x02\xEF\x03\x02\x02", "\x02\x02\xF1\x03\x02\x02\x02\x02\xF3\x03\x02\x02", "\x02\x02\xF5\x03\x02\x02\x02\x02\xF7\x03\x02\x02", "\x02\x02\xF9\x03\x02\x02\x02\x02\xFB\x03\x02\x02", "\x02\x02\xFD\x03\x02\x02\x02\x02\xFF\x03\x02\x02", "\x02\x02\u0105\x03\x02\x02\x02\x02\u010B\x03\x02\x02", "\x02\x02\u010D\x03\x02\x02\x02\x02\u010F\x03\x02\x02", "\x02\x02\u0111\x03\x02\x02\x02\x03\u0113\x03\x02\x02", "\x02\x05\u011A\x03\x02\x02\x02\x07\u011C\x03\x02\x02", "\x02\t\u011E\x03\x02\x02\x02\x0B\u0120\x03\x02\x02", "\x02\r\u0123\x03\x02\x02\x02\x0F\u0125\x03\x02\x02", "\x02\x11\u0127\x03\x02\x02\x02\x13\u012A\x03\x02\x02", "\x02\x15\u012C\x03\x02\x02\x02\x17\u012F\x03\x02\x02", "\x02\x19\u0136\x03\x02\x02\x02\x1B\u0138\x03\x02\x02", "\x02\x1D\u013D\x03\x02\x02\x02\x1F\u013F\x03\x02\x02", "\x02!\u0141\x03\x02\x02\x02#\u0143\x03\x02\x02\x02", "%\u014C\x03\x02\x02\x02'\u0155\x03\x02\x02\x02)\u015F", "\x03\x02\x02\x02+\u0167\x03\x02\x02\x02-\u016A\x03", "\x02\x02\x02/\u016C\x03\x02\x02\x021\u016E\x03\x02", "\x02\x023\u0174\x03\x02\x02\x025\u0178\x03\x02\x02", "\x027\u017F\x03\x02\x02\x029\u0188\x03\x02\x02\x02", ";\u0191\x03\x02\x02\x02=\u0199\x03\x02\x02\x02?\u019F", "\x03\x02\x02\x02A\u01A4\x03\x02\x02\x02C\u01A6\x03", "\x02\x02\x02E\u01A8\x03\x02\x02\x02G\u01B0\x03\x02", "\x02\x02I\u01B2\x03\x02\x02\x02K\u01BA\x03\x02\x02", "\x02M\u01BD\x03\x02\x02\x02O\u01C4\x03\x02\x02\x02", "Q\u01CC\x03\x02\x02\x02S\u01D5\x03\x02\x02\x02U\u01D8", "\x03\x02\x02\x02W\u01DD\x03\x02\x02\x02Y\u01E1\x03", "\x02\x02\x02[\u01E7\x03\x02\x02\x02]\u01ED\x03\x02", "\x02\x02_\u01F6\x03\x02\x02\x02a\u01F9\x03\x02\x02", "\x02c\u0200\x03\x02\x02\x02e\u0206\x03\x02\x02\x02", "g\u020B\x03\x02\x02\x02i\u020F\x03\x02\x02\x02k\u0214", "\x03\x02\x02\x02m\u021B\x03\x02\x02\x02o\u0220\x03", "\x02\x02\x02q\u0223\x03\x02\x02\x02s\u0226\x03\x02", "\x02\x02u\u022A\x03\x02\x02\x02w\u022C\x03\x02\x02", "\x02y\u022E\x03\x02\x02\x02{\u0230\x03\x02\x02\x02", "}\u0236\x03\x02\x02\x02\x7F\u023D\x03\x02\x02\x02", "\x81\u023F\x03\x02\x02\x02\x83\u0242\x03\x02\x02\x02", "\x85\u0244\x03\x02\x02\x02\x87\u0246\x03\x02\x02\x02", "\x89\u0249\x03\x02\x02\x02\x8B\u024C\x03\x02\x02\x02", "\x8D\u024E\x03\x02\x02\x02\x8F\u0250\x03\x02\x02\x02", "\x91\u0253\x03\x02\x02\x02\x93\u0256\x03\x02\x02\x02", "\x95\u0259\x03\x02\x02\x02\x97\u025C\x03\x02\x02\x02", "\x99\u025E\x03\x02\x02\x02\x9B\u0261\x03\x02\x02\x02", "\x9D\u0264\x03\x02\x02\x02\x9F\u0267\x03\x02\x02\x02", "\xA1\u026B\x03\x02\x02\x02\xA3\u026F\x03\x02\x02\x02", "\xA5\u0272\x03\x02\x02\x02\xA7\u0275\x03\x02\x02\x02", "\xA9\u0278\x03\x02\x02\x02\xAB\u027B\x03\x02\x02\x02", "\xAD\u027E\x03\x02\x02\x02\xAF\u0282\x03\x02\x02\x02", "\xB1\u0285\x03\x02\x02\x02\xB3\u0288\x03\x02\x02\x02", "\xB5\u028F\x03\x02\x02\x02\xB7\u0294\x03\x02\x02\x02", "\xB9\u029C\x03\x02\x02\x02\xBB\u029F\x03\x02\x02\x02", "\xBD\u035E\x03\x02\x02\x02\xBF\u0437\x03\x02\x02\x02", "\xC1\u0515\x03\x02\x02\x02\xC3\u052D\x03\x02\x02\x02", "\xC5\u0547\x03\x02\x02\x02\xC7\u0552\x03\x02\x02\x02", "\xC9\u055A\x03\x02\x02\x02\xCB\u0560\x03\x02\x02\x02", "\xCD\u056A\x03\x02\x02\x02\xCF\u056E\x03\x02\x02\x02", "\xD1\u05AC\x03\x02\x02\x02\xD3\u05AE\x03\x02\x02\x02", "\xD5\u05BE\x03\x02\x02\x02\xD7\u05C1\x03\x02\x02\x02", "\xD9\u061B\x03\x02\x02\x02\xDB\u061D\x03\x02\x02\x02", "\xDD\u0627\x03\x02\x02\x02\xDF\u062D\x03\x02\x02\x02", "\xE1\u0636\x03\x02\x02\x02\xE3\u063F\x03\x02\x02\x02", "\xE5\u0645\x03\x02\x02\x02\xE7\u064E\x03\x02\x02\x02", "\xE9\u0656\x03\x02\x02\x02\xEB\u065F\x03\x02\x02\x02", "\xED\u0667\x03\x02\x02\x02\xEF\u066F\x03\x02\x02\x02", "\xF1\u0676\x03\x02\x02\x02\xF3\u067E\x03\x02\x02\x02", "\xF5\u0683\x03\x02\x02\x02\xF7\u0688\x03\x02\x02\x02", "\xF9\u068D\x03\x02\x02\x02\xFB\u0699\x03\x02\x02\x02", "\xFD\u06A2\x03\x02\x02\x02\xFF\u06AA\x03\x02\x02\x02", "\u0101\u06B1\x03\x02\x02\x02\u0103\u06B3\x03\x02\x02\x02", "\u0105\u06C5\x03\x02\x02\x02\u0107\u06CA\x03\x02\x02\x02", "\u0109\u06CF\x03\x02\x02\x02\u010B\u06D2\x03\x02\x02\x02", "\u010D\u06E5\x03\x02\x02\x02\u010F\u06EB\x03\x02\x02\x02", "\u0111\u06F9\x03\x02\x02\x02\u0113\u0114\x07r\x02\x02", "\u0114\u0115\x07t\x02\x02\u0115\u0116\x07c\x02\x02\u0116", "\u0117\x07i\x02\x02\u0117\u0118\x07o\x02\x02\u0118\u0119", "\x07c\x02\x02\u0119\x04\x03\x02\x02\x02\u011A\u011B", "\x07=\x02\x02\u011B\x06\x03\x02\x02\x02\u011C\u011D", "\x07`\x02\x02\u011D\b\x03\x02\x02\x02\u011E\u011F\x07", "\x80\x02\x02\u011F\n\x03\x02\x02\x02\u0120\u0121\x07", "@\x02\x02\u0121\u0122\x07?\x02\x02\u0122\f\x03\x02\x02", "\x02\u0123\u0124\x07@\x02\x02\u0124\x0E\x03\x02\x02", "\x02\u0125\u0126\x07>\x02\x02\u0126\x10\x03\x02\x02", "\x02\u0127\u0128\x07>\x02\x02\u0128\u0129\x07?\x02\x02", "\u0129\x12\x03\x02\x02\x02\u012A\u012B\x07?\x02\x02", "\u012B\x14\x03\x02\x02\x02\u012C\u012D\x07c\x02\x02", "\u012D\u012E\x07u\x02\x02\u012E\x16\x03\x02\x02\x02", "\u012F\u0130\x07k\x02\x02\u0130\u0131\x07o\x02\x02\u0131", "\u0132\x07r\x02\x02\u0132\u0133\x07q\x02\x02\u0133\u0134", "\x07t\x02\x02\u0134\u0135\x07v\x02\x02\u0135\x18\x03", "\x02\x02\x02\u0136\u0137\x07,\x02\x02\u0137\x1A\x03", "\x02\x02\x02\u0138\u0139\x07h\x02\x02\u0139\u013A\x07", "t\x02\x02\u013A\u013B\x07q\x02\x02\u013B\u013C\x07o\x02", "\x02\u013C\x1C\x03\x02\x02\x02\u013D\u013E\x07}\x02", "\x02\u013E\x1E\x03\x02\x02\x02\u013F\u0140\x07.\x02", "\x02\u0140 \x03\x02\x02\x02\u0141\u0142\x07\x7F\x02", "\x02\u0142\"\x03\x02\x02\x02\u0143\u0144\x07c\x02\x02", "\u0144\u0145\x07d\x02\x02\u0145\u0146\x07u\x02\x02\u0146", "\u0147\x07v\x02\x02\u0147\u0148\x07t\x02\x02\u0148\u0149", "\x07c\x02\x02\u0149\u014A\x07e\x02\x02\u014A\u014B\x07", "v\x02\x02\u014B$\x03\x02\x02\x02\u014C\u014D\x07e\x02", "\x02\u014D\u014E\x07q\x02\x02\u014E\u014F\x07p\x02\x02", "\u014F\u0150\x07v\x02\x02\u0150\u0151\x07t\x02\x02\u0151", "\u0152\x07c\x02\x02\u0152\u0153\x07e\x02\x02\u0153\u0154", "\x07v\x02\x02\u0154&\x03\x02\x02\x02\u0155\u0156\x07", "k\x02\x02\u0156\u0157\x07p\x02\x02\u0157\u0158\x07v\x02", "\x02\u0158\u0159\x07g\x02\x02\u0159\u015A\x07t\x02\x02", "\u015A\u015B\x07h\x02\x02\u015B\u015C\x07c\x02\x02\u015C", "\u015D\x07e\x02\x02\u015D\u015E\x07g\x02\x02\u015E(\x03", "\x02\x02\x02\u015F\u0160\x07n\x02\x02\u0160\u0161\x07", "k\x02\x02\u0161\u0162\x07d\x02\x02\u0162\u0163\x07t\x02", "\x02\u0163\u0164\x07c\x02\x02\u0164\u0165\x07t\x02\x02", "\u0165\u0166\x07{\x02\x02\u0166*\x03\x02\x02\x02\u0167", "\u0168\x07k\x02\x02\u0168\u0169\x07u\x02\x02\u0169,\x03", "\x02\x02\x02\u016A\u016B\x07*\x02\x02\u016B.\x03\x02", "\x02\x02\u016C\u016D\x07+\x02\x02\u016D0\x03\x02\x02", "\x02\u016E\u016F\x07w\x02\x02\u016F\u0170\x07u\x02\x02", "\u0170\u0171\x07k\x02\x02\u0171\u0172\x07p\x02\x02\u0172", "\u0173\x07i\x02\x02\u01732\x03\x02\x02\x02\u0174\u0175", "\x07h\x02\x02\u0175\u0176\x07q\x02\x02\u0176\u0177\x07", "t\x02\x02\u01774\x03\x02\x02\x02\u0178\u0179\x07u\x02", "\x02\u0179\u017A\x07v\x02\x02\u017A\u017B\x07t\x02\x02", "\u017B\u017C\x07w\x02\x02\u017C\u017D\x07e\x02\x02\u017D", "\u017E\x07v\x02\x02\u017E6\x03\x02\x02\x02\u017F\u0180", "\x07o\x02\x02\u0180\u0181\x07q\x02\x02\u0181\u0182\x07", "f\x02\x02\u0182\u0183\x07k\x02\x02\u0183\u0184\x07h\x02", "\x02\u0184\u0185\x07k\x02\x02\u0185\u0186\x07g\x02\x02", "\u0186\u0187\x07t\x02\x02\u01878\x03\x02\x02\x02\u0188", "\u0189\x07h\x02\x02\u0189\u018A\x07w\x02\x02\u018A\u018B", "\x07p\x02\x02\u018B\u018C\x07e\x02\x02\u018C\u018D\x07", "v\x02\x02\u018D\u018E\x07k\x02\x02\u018E\u018F\x07q\x02", "\x02\u018F\u0190\x07p\x02\x02\u0190:\x03\x02\x02\x02", "\u0191\u0192\x07t\x02\x02\u0192\u0193\x07g\x02\x02\u0193", "\u0194\x07v\x02\x02\u0194\u0195\x07w\x02\x02\u0195\u0196", "\x07t\x02\x02\u0196\u0197\x07p\x02\x02\u0197\u0198\x07", "u\x02\x02\u0198<\x03\x02\x02\x02\u0199\u019A\x07g\x02", "\x02\u019A\u019B\x07x\x02\x02\u019B\u019C\x07g\x02\x02", "\u019C\u019D\x07p\x02\x02\u019D\u019E\x07v\x02\x02\u019E", ">\x03\x02\x02\x02\u019F\u01A0\x07g\x02\x02\u01A0\u01A1", "\x07p\x02\x02\u01A1\u01A2\x07w\x02\x02\u01A2\u01A3\x07", "o\x02\x02\u01A3@\x03\x02\x02\x02\u01A4\u01A5\x07]\x02", "\x02\u01A5B\x03\x02\x02\x02\u01A6\u01A7\x07_\x02\x02", "\u01A7D\x03\x02\x02\x02\u01A8\u01A9\x07c\x02\x02\u01A9", "\u01AA\x07f\x02\x02\u01AA\u01AB\x07f\x02\x02\u01AB\u01AC", "\x07t\x02\x02\u01AC\u01AD\x07g\x02\x02\u01AD\u01AE\x07", "u\x02\x02\u01AE\u01AF\x07u\x02\x02\u01AFF\x03\x02\x02", "\x02\u01B0\u01B1\x070\x02\x02\u01B1H\x03\x02\x02\x02", "\u01B2\u01B3\x07o\x02\x02\u01B3\u01B4\x07c\x02\x02\u01B4", "\u01B5\x07r\x02\x02\u01B5\u01B6\x07r\x02\x02\u01B6\u01B7", "\x07k\x02\x02\u01B7\u01B8\x07p\x02\x02\u01B8\u01B9\x07", "i\x02\x02\u01B9J\x03\x02\x02\x02\u01BA\u01BB\x07?\x02", "\x02\u01BB\u01BC\x07@\x02\x02\u01BCL\x03\x02\x02\x02", "\u01BD\u01BE\x07o\x02\x02\u01BE\u01BF\x07g\x02\x02\u01BF", "\u01C0\x07o\x02\x02\u01C0\u01C1\x07q\x02\x02\u01C1\u01C2", "\x07t\x02\x02\u01C2\u01C3\x07{\x02\x02\u01C3N\x03\x02", "\x02\x02\u01C4\u01C5\x07u\x02\x02\u01C5\u01C6\x07v\x02", "\x02\u01C6\u01C7\x07q\x02\x02\u01C7\u01C8\x07t\x02\x02", "\u01C8\u01C9\x07c\x02\x02\u01C9\u01CA\x07i\x02\x02\u01CA", "\u01CB\x07g\x02\x02\u01CBP\x03\x02\x02\x02\u01CC\u01CD", "\x07e\x02\x02\u01CD\u01CE\x07c\x02\x02\u01CE\u01CF\x07", "n\x02\x02\u01CF\u01D0\x07n\x02\x02\u01D0\u01D1\x07f\x02", "\x02\u01D1\u01D2\x07c\x02\x02\u01D2\u01D3\x07v\x02\x02", "\u01D3\u01D4\x07c\x02\x02\u01D4R\x03\x02\x02\x02\u01D5", "\u01D6\x07k\x02\x02\u01D6\u01D7\x07h\x02\x02\u01D7T\x03", "\x02\x02\x02\u01D8\u01D9\x07g\x02\x02\u01D9\u01DA\x07", "n\x02\x02\u01DA\u01DB\x07u\x02\x02\u01DB\u01DC\x07g\x02", "\x02\u01DCV\x03\x02\x02\x02\u01DD\u01DE\x07v\x02\x02", "\u01DE\u01DF\x07t\x02\x02\u01DF\u01E0\x07{\x02\x02\u01E0", "X\x03\x02\x02\x02\u01E1\u01E2\x07e\x02\x02\u01E2\u01E3", "\x07c\x02\x02\u01E3\u01E4\x07v\x02\x02\u01E4\u01E5\x07", "e\x02\x02\u01E5\u01E6\x07j\x02\x02\u01E6Z\x03\x02\x02", "\x02\u01E7\u01E8\x07y\x02\x02\u01E8\u01E9\x07j\x02\x02", "\u01E9\u01EA\x07k\x02\x02\u01EA\u01EB\x07n\x02\x02\u01EB", "\u01EC\x07g\x02\x02\u01EC\\\x03\x02\x02\x02\u01ED\u01EE", "\x07c\x02\x02\u01EE\u01EF\x07u\x02\x02\u01EF\u01F0\x07", "u\x02\x02\u01F0\u01F1\x07g\x02\x02\u01F1\u01F2\x07o\x02", "\x02\u01F2\u01F3\x07d\x02\x02\u01F3\u01F4\x07n\x02\x02", "\u01F4\u01F5\x07{\x02\x02\u01F5^\x03\x02\x02\x02\u01F6", "\u01F7\x07f\x02\x02\u01F7\u01F8\x07q\x02\x02\u01F8`\x03", "\x02\x02\x02\u01F9\u01FA\x07t\x02\x02\u01FA\u01FB\x07", "g\x02\x02\u01FB\u01FC\x07v\x02\x02\u01FC\u01FD\x07w\x02", "\x02\u01FD\u01FE\x07t\x02\x02\u01FE\u01FF\x07p\x02\x02", "\u01FFb\x03\x02\x02\x02\u0200\u0201\x07v\x02\x02\u0201", "\u0202\x07j\x02\x02\u0202\u0203\x07t\x02\x02\u0203\u0204", "\x07q\x02\x02\u0204\u0205\x07y\x02\x02\u0205d\x03\x02", "\x02\x02\u0206\u0207\x07g\x02\x02\u0207\u0208\x07o\x02", "\x02\u0208\u0209\x07k\x02\x02\u0209\u020A\x07v\x02\x02", "\u020Af\x03\x02\x02\x02\u020B\u020C\x07x\x02\x02\u020C", "\u020D\x07c\x02\x02\u020D\u020E\x07t\x02\x02\u020Eh\x03", "\x02\x02\x02\u020F\u0210\x07d\x02\x02\u0210\u0211\x07", "q\x02\x02\u0211\u0212\x07q\x02\x02\u0212\u0213\x07n\x02", "\x02\u0213j\x03\x02\x02\x02\u0214\u0215\x07u\x02\x02", "\u0215\u0216\x07v\x02\x02\u0216\u0217\x07t\x02\x02\u0217", "\u0218\x07k\x02\x02\u0218\u0219\x07p\x02\x02\u0219\u021A", "\x07i\x02\x02\u021Al\x03\x02\x02\x02\u021B\u021C\x07", "d\x02\x02\u021C\u021D\x07{\x02\x02\u021D\u021E\x07v\x02", "\x02\u021E\u021F\x07g\x02\x02\u021Fn\x03\x02\x02\x02", "\u0220\u0221\x07-\x02\x02\u0221\u0222\x07-\x02\x02\u0222", "p\x03\x02\x02\x02\u0223\u0224\x07/\x02\x02\u0224\u0225", "\x07/\x02\x02\u0225r\x03\x02\x02\x02\u0226\u0227\x07", "p\x02\x02\u0227\u0228\x07g\x02\x02\u0228\u0229\x07y\x02", "\x02\u0229t\x03\x02\x02\x02\u022A\u022B\x07<\x02\x02", "\u022Bv\x03\x02\x02\x02\u022C\u022D\x07-\x02\x02\u022D", "x\x03\x02\x02\x02\u022E\u022F\x07/\x02\x02\u022Fz\x03", "\x02\x02\x02\u0230\u0231\x07c\x02\x02\u0231\u0232\x07", "h\x02\x02\u0232\u0233\x07v\x02\x02\u0233\u0234\x07g\x02", "\x02\u0234\u0235\x07t\x02\x02\u0235|\x03\x02\x02\x02", "\u0236\u0237\x07f\x02\x02\u0237\u0238\x07g\x02\x02\u0238", "\u0239\x07n\x02\x02\u0239\u023A\x07g\x02\x02\u023A\u023B", "\x07v\x02\x02\u023B\u023C\x07g\x02\x02\u023C~\x03\x02", "\x02\x02\u023D\u023E\x07#\x02\x02\u023E\x80\x03\x02", "\x02\x02\u023F\u0240\x07,\x02\x02\u0240\u0241\x07,\x02", "\x02\u0241\x82\x03\x02\x02\x02\u0242\u0243\x071\x02", "\x02\u0243\x84\x03\x02\x02\x02\u0244\u0245\x07'\x02", "\x02\u0245\x86\x03\x02\x02\x02\u0246\u0247\x07>\x02", "\x02\u0247\u0248\x07>\x02\x02\u0248\x88\x03\x02\x02", "\x02\u0249\u024A\x07@\x02\x02\u024A\u024B\x07@\x02\x02", "\u024B\x8A\x03\x02\x02\x02\u024C\u024D\x07(\x02\x02", "\u024D\x8C\x03\x02\x02\x02\u024E\u024F\x07~\x02\x02", "\u024F\x8E\x03\x02\x02\x02\u0250\u0251\x07?\x02\x02", "\u0251\u0252\x07?\x02\x02\u0252\x90\x03\x02\x02\x02", "\u0253\u0254\x07#\x02\x02\u0254\u0255\x07?\x02\x02\u0255", "\x92\x03\x02\x02\x02\u0256\u0257\x07(\x02\x02\u0257", "\u0258\x07(\x02\x02\u0258\x94\x03\x02\x02\x02\u0259", "\u025A\x07~\x02\x02\u025A\u025B\x07~\x02\x02\u025B\x96", "\x03\x02\x02\x02\u025C\u025D\x07A\x02\x02\u025D\x98", "\x03\x02\x02\x02\u025E\u025F\x07~\x02\x02\u025F\u0260", "\x07?\x02\x02\u0260\x9A\x03\x02\x02\x02\u0261\u0262", "\x07`\x02\x02\u0262\u0263\x07?\x02\x02\u0263\x9C\x03", "\x02\x02\x02\u0264\u0265\x07(\x02\x02\u0265\u0266\x07", "?\x02\x02\u0266\x9E\x03\x02\x02\x02\u0267\u0268\x07", ">\x02\x02\u0268\u0269\x07>\x02\x02\u0269\u026A\x07?\x02", "\x02\u026A\xA0\x03\x02\x02\x02\u026B\u026C\x07@\x02", "\x02\u026C\u026D\x07@\x02\x02\u026D\u026E\x07?\x02\x02", "\u026E\xA2\x03\x02\x02\x02\u026F\u0270\x07-\x02\x02", "\u0270\u0271\x07?\x02\x02\u0271\xA4\x03\x02\x02\x02", "\u0272\u0273\x07/\x02\x02\u0273\u0274\x07?\x02\x02\u0274", "\xA6\x03\x02\x02\x02\u0275\u0276\x07,\x02\x02\u0276", "\u0277\x07?\x02\x02\u0277\xA8\x03\x02\x02\x02\u0278", "\u0279\x071\x02\x02\u0279\u027A\x07?\x02\x02\u027A\xAA", "\x03\x02\x02\x02\u027B\u027C\x07'\x02\x02\u027C\u027D", "\x07?\x02\x02\u027D\xAC\x03\x02\x02\x02\u027E\u027F", "\x07n\x02\x02\u027F\u0280\x07g\x02\x02\u0280\u0281\x07", "v\x02\x02\u0281\xAE\x03\x02\x02\x02\u0282\u0283\x07", "<\x02\x02\u0283\u0284\x07?\x02\x02\u0284\xB0\x03\x02", "\x02\x02\u0285\u0286\x07?\x02\x02\u0286\u0287\x07<\x02", "\x02\u0287\xB2\x03\x02\x02\x02\u0288\u0289\x07u\x02", "\x02\u0289\u028A\x07y\x02\x02\u028A\u028B\x07k\x02\x02", "\u028B\u028C\x07v\x02\x02\u028C\u028D\x07e\x02\x02\u028D", "\u028E\x07j\x02\x02\u028E\xB4\x03\x02\x02\x02\u028F", "\u0290\x07e\x02\x02\u0290\u0291\x07c\x02\x02\u0291\u0292", "\x07u\x02\x02\u0292\u0293\x07g\x02\x02\u0293\xB6\x03", "\x02\x02\x02\u0294\u0295\x07f\x02\x02\u0295\u0296\x07", "g\x02\x02\u0296\u0297\x07h\x02\x02\u0297\u0298\x07c\x02", "\x02\u0298\u0299\x07w\x02\x02\u0299\u029A\x07n\x02\x02", "\u029A\u029B\x07v\x02\x02\u029B\xB8\x03\x02\x02\x02", "\u029C\u029D\x07/\x02\x02\u029D\u029E\x07@\x02\x02\u029E", "\xBA\x03\x02\x02\x02\u029F\u02A0\x07q\x02\x02\u02A0", "\u02A1\x07x\x02\x02\u02A1\u02A2\x07g\x02\x02\u02A2\u02A3", "\x07t\x02\x02\u02A3\u02A4\x07t\x02\x02\u02A4\u02A5\x07", "k\x02\x02\u02A5\u02A6\x07f\x02\x02\u02A6\u02A7\x07g\x02", "\x02\u02A7\xBC\x03\x02\x02\x02\u02A8\u02A9\x07k\x02", "\x02\u02A9\u02AA\x07p\x02\x02\u02AA\u035F\x07v\x02\x02", "\u02AB\u02AC\x07k\x02\x02\u02AC\u02AD\x07p\x02\x02\u02AD", "\u02AE\x07v\x02\x02\u02AE\u035F\x07:\x02\x02\u02AF\u02B0", "\x07k\x02\x02\u02B0\u02B1\x07p\x02\x02\u02B1\u02B2\x07", "v\x02\x02\u02B2\u02B3\x073\x02\x02\u02B3\u035F\x078\x02", "\x02\u02B4\u02B5\x07k\x02\x02\u02B5\u02B6\x07p\x02\x02", "\u02B6\u02B7\x07v\x02\x02\u02B7\u02B8\x074\x02\x02\u02B8", "\u035F\x076\x02\x02\u02B9\u02BA\x07k\x02\x02\u02BA\u02BB", "\x07p\x02\x02\u02BB\u02BC\x07v\x02\x02\u02BC\u02BD\x07", "5\x02\x02\u02BD\u035F\x074\x02\x02\u02BE\u02BF\x07k\x02", "\x02\u02BF\u02C0\x07p\x02\x02\u02C0\u02C1\x07v\x02\x02", "\u02C1\u02C2\x076\x02\x02\u02C2\u035F\x072\x02\x02\u02C3", "\u02C4\x07k\x02\x02\u02C4\u02C5\x07p\x02\x02\u02C5\u02C6", "\x07v\x02\x02\u02C6\u02C7\x076\x02\x02\u02C7\u035F\x07", ":\x02\x02\u02C8\u02C9\x07k\x02\x02\u02C9\u02CA\x07p\x02", "\x02\u02CA\u02CB\x07v\x02\x02\u02CB\u02CC\x077\x02\x02", "\u02CC\u035F\x078\x02\x02\u02CD\u02CE\x07k\x02\x02\u02CE", "\u02CF\x07p\x02\x02\u02CF\u02D0\x07v\x02\x02\u02D0\u02D1", "\x078\x02\x02\u02D1\u035F\x076\x02\x02\u02D2\u02D3\x07", "k\x02\x02\u02D3\u02D4\x07p\x02\x02\u02D4\u02D5\x07v\x02", "\x02\u02D5\u02D6\x079\x02\x02\u02D6\u035F\x074\x02\x02", "\u02D7\u02D8\x07k\x02\x02\u02D8\u02D9\x07p\x02\x02\u02D9", "\u02DA\x07v\x02\x02\u02DA\u02DB\x07:\x02\x02\u02DB\u035F", "\x072\x02\x02\u02DC\u02DD\x07k\x02\x02\u02DD\u02DE\x07", "p\x02\x02\u02DE\u02DF\x07v\x02\x02\u02DF\u02E0\x07:\x02", "\x02\u02E0\u035F\x07:\x02\x02\u02E1\u02E2\x07k\x02\x02", "\u02E2\u02E3\x07p\x02\x02\u02E3\u02E4\x07v\x02\x02\u02E4", "\u02E5\x07;\x02\x02\u02E5\u035F\x078\x02\x02\u02E6\u02E7", "\x07k\x02\x02\u02E7\u02E8\x07p\x02\x02\u02E8\u02E9\x07", "v\x02\x02\u02E9\u02EA\x073\x02\x02\u02EA\u02EB\x072\x02", "\x02\u02EB\u035F\x076\x02\x02\u02EC\u02ED\x07k\x02\x02", "\u02ED\u02EE\x07p\x02\x02\u02EE\u02EF\x07v\x02\x02\u02EF", "\u02F0\x073\x02\x02\u02F0\u02F1\x073\x02\x02\u02F1\u035F", "\x074\x02\x02\u02F2\u02F3\x07k\x02\x02\u02F3\u02F4\x07", "p\x02\x02\u02F4\u02F5\x07v\x02\x02\u02F5\u02F6\x073\x02", "\x02\u02F6\u02F7\x074\x02\x02\u02F7\u035F\x072\x02\x02", "\u02F8\u02F9\x07k\x02\x02\u02F9\u02FA\x07p\x02\x02\u02FA", "\u02FB\x07v\x02\x02\u02FB\u02FC\x073\x02\x02\u02FC\u02FD", "\x074\x02\x02\u02FD\u035F\x07:\x02\x02\u02FE\u02FF\x07", "k\x02\x02\u02FF\u0300\x07p\x02\x02\u0300\u0301\x07v\x02", "\x02\u0301\u0302\x073\x02\x02\u0302\u0303\x075\x02\x02", "\u0303\u035F\x078\x02\x02\u0304\u0305\x07k\x02\x02\u0305", "\u0306\x07p\x02\x02\u0306\u0307\x07v\x02\x02\u0307\u0308", "\x073\x02\x02\u0308\u0309\x076\x02\x02\u0309\u035F\x07", "6\x02\x02\u030A\u030B\x07k\x02\x02\u030B\u030C\x07p\x02", "\x02\u030C\u030D\x07v\x02\x02\u030D\u030E\x073\x02\x02", "\u030E\u030F\x077\x02\x02\u030F\u035F\x074\x02\x02\u0310", "\u0311\x07k\x02\x02\u0311\u0312\x07p\x02\x02\u0312\u0313", "\x07v\x02\x02\u0313\u0314\x073\x02\x02\u0314\u0315\x07", "8\x02\x02\u0315\u035F\x072\x02\x02\u0316\u0317\x07k\x02", "\x02\u0317\u0318\x07p\x02\x02\u0318\u0319\x07v\x02\x02", "\u0319\u031A\x073\x02\x02\u031A\u031B\x078\x02\x02\u031B", "\u035F\x07:\x02\x02\u031C\u031D\x07k\x02\x02\u031D\u031E", "\x07p\x02\x02\u031E\u031F\x07v\x02\x02\u031F\u0320\x07", "3\x02\x02\u0320\u0321\x079\x02\x02\u0321\u035F\x078\x02", "\x02\u0322\u0323\x07k\x02\x02\u0323\u0324\x07p\x02\x02", "\u0324\u0325\x07v\x02\x02\u0325\u0326\x073\x02\x02\u0326", "\u0327\x07:\x02\x02\u0327\u035F\x076\x02\x02\u0328\u0329", "\x07k\x02\x02\u0329\u032A\x07p\x02\x02\u032A\u032B\x07", "v\x02\x02\u032B\u032C\x073\x02\x02\u032C\u032D\x07;\x02", "\x02\u032D\u035F\x074\x02\x02\u032E\u032F\x07k\x02\x02", "\u032F\u0330\x07p\x02\x02\u0330\u0331\x07v\x02\x02\u0331", "\u0332\x074\x02\x02\u0332\u0333\x072\x02\x02\u0333\u035F", "\x072\x02\x02\u0334\u0335\x07k\x02\x02\u0335\u0336\x07", "p\x02\x02\u0336\u0337\x07v\x02\x02\u0337\u0338\x074\x02", "\x02\u0338\u0339\x072\x02\x02\u0339\u035F\x07:\x02\x02", "\u033A\u033B\x07k\x02\x02\u033B\u033C\x07p\x02\x02\u033C", "\u033D\x07v\x02\x02\u033D\u033E\x074\x02\x02\u033E\u033F", "\x073\x02\x02\u033F\u035F\x078\x02\x02\u0340\u0341\x07", "k\x02\x02\u0341\u0342\x07p\x02\x02\u0342\u0343\x07v\x02", "\x02\u0343\u0344\x074\x02\x02\u0344\u0345\x074\x02\x02", "\u0345\u035F\x076\x02\x02\u0346\u0347\x07k\x02\x02\u0347", "\u0348\x07p\x02\x02\u0348\u0349\x07v\x02\x02\u0349\u034A", "\x074\x02\x02\u034A\u034B\x075\x02\x02\u034B\u035F\x07", "4\x02\x02\u034C\u034D\x07k\x02\x02\u034D\u034E\x07p\x02", "\x02\u034E\u034F\x07v\x02\x02\u034F\u0350\x074\x02\x02", "\u0350\u0351\x076\x02\x02\u0351\u035F\x072\x02\x02\u0352", "\u0353\x07k\x02\x02\u0353\u0354\x07p\x02\x02\u0354\u0355", "\x07v\x02\x02\u0355\u0356\x074\x02\x02\u0356\u0357\x07", "6\x02\x02\u0357\u035F\x07:\x02\x02\u0358\u0359\x07k\x02", "\x02\u0359\u035A\x07p\x02\x02\u035A\u035B\x07v\x02\x02", "\u035B\u035C\x074\x02\x02\u035C\u035D\x077\x02\x02\u035D", "\u035F\x078\x02\x02\u035E\u02A8\x03\x02\x02\x02\u035E", "\u02AB\x03\x02\x02\x02\u035E\u02AF\x03\x02\x02\x02\u035E", "\u02B4\x03\x02\x02\x02\u035E\u02B9\x03\x02\x02\x02\u035E", "\u02BE\x03\x02\x02\x02\u035E\u02C3\x03\x02\x02\x02\u035E", "\u02C8\x03\x02\x02\x02\u035E\u02CD\x03\x02\x02\x02\u035E", "\u02D2\x03\x02\x02\x02\u035E\u02D7\x03\x02\x02\x02\u035E", "\u02DC\x03\x02\x02\x02\u035E\u02E1\x03\x02\x02\x02\u035E", "\u02E6\x03\x02\x02\x02\u035E\u02EC\x03\x02\x02\x02\u035E", "\u02F2\x03\x02\x02\x02\u035E\u02F8\x03\x02\x02\x02\u035E", "\u02FE\x03\x02\x02\x02\u035E\u0304\x03\x02\x02\x02\u035E", "\u030A\x03\x02\x02\x02\u035E\u0310\x03\x02\x02\x02\u035E", "\u0316\x03\x02\x02\x02\u035E\u031C\x03\x02\x02\x02\u035E", "\u0322\x03\x02\x02\x02\u035E\u0328\x03\x02\x02\x02\u035E", "\u032E\x03\x02\x02\x02\u035E\u0334\x03\x02\x02\x02\u035E", "\u033A\x03\x02\x02\x02\u035E\u0340\x03\x02\x02\x02\u035E", "\u0346\x03\x02\x02\x02\u035E\u034C\x03\x02\x02\x02\u035E", "\u0352\x03\x02\x02\x02\u035E\u0358\x03\x02\x02\x02\u035F", "\xBE\x03\x02\x02\x02\u0360\u0361\x07w\x02\x02\u0361", "\u0362\x07k\x02\x02\u0362\u0363\x07p\x02\x02\u0363\u0438", "\x07v\x02\x02\u0364\u0365\x07w\x02\x02\u0365\u0366\x07", "k\x02\x02\u0366\u0367\x07p\x02\x02\u0367\u0368\x07v\x02", "\x02\u0368\u0438\x07:\x02\x02\u0369\u036A\x07w\x02\x02", "\u036A\u036B\x07k\x02\x02\u036B\u036C\x07p\x02\x02\u036C", "\u036D\x07v\x02\x02\u036D\u036E\x073\x02\x02\u036E\u0438", "\x078\x02\x02\u036F\u0370\x07w\x02\x02\u0370\u0371\x07", "k\x02\x02\u0371\u0372\x07p\x02\x02\u0372\u0373\x07v\x02", "\x02\u0373\u0374\x074\x02\x02\u0374\u0438\x076\x02\x02", "\u0375\u0376\x07w\x02\x02\u0376\u0377\x07k\x02\x02\u0377", "\u0378\x07p\x02\x02\u0378\u0379\x07v\x02\x02\u0379\u037A", "\x075\x02\x02\u037A\u0438\x074\x02\x02\u037B\u037C\x07", "w\x02\x02\u037C\u037D\x07k\x02\x02\u037D\u037E\x07p\x02", "\x02\u037E\u037F\x07v\x02\x02\u037F\u0380\x076\x02\x02", "\u0380\u0438\x072\x02\x02\u0381\u0382\x07w\x02\x02\u0382", "\u0383\x07k\x02\x02\u0383\u0384\x07p\x02\x02\u0384\u0385", "\x07v\x02\x02\u0385\u0386\x076\x02\x02\u0386\u0438\x07", ":\x02\x02\u0387\u0388\x07w\x02\x02\u0388\u0389\x07k\x02", "\x02\u0389\u038A\x07p\x02\x02\u038A\u038B\x07v\x02\x02", "\u038B\u038C\x077\x02\x02\u038C\u0438\x078\x02\x02\u038D", "\u038E\x07w\x02\x02\u038E\u038F\x07k\x02\x02\u038F\u0390", "\x07p\x02\x02\u0390\u0391\x07v\x02\x02\u0391\u0392\x07", "8\x02\x02\u0392\u0438\x076\x02\x02\u0393\u0394\x07w\x02", "\x02\u0394\u0395\x07k\x02\x02\u0395\u0396\x07p\x02\x02", "\u0396\u0397\x07v\x02\x02\u0397\u0398\x079\x02\x02\u0398", "\u0438\x074\x02\x02\u0399\u039A\x07w\x02\x02\u039A\u039B", "\x07k\x02\x02\u039B\u039C\x07p\x02\x02\u039C\u039D\x07", "v\x02\x02\u039D\u039E\x07:\x02\x02\u039E\u0438\x072\x02", "\x02\u039F\u03A0\x07w\x02\x02\u03A0\u03A1\x07k\x02\x02", "\u03A1\u03A2\x07p\x02\x02\u03A2\u03A3\x07v\x02\x02\u03A3", "\u03A4\x07:\x02\x02\u03A4\u0438\x07:\x02\x02\u03A5\u03A6", "\x07w\x02\x02\u03A6\u03A7\x07k\x02\x02\u03A7\u03A8\x07", "p\x02\x02\u03A8\u03A9\x07v\x02\x02\u03A9\u03AA\x07;\x02", "\x02\u03AA\u0438\x078\x02\x02\u03AB\u03AC\x07w\x02\x02", "\u03AC\u03AD\x07k\x02\x02\u03AD\u03AE\x07p\x02\x02\u03AE", "\u03AF\x07v\x02\x02\u03AF\u03B0\x073\x02\x02\u03B0\u03B1", "\x072\x02\x02\u03B1\u0438\x076\x02\x02\u03B2\u03B3\x07", "w\x02\x02\u03B3\u03B4\x07k\x02\x02\u03B4\u03B5\x07p\x02", "\x02\u03B5\u03B6\x07v\x02\x02\u03B6\u03B7\x073\x02\x02", "\u03B7\u03B8\x073\x02\x02\u03B8\u0438\x074\x02\x02\u03B9", "\u03BA\x07w\x02\x02\u03BA\u03BB\x07k\x02\x02\u03BB\u03BC", "\x07p\x02\x02\u03BC\u03BD\x07v\x02\x02\u03BD\u03BE\x07", "3\x02\x02\u03BE\u03BF\x074\x02\x02\u03BF\u0438\x072\x02", "\x02\u03C0\u03C1\x07w\x02\x02\u03C1\u03C2\x07k\x02\x02", "\u03C2\u03C3\x07p\x02\x02\u03C3\u03C4\x07v\x02\x02\u03C4", "\u03C5\x073\x02\x02\u03C5\u03C6\x074\x02\x02\u03C6\u0438", "\x07:\x02\x02\u03C7\u03C8\x07w\x02\x02\u03C8\u03C9\x07", "k\x02\x02\u03C9\u03CA\x07p\x02\x02\u03CA\u03CB\x07v\x02", "\x02\u03CB\u03CC\x073\x02\x02\u03CC\u03CD\x075\x02\x02", "\u03CD\u0438\x078\x02\x02\u03CE\u03CF\x07w\x02\x02\u03CF", "\u03D0\x07k\x02\x02\u03D0\u03D1\x07p\x02\x02\u03D1\u03D2", "\x07v\x02\x02\u03D2\u03D3\x073\x02\x02\u03D3\u03D4\x07", "6\x02\x02\u03D4\u0438\x076\x02\x02\u03D5\u03D6\x07w\x02", "\x02\u03D6\u03D7\x07k\x02\x02\u03D7\u03D8\x07p\x02\x02", "\u03D8\u03D9\x07v\x02\x02\u03D9\u03DA\x073\x02\x02\u03DA", "\u03DB\x077\x02\x02\u03DB\u0438\x074\x02\x02\u03DC\u03DD", "\x07w\x02\x02\u03DD\u03DE\x07k\x02\x02\u03DE\u03DF\x07", "p\x02\x02\u03DF\u03E0\x07v\x02\x02\u03E0\u03E1\x073\x02", "\x02\u03E1\u03E2\x078\x02\x02\u03E2\u0438\x072\x02\x02", "\u03E3\u03E4\x07w\x02\x02\u03E4\u03E5\x07k\x02\x02\u03E5", "\u03E6\x07p\x02\x02\u03E6\u03E7\x07v\x02\x02\u03E7\u03E8", "\x073\x02\x02\u03E8\u03E9\x078\x02\x02\u03E9\u0438\x07", ":\x02\x02\u03EA\u03EB\x07w\x02\x02\u03EB\u03EC\x07k\x02", "\x02\u03EC\u03ED\x07p\x02\x02\u03ED\u03EE\x07v\x02\x02", "\u03EE\u03EF\x073\x02\x02\u03EF\u03F0\x079\x02\x02\u03F0", "\u0438\x078\x02\x02\u03F1\u03F2\x07w\x02\x02\u03F2\u03F3", "\x07k\x02\x02\u03F3\u03F4\x07p\x02\x02\u03F4\u03F5\x07", "v\x02\x02\u03F5\u03F6\x073\x02\x02\u03F6\u03F7\x07:\x02", "\x02\u03F7\u0438\x076\x02\x02\u03F8\u03F9\x07w\x02\x02", "\u03F9\u03FA\x07k\x02\x02\u03FA\u03FB\x07p\x02\x02\u03FB", "\u03FC\x07v\x02\x02\u03FC\u03FD\x073\x02\x02\u03FD\u03FE", "\x07;\x02\x02\u03FE\u0438\x074\x02\x02\u03FF\u0400\x07", "w\x02\x02\u0400\u0401\x07k\x02\x02\u0401\u0402\x07p\x02", "\x02\u0402\u0403\x07v\x02\x02\u0403\u0404\x074\x02\x02", "\u0404\u0405\x072\x02\x02\u0405\u0438\x072\x02\x02\u0406", "\u0407\x07w\x02\x02\u0407\u0408\x07k\x02\x02\u0408\u0409", "\x07p\x02\x02\u0409\u040A\x07v\x02\x02\u040A\u040B\x07", "4\x02\x02\u040B\u040C\x072\x02\x02\u040C\u0438\x07:\x02", "\x02\u040D\u040E\x07w\x02\x02\u040E\u040F\x07k\x02\x02", "\u040F\u0410\x07p\x02\x02\u0410\u0411\x07v\x02\x02\u0411", "\u0412\x074\x02\x02\u0412\u0413\x073\x02\x02\u0413\u0438", "\x078\x02\x02\u0414\u0415\x07w\x02\x02\u0415\u0416\x07", "k\x02\x02\u0416\u0417\x07p\x02\x02\u0417\u0418\x07v\x02", "\x02\u0418\u0419\x074\x02\x02\u0419\u041A\x074\x02\x02", "\u041A\u0438\x076\x02\x02\u041B\u041C\x07w\x02\x02\u041C", "\u041D\x07k\x02\x02\u041D\u041E\x07p\x02\x02\u041E\u041F", "\x07v\x02\x02\u041F\u0420\x074\x02\x02\u0420\u0421\x07", "5\x02\x02\u0421\u0438\x074\x02\x02\u0422\u0423\x07w\x02", "\x02\u0423\u0424\x07k\x02\x02\u0424\u0425\x07p\x02\x02", "\u0425\u0426\x07v\x02\x02\u0426\u0427\x074\x02\x02\u0427", "\u0428\x076\x02\x02\u0428\u0438\x072\x02\x02\u0429\u042A", "\x07w\x02\x02\u042A\u042B\x07k\x02\x02\u042B\u042C\x07", "p\x02\x02\u042C\u042D\x07v\x02\x02\u042D\u042E\x074\x02", "\x02\u042E\u042F\x076\x02\x02\u042F\u0438\x07:\x02\x02", "\u0430\u0431\x07w\x02\x02\u0431\u0432\x07k\x02\x02\u0432", "\u0433\x07p\x02\x02\u0433\u0434\x07v\x02\x02\u0434\u0435", "\x074\x02\x02\u0435\u0436\x077\x02\x02\u0436\u0438\x07", "8\x02\x02\u0437\u0360\x03\x02\x02\x02\u0437\u0364\x03", "\x02\x02\x02\u0437\u0369\x03\x02\x02\x02\u0437\u036F\x03", "\x02\x02\x02\u0437\u0375\x03\x02\x02\x02\u0437\u037B\x03", "\x02\x02\x02\u0437\u0381\x03\x02\x02\x02\u0437\u0387\x03", "\x02\x02\x02\u0437\u038D\x03\x02\x02\x02\u0437\u0393\x03", "\x02\x02\x02\u0437\u0399\x03\x02\x02\x02\u0437\u039F\x03", "\x02\x02\x02\u0437\u03A5\x03\x02\x02\x02\u0437\u03AB\x03", "\x02\x02\x02\u0437\u03B2\x03\x02\x02\x02\u0437\u03B9\x03", "\x02\x02\x02\u0437\u03C0\x03\x02\x02\x02\u0437\u03C7\x03", "\x02\x02\x02\u0437\u03CE\x03\x02\x02\x02\u0437\u03D5\x03", "\x02\x02\x02\u0437\u03DC\x03\x02\x02\x02\u0437\u03E3\x03", "\x02\x02\x02\u0437\u03EA\x03\x02\x02\x02\u0437\u03F1\x03", "\x02\x02\x02\u0437\u03F8\x03\x02\x02\x02\u0437\u03FF\x03", "\x02\x02\x02\u0437\u0406\x03\x02\x02\x02\u0437\u040D\x03", "\x02\x02\x02\u0437\u0414\x03\x02\x02\x02\u0437\u041B\x03", "\x02\x02\x02\u0437\u0422\x03\x02\x02\x02\u0437\u0429\x03", "\x02\x02\x02\u0437\u0430\x03\x02\x02\x02\u0438\xC0\x03", "\x02\x02\x02\u0439\u043A\x07d\x02\x02\u043A\u043B\x07", "{\x02\x02\u043B\u043C\x07v\x02\x02\u043C\u043D\x07g\x02", "\x02\u043D\u0516\x07u\x02\x02\u043E\u043F\x07d\x02\x02", "\u043F\u0440\x07{\x02\x02\u0440\u0441\x07v\x02\x02\u0441", "\u0442\x07g\x02\x02\u0442\u0443\x07u\x02\x02\u0443\u0516", "\x073\x02\x02\u0444\u0445\x07d\x02\x02\u0445\u0446\x07", "{\x02\x02\u0446\u0447\x07v\x02\x02\u0447\u0448\x07g\x02", "\x02\u0448\u0449\x07u\x02\x02\u0449\u0516\x074\x02\x02", "\u044A\u044B\x07d\x02\x02\u044B\u044C\x07{\x02\x02\u044C", "\u044D\x07v\x02\x02\u044D\u044E\x07g\x02\x02\u044E\u044F", "\x07u\x02\x02\u044F\u0516\x075\x02\x02\u0450\u0451\x07", "d\x02\x02\u0451\u0452\x07{\x02\x02\u0452\u0453\x07v\x02", "\x02\u0453\u0454\x07g\x02\x02\u0454\u0455\x07u\x02\x02", "\u0455\u0516\x076\x02\x02\u0456\u0457\x07d\x02\x02\u0457", "\u0458\x07{\x02\x02\u0458\u0459\x07v\x02\x02\u0459\u045A", "\x07g\x02\x02\u045A\u045B\x07u\x02\x02\u045B\u0516\x07", "7\x02\x02\u045C\u045D\x07d\x02\x02\u045D\u045E\x07{\x02", "\x02\u045E\u045F\x07v\x02\x02\u045F\u0460\x07g\x02\x02", "\u0460\u0461\x07u\x02\x02\u0461\u0516\x078\x02\x02\u0462", "\u0463\x07d\x02\x02\u0463\u0464\x07{\x02\x02\u0464\u0465", "\x07v\x02\x02\u0465\u0466\x07g\x02\x02\u0466\u0467\x07", "u\x02\x02\u0467\u0516\x079\x02\x02\u0468\u0469\x07d\x02", "\x02\u0469\u046A\x07{\x02\x02\u046A\u046B\x07v\x02\x02", "\u046B\u046C\x07g\x02\x02\u046C\u046D\x07u\x02\x02\u046D", "\u0516\x07:\x02\x02\u046E\u046F\x07d\x02\x02\u046F\u0470", "\x07{\x02\x02\u0470\u0471\x07v\x02\x02\u0471\u0472\x07", "g\x02\x02\u0472\u0473\x07u\x02\x02\u0473\u0516\x07;\x02", "\x02\u0474\u0475\x07d\x02\x02\u0475\u0476\x07{\x02\x02", "\u0476\u0477\x07v\x02\x02\u0477\u0478\x07g\x02\x02\u0478", "\u0479\x07u\x02\x02\u0479\u047A\x073\x02\x02\u047A\u0516", "\x072\x02\x02\u047B\u047C\x07d\x02\x02\u047C\u047D\x07", "{\x02\x02\u047D\u047E\x07v\x02\x02\u047E\u047F\x07g\x02", "\x02\u047F\u0480\x07u\x02\x02\u0480\u0481\x073\x02\x02", "\u0481\u0516\x073\x02\x02\u0482\u0483\x07d\x02\x02\u0483", "\u0484\x07{\x02\x02\u0484\u0485\x07v\x02\x02\u0485\u0486", "\x07g\x02\x02\u0486\u0487\x07u\x02\x02\u0487\u0488\x07", "3\x02\x02\u0488\u0516\x074\x02\x02\u0489\u048A\x07d\x02", "\x02\u048A\u048B\x07{\x02\x02\u048B\u048C\x07v\x02\x02", "\u048C\u048D\x07g\x02\x02\u048D\u048E\x07u\x02\x02\u048E", "\u048F\x073\x02\x02\u048F\u0516\x075\x02\x02\u0490\u0491", "\x07d\x02\x02\u0491\u0492\x07{\x02\x02\u0492\u0493\x07", "v\x02\x02\u0493\u0494\x07g\x02\x02\u0494\u0495\x07u\x02", "\x02\u0495\u0496\x073\x02\x02\u0496\u0516\x076\x02\x02", "\u0497\u0498\x07d\x02\x02\u0498\u0499\x07{\x02\x02\u0499", "\u049A\x07v\x02\x02\u049A\u049B\x07g\x02\x02\u049B\u049C", "\x07u\x02\x02\u049C\u049D\x073\x02\x02\u049D\u0516\x07", "7\x02\x02\u049E\u049F\x07d\x02\x02\u049F\u04A0\x07{\x02", "\x02\u04A0\u04A1\x07v\x02\x02\u04A1\u04A2\x07g\x02\x02", "\u04A2\u04A3\x07u\x02\x02\u04A3\u04A4\x073\x02\x02\u04A4", "\u0516\x078\x02\x02\u04A5\u04A6\x07d\x02\x02\u04A6\u04A7", "\x07{\x02\x02\u04A7\u04A8\x07v\x02\x02\u04A8\u04A9\x07", "g\x02\x02\u04A9\u04AA\x07u\x02\x02\u04AA\u04AB\x073\x02", "\x02\u04AB\u0516\x079\x02\x02\u04AC\u04AD\x07d\x02\x02", "\u04AD\u04AE\x07{\x02\x02\u04AE\u04AF\x07v\x02\x02\u04AF", "\u04B0\x07g\x02\x02\u04B0\u04B1\x07u\x02\x02\u04B1\u04B2", "\x073\x02\x02\u04B2\u0516\x07:\x02\x02\u04B3\u04B4\x07", "d\x02\x02\u04B4\u04B5\x07{\x02\x02\u04B5\u04B6\x07v\x02", "\x02\u04B6\u04B7\x07g\x02\x02\u04B7\u04B8\x07u\x02\x02", "\u04B8\u04B9\x073\x02\x02\u04B9\u0516\x07;\x02\x02\u04BA", "\u04BB\x07d\x02\x02\u04BB\u04BC\x07{\x02\x02\u04BC\u04BD", "\x07v\x02\x02\u04BD\u04BE\x07g\x02\x02\u04BE\u04BF\x07", "u\x02\x02\u04BF\u04C0\x074\x02\x02\u04C0\u0516\x072\x02", "\x02\u04C1\u04C2\x07d\x02\x02\u04C2\u04C3\x07{\x02\x02", "\u04C3\u04C4\x07v\x02\x02\u04C4\u04C5\x07g\x02\x02\u04C5", "\u04C6\x07u\x02\x02\u04C6\u04C7\x074\x02\x02\u04C7\u0516", "\x073\x02\x02\u04C8\u04C9\x07d\x02\x02\u04C9\u04CA\x07", "{\x02\x02\u04CA\u04CB\x07v\x02\x02\u04CB\u04CC\x07g\x02", "\x02\u04CC\u04CD\x07u\x02\x02\u04CD\u04CE\x074\x02\x02", "\u04CE\u0516\x074\x02\x02\u04CF\u04D0\x07d\x02\x02\u04D0", "\u04D1\x07{\x02\x02\u04D1\u04D2\x07v\x02\x02\u04D2\u04D3", "\x07g\x02\x02\u04D3\u04D4\x07u\x02\x02\u04D4\u04D5\x07", "4\x02\x02\u04D5\u0516\x075\x02\x02\u04D6\u04D7\x07d\x02", "\x02\u04D7\u04D8\x07{\x02\x02\u04D8\u04D9\x07v\x02\x02", "\u04D9\u04DA\x07g\x02\x02\u04DA\u04DB\x07u\x02\x02\u04DB", "\u04DC\x074\x02\x02\u04DC\u0516\x076\x02\x02\u04DD\u04DE", "\x07d\x02\x02\u04DE\u04DF\x07{\x02\x02\u04DF\u04E0\x07", "v\x02\x02\u04E0\u04E1\x07g\x02\x02\u04E1\u04E2\x07u\x02", "\x02\u04E2\u04E3\x074\x02\x02\u04E3\u0516\x077\x02\x02", "\u04E4\u04E5\x07d\x02\x02\u04E5\u04E6\x07{\x02\x02\u04E6", "\u04E7\x07v\x02\x02\u04E7\u04E8\x07g\x02\x02\u04E8\u04E9", "\x07u\x02\x02\u04E9\u04EA\x074\x02\x02\u04EA\u0516\x07", "8\x02\x02\u04EB\u04EC\x07d\x02\x02\u04EC\u04ED\x07{\x02", "\x02\u04ED\u04EE\x07v\x02\x02\u04EE\u04EF\x07g\x02\x02", "\u04EF\u04F0\x07u\x02\x02\u04F0\u04F1\x074\x02\x02\u04F1", "\u0516\x079\x02\x02\u04F2\u04F3\x07d\x02\x02\u04F3\u04F4", "\x07{\x02\x02\u04F4\u04F5\x07v\x02\x02\u04F5\u04F6\x07", "g\x02\x02\u04F6\u04F7\x07u\x02\x02\u04F7\u04F8\x074\x02", "\x02\u04F8\u0516\x07:\x02\x02\u04F9\u04FA\x07d\x02\x02", "\u04FA\u04FB\x07{\x02\x02\u04FB\u04FC\x07v\x02\x02\u04FC", "\u04FD\x07g\x02\x02\u04FD\u04FE\x07u\x02\x02\u04FE\u04FF", "\x074\x02\x02\u04FF\u0516\x07;\x02\x02\u0500\u0501\x07", "d\x02\x02\u0501\u0502\x07{\x02\x02\u0502\u0503\x07v\x02", "\x02\u0503\u0504\x07g\x02\x02\u0504\u0505\x07u\x02\x02", "\u0505\u0506\x075\x02\x02\u0506\u0516\x072\x02\x02\u0507", "\u0508\x07d\x02\x02\u0508\u0509\x07{\x02\x02\u0509\u050A", "\x07v\x02\x02\u050A\u050B\x07g\x02\x02\u050B\u050C\x07", "u\x02\x02\u050C\u050D\x075\x02\x02\u050D\u0516\x073\x02", "\x02\u050E\u050F\x07d\x02\x02\u050F\u0510\x07{\x02\x02", "\u0510\u0511\x07v\x02\x02\u0511\u0512\x07g\x02\x02\u0512", "\u0513\x07u\x02\x02\u0513\u0514\x075\x02\x02\u0514\u0516", "\x074\x02\x02\u0515\u0439\x03\x02\x02\x02\u0515\u043E", "\x03\x02\x02\x02\u0515\u0444\x03\x02\x02\x02\u0515\u044A", "\x03\x02\x02\x02\u0515\u0450\x03\x02\x02\x02\u0515\u0456", "\x03\x02\x02\x02\u0515\u045C\x03\x02\x02\x02\u0515\u0462", "\x03\x02\x02\x02\u0515\u0468\x03\x02\x02\x02\u0515\u046E", "\x03\x02\x02\x02\u0515\u0474\x03\x02\x02\x02\u0515\u047B", "\x03\x02\x02\x02\u0515\u0482\x03\x02\x02\x02\u0515\u0489", "\x03\x02\x02\x02\u0515\u0490\x03\x02\x02\x02\u0515\u0497", "\x03\x02\x02\x02\u0515\u049E\x03\x02\x02\x02\u0515\u04A5", "\x03\x02\x02\x02\u0515\u04AC\x03\x02\x02\x02\u0515\u04B3", "\x03\x02\x02\x02\u0515\u04BA\x03\x02\x02\x02\u0515\u04C1", "\x03\x02\x02\x02\u0515\u04C8\x03\x02\x02\x02\u0515\u04CF", "\x03\x02\x02\x02\u0515\u04D6\x03\x02\x02\x02\u0515\u04DD", "\x03\x02\x02\x02\u0515\u04E4\x03\x02\x02\x02\u0515\u04EB", "\x03\x02\x02\x02\u0515\u04F2\x03\x02\x02\x02\u0515\u04F9", "\x03\x02\x02\x02\u0515\u0500\x03\x02\x02\x02\u0515\u0507", "\x03\x02\x02\x02\u0515\u050E\x03\x02\x02\x02\u0516\xC2", "\x03\x02\x02\x02\u0517\u0518\x07h\x02\x02\u0518\u0519", "\x07k\x02\x02\u0519\u051A\x07z\x02\x02\u051A\u051B\x07", "g\x02\x02\u051B\u052E\x07f\x02\x02\u051C\u051D\x07h\x02", "\x02\u051D\u051E\x07k\x02\x02\u051E\u051F\x07z\x02\x02", "\u051F\u0520\x07g\x02\x02\u0520\u0521\x07f\x02\x02\u0521", "\u0523\x03\x02\x02\x02\u0522\u0524\t\x02\x02\x02\u0523", "\u0522\x03\x02\x02\x02\u0524\u0525\x03\x02\x02\x02\u0525", "\u0523\x03\x02\x02\x02\u0525\u0526\x03\x02\x02\x02\u0526", "\u0527\x03\x02\x02\x02\u0527\u0529\x07z\x02\x02\u0528", "\u052A\t\x02\x02\x02\u0529\u0528\x03\x02\x02\x02\u052A", "\u052B\x03\x02\x02\x02\u052B\u0529\x03\x02\x02\x02\u052B", "\u052C\x03\x02\x02\x02\u052C\u052E\x03\x02\x02\x02\u052D", "\u0517\x03\x02\x02\x02\u052D\u051C\x03\x02\x02\x02\u052E", "\xC4\x03\x02\x02\x02\u052F\u0530\x07w\x02\x02\u0530", "\u0531\x07h\x02\x02\u0531\u0532\x07k\x02\x02\u0532\u0533", "\x07z\x02\x02\u0533\u0534\x07g\x02\x02\u0534\u0548\x07", "f\x02\x02\u0535\u0536\x07w\x02\x02\u0536\u0537\x07h\x02", "\x02\u0537\u0538\x07k\x02\x02\u0538\u0539\x07z\x02\x02", "\u0539\u053A\x07g\x02\x02\u053A\u053B\x07f\x02\x02\u053B", "\u053D\x03\x02\x02\x02\u053C\u053E\t\x02\x02\x02\u053D", "\u053C\x03\x02\x02\x02\u053E\u053F\x03\x02\x02\x02\u053F", "\u053D\x03\x02\x02\x02\u053F\u0540\x03\x02\x02\x02\u0540", "\u0541\x03\x02\x02\x02\u0541\u0543\x07z\x02\x02\u0542", "\u0544\t\x02\x02\x02\u0543\u0542\x03\x02\x02\x02\u0544", "\u0545\x03\x02\x02\x02\u0545\u0543\x03\x02\x02\x02\u0545", "\u0546\x03\x02\x02\x02\u0546\u0548\x03\x02\x02\x02\u0547", "\u052F\x03\x02\x02\x02\u0547\u0535\x03\x02\x02\x02\u0548", "\xC6\x03\x02\x02\x02\u0549\u054A\x07v\x02\x02\u054A", "\u054B\x07t\x02\x02\u054B\u054C\x07w\x02\x02\u054C\u0553", "\x07g\x02\x02\u054D\u054E\x07h\x02\x02\u054E\u054F\x07", "c\x02\x02\u054F\u0550\x07n\x02\x02\u0550\u0551\x07u\x02", "\x02\u0551\u0553\x07g\x02\x02\u0552\u0549\x03\x02\x02", "\x02\u0552\u054D\x03\x02\x02\x02\u0553\xC8\x03\x02\x02", "\x02\u0554\u055B\x05\xCBf\x02\u0555\u0557\x05\xCBf\x02", "\u0556\u0555\x03\x02\x02\x02\u0556\u0557\x03\x02\x02\x02", "\u0557\u0558\x03\x02\x02\x02\u0558\u0559\x070\x02\x02", "\u0559\u055B\x05\xCBf\x02\u055A\u0554\x03\x02\x02\x02", "\u055A\u0556\x03\x02\x02\x02\u055B\u055E\x03\x02\x02\x02", "\u055C\u055D\t\x03\x02\x02\u055D\u055F\x05\xCBf\x02\u055E", "\u055C\x03\x02\x02\x02\u055E\u055F\x03\x02\x02\x02\u055F", "\xCA\x03\x02\x02\x02\u0560\u0567\t\x02\x02\x02\u0561", "\u0563\x07a\x02\x02\u0562\u0561\x03\x02\x02\x02\u0562", "\u0563\x03\x02\x02\x02\u0563\u0564\x03\x02\x02\x02\u0564", "\u0566\t\x02\x02\x02\u0565\u0562\x03\x02\x02\x02\u0566", "\u0569\x03\x02\x02\x02\u0567\u0565\x03\x02\x02\x02\u0567", "\u0568\x03\x02\x02\x02\u0568\xCC\x03\x02\x02\x02\u0569", "\u0567\x03\x02\x02\x02\u056A\u056B\x072\x02\x02\u056B", "\u056C\t\x04\x02\x02\u056C\u056D\x05\xCFh\x02\u056D\xCE", "\x03\x02\x02\x02\u056E\u0575\x05\xD7l\x02\u056F\u0571", "\x07a\x02\x02\u0570\u056F\x03\x02\x02\x02\u0570\u0571", "\x03\x02\x02\x02\u0571\u0572\x03\x02\x02\x02\u0572\u0574", "\x05\xD7l\x02\u0573\u0570\x03\x02\x02\x02\u0574\u0577", "\x03\x02\x02\x02\u0575\u0573\x03\x02\x02\x02\u0575\u0576", "\x03\x02\x02\x02\u0576\xD0\x03\x02\x02\x02\u0577\u0575", "\x03\x02\x02\x02\u0578\u0579\x07y\x02\x02\u0579\u057A", "\x07g\x02\x02\u057A\u05AD\x07k\x02\x02\u057B\u057C\x07", "u\x02\x02\u057C\u057D\x07|\x02\x02\u057D\u057E\x07c\x02", "\x02\u057E\u057F\x07d\x02\x02\u057F\u05AD\x07q\x02\x02", "\u0580\u0581\x07h\x02\x02\u0581\u0582\x07k\x02\x02\u0582", "\u0583\x07p\x02\x02\u0583\u0584\x07p\x02\x02\u0584\u0585", "\x07g\x02\x02\u0585\u05AD\x07{\x02\x02\u0586\u0587\x07", "g\x02\x02\u0587\u0588\x07v\x02\x02\u0588\u0589\x07j\x02", "\x02\u0589\u058A\x07g\x02\x02\u058A\u05AD\x07t\x02\x02", "\u058B\u058C\x07u\x02\x02\u058C\u058D\x07g\x02\x02\u058D", "\u058E\x07e\x02\x02\u058E\u058F\x07q\x02\x02\u058F\u0590", "\x07p\x02\x02\u0590\u0591\x07f\x02\x02\u0591\u05AD\x07", "u\x02\x02\u0592\u0593\x07o\x02\x02\u0593\u0594\x07k\x02", "\x02\u0594\u0595\x07p\x02\x02\u0595\u0596\x07w\x02\x02", "\u0596\u0597\x07v\x02\x02\u0597\u0598\x07g\x02\x02\u0598", "\u05AD\x07u\x02\x02\u0599\u059A\x07j\x02\x02\u059A\u059B", "\x07q\x02\x02\u059B\u059C\x07w\x02\x02\u059C\u059D\x07", "t\x02\x02\u059D\u05AD\x07u\x02\x02\u059E\u059F\x07f\x02", "\x02\u059F\u05A0\x07c\x02\x02\u05A0\u05A1\x07{\x02\x02", "\u05A1\u05AD\x07u\x02\x02\u05A2\u05A3\x07y\x02\x02\u05A3", "\u05A4\x07g\x02\x02\u05A4\u05A5\x07g\x02\x02\u05A5\u05A6", "\x07m\x02\x02\u05A6\u05AD\x07u\x02\x02\u05A7\u05A8\x07", "{\x02\x02\u05A8\u05A9\x07g\x02\x02\u05A9\u05AA\x07c\x02", "\x02\u05AA\u05AB\x07t\x02\x02\u05AB\u05AD\x07u\x02\x02", "\u05AC\u0578\x03\x02\x02\x02\u05AC\u057B\x03\x02\x02\x02", "\u05AC\u0580\x03\x02\x02\x02\u05AC\u0586\x03\x02\x02\x02", "\u05AC\u058B\x03\x02\x02\x02\u05AC\u0592\x03\x02\x02\x02", "\u05AC\u0599\x03\x02\x02\x02\u05AC\u059E\x03\x02\x02\x02", "\u05AC\u05A2\x03\x02\x02\x02\u05AC\u05A7\x03\x02\x02\x02", "\u05AD\xD2\x03\x02\x02\x02\u05AE\u05AF\x07j\x02\x02", "\u05AF\u05B0\x07g\x02\x02\u05B0\u05B1\x07z\x02\x02\u05B1", "\u05BC\x03\x02\x02\x02\u05B2\u05B4\x07$\x02\x02\u05B3", "\u05B5\x05\xCFh\x02\u05B4\u05B3\x03\x02\x02\x02\u05B4", "\u05B5\x03\x02\x02\x02\u05B5\u05B6\x03\x02\x02\x02\u05B6", "\u05BD\x07$\x02\x02\u05B7\u05B9\x07)\x02\x02\u05B8\u05BA", "\x05\xCFh\x02\u05B9\u05B8\x03\x02\x02\x02\u05B9\u05BA", "\x03\x02\x02\x02\u05BA\u05BB\x03\x02\x02\x02\u05BB\u05BD", "\x07)\x02\x02\u05BC\u05B2\x03\x02\x02\x02\u05BC\u05B7", "\x03\x02\x02\x02\u05BD\xD4\x03\x02\x02\x02\u05BE\u05BF", "\x05\xD7l\x02\u05BF\u05C0\x05\xD7l\x02\u05C0\xD6\x03", "\x02\x02\x02\u05C1\u05C2\t\x05\x02\x02\u05C2\xD8\x03", "\x02\x02\x02\u05C3\u05C4\x07c\x02\x02\u05C4\u05C5\x07", "d\x02\x02\u05C5\u05C6\x07u\x02\x02\u05C6\u05C7\x07v\x02", "\x02\u05C7\u05C8\x07t\x02\x02\u05C8\u05C9\x07c\x02\x02", "\u05C9\u05CA\x07e\x02\x02\u05CA\u061C\x07v\x02\x02\u05CB", "\u05CC\x07c\x02\x02\u05CC\u05CD\x07h\x02\x02\u05CD\u05CE", "\x07v\x02\x02\u05CE\u05CF\x07g\x02\x02\u05CF\u061C\x07", "t\x02\x02\u05D0\u05D1\x07e\x02\x02\u05D1\u05D2\x07c\x02", "\x02\u05D2\u05D3\x07u\x02\x02\u05D3\u061C\x07g\x02\x02", "\u05D4\u05D5\x07e\x02\x02\u05D5\u05D6\x07c\x02\x02\u05D6", "\u05D7\x07v\x02\x02\u05D7\u05D8\x07e\x02\x02\u05D8\u061C", "\x07j\x02\x02\u05D9\u05DA\x07f\x02\x02\u05DA\u05DB\x07", "g\x02\x02\u05DB\u05DC\x07h\x02\x02\u05DC\u05DD\x07c\x02", "\x02\u05DD\u05DE\x07w\x02\x02\u05DE\u05DF\x07n\x02\x02", "\u05DF\u061C\x07v\x02\x02\u05E0\u05E1\x07h\x02\x02\u05E1", "\u05E2\x07k\x02\x02\u05E2\u05E3\x07p\x02\x02\u05E3\u05E4", "\x07c\x02\x02\u05E4\u061C\x07n\x02\x02\u05E5\u05E6\x07", "k\x02\x02\u05E6\u061C\x07p\x02\x02\u05E7\u05E8\x07k\x02", "\x02\u05E8\u05E9\x07p\x02\x02\u05E9\u05EA\x07n\x02\x02", "\u05EA\u05EB\x07k\x02\x02\u05EB\u05EC\x07p\x02\x02\u05EC", "\u061C\x07g\x02\x02\u05ED\u05EE\x07n\x02\x02\u05EE\u05EF", "\x07g\x02\x02\u05EF\u061C\x07v\x02\x02\u05F0\u05F1\x07", "o\x02\x02\u05F1\u05F2\x07c\x02\x02\u05F2\u05F3\x07v\x02", "\x02\u05F3\u05F4\x07e\x02\x02\u05F4\u061C\x07j\x02\x02", "\u05F5\u05F6\x07p\x02\x02\u05F6\u05F7\x07w\x02\x02\u05F7", "\u05F8\x07n\x02\x02\u05F8\u061C\x07n\x02\x02\u05F9\u05FA", "\x07q\x02\x02\u05FA\u061C\x07h\x02\x02\u05FB\u05FC\x07", "t\x02\x02\u05FC\u05FD\x07g\x02\x02\u05FD\u05FE\x07n\x02", "\x02\u05FE\u05FF\x07q\x02\x02\u05FF\u0600\x07e\x02\x02", "\u0600\u0601\x07c\x02\x02\u0601\u0602\x07v\x02\x02\u0602", "\u0603\x07c\x02\x02\u0603\u0604\x07d\x02\x02\u0604\u0605", "\x07n\x02\x02\u0605\u061C\x07g\x02\x02\u0606\u0607\x07", "u\x02\x02\u0607\u0608\x07v\x02\x02\u0608\u0609\x07c\x02", "\x02\u0609\u060A\x07v\x02\x02\u060A\u060B\x07k\x02\x02", "\u060B\u061C\x07e\x02\x02\u060C\u060D\x07u\x02\x02\u060D", "\u060E\x07y\x02\x02\u060E\u060F\x07k\x02\x02\u060F\u0610", "\x07v\x02\x02\u0610\u0611\x07e\x02\x02\u0611\u061C\x07", "j\x02\x02\u0612\u0613\x07v\x02\x02\u0613\u0614\x07t\x02", "\x02\u0614\u061C\x07{\x02\x02\u0615\u0616\x07v\x02\x02", "\u0616\u0617\x07{\x02\x02\u0617\u0618\x07r\x02\x02\u0618", "\u0619\x07g\x02\x02\u0619\u061A\x07q\x02\x02\u061A\u061C", "\x07h\x02\x02\u061B\u05C3\x03\x02\x02\x02\u061B\u05CB", "\x03\x02\x02\x02\u061B\u05D0\x03\x02\x02\x02\u061B\u05D4", "\x03\x02\x02\x02\u061B\u05D9\x03\x02\x02\x02\u061B\u05E0", "\x03\x02\x02\x02\u061B\u05E5\x03\x02\x02\x02\u061B\u05E7", "\x03\x02\x02\x02\u061B\u05ED\x03\x02\x02\x02\u061B\u05F0", "\x03\x02\x02\x02\u061B\u05F5\x03\x02\x02\x02\u061B\u05F9", "\x03\x02\x02\x02\u061B\u05FB\x03\x02\x02\x02\u061B\u0606", "\x03\x02\x02\x02\u061B\u060C\x03\x02\x02\x02\u061B\u0612", "\x03\x02\x02\x02\u061B\u0615\x03\x02\x02\x02\u061C\xDA", "\x03\x02\x02\x02\u061D\u061E\x07c\x02\x02\u061E\u061F", "\x07p\x02\x02\u061F\u0620\x07q\x02\x02\u0620\u0621\x07", "p\x02\x02\u0621\u0622\x07{\x02\x02\u0622\u0623\x07o\x02", "\x02\u0623\u0624\x07q\x02\x02\u0624\u0625\x07w\x02\x02", "\u0625\u0626\x07u\x02\x02\u0626\xDC\x03\x02\x02\x02", "\u0627\u0628\x07d\x02\x02\u0628\u0629\x07t\x02\x02\u0629", "\u062A\x07g\x02\x02\u062A\u062B\x07c\x02\x02\u062B\u062C", "\x07m\x02\x02\u062C\xDE\x03\x02\x02\x02\u062D\u062E", "\x07e\x02\x02\u062E\u062F\x07q\x02\x02\u062F\u0630\x07", "p\x02\x02\u0630\u0631\x07u\x02\x02\u0631\u0632\x07v\x02", "\x02\u0632\u0633\x07c\x02\x02\u0633\u0634\x07p\x02\x02", "\u0634\u0635\x07v\x02\x02\u0635\xE0\x03\x02\x02\x02", "\u0636\u0637\x07e\x02\x02\u0637\u0638\x07q\x02\x02\u0638", "\u0639\x07p\x02\x02\u0639\u063A\x07v\x02\x02\u063A\u063B", "\x07k\x02\x02\u063B\u063C\x07p\x02\x02\u063C\u063D\x07", "w\x02\x02\u063D\u063E\x07g\x02\x02\u063E\xE2\x03\x02", "\x02\x02\u063F\u0640\x07n\x02\x02\u0640\u0641\x07g\x02", "\x02\u0641\u0642\x07c\x02\x02\u0642\u0643\x07x\x02\x02", "\u0643\u0644\x07g\x02\x02\u0644\xE4\x03\x02\x02\x02", "\u0645\u0646\x07g\x02\x02\u0646\u0647\x07z\x02\x02\u0647", "\u0648\x07v\x02\x02\u0648\u0649\x07g\x02\x02\u0649\u064A", "\x07t\x02\x02\u064A\u064B\x07p\x02\x02\u064B\u064C\x07", "c\x02\x02\u064C\u064D\x07n\x02\x02\u064D\xE6\x03\x02", "\x02\x02\u064E\u064F\x07k\x02\x02\u064F\u0650\x07p\x02", "\x02\u0650\u0651\x07f\x02\x02\u0651\u0652\x07g\x02\x02", "\u0652\u0653\x07z\x02\x02\u0653\u0654\x07g\x02\x02\u0654", "\u0655\x07f\x02\x02\u0655\xE8\x03\x02\x02\x02\u0656", "\u0657\x07k\x02\x02\u0657\u0658\x07p\x02\x02\u0658\u0659", "\x07v\x02\x02\u0659\u065A\x07g\x02\x02\u065A\u065B\x07", "t\x02\x02\u065B\u065C\x07p\x02\x02\u065C\u065D\x07c\x02", "\x02\u065D\u065E\x07n\x02\x02\u065E\xEA\x03\x02\x02", "\x02\u065F\u0660\x07r\x02\x02\u0660\u0661\x07c\x02\x02", "\u0661\u0662\x07{\x02\x02\u0662\u0663\x07c\x02\x02\u0663", "\u0664\x07d\x02\x02\u0664\u0665\x07n\x02\x02\u0665\u0666", "\x07g\x02\x02\u0666\xEC\x03\x02\x02\x02\u0667\u0668", "\x07r\x02\x02\u0668\u0669\x07t\x02\x02\u0669\u066A\x07", "k\x02\x02\u066A\u066B\x07x\x02\x02\u066B\u066C\x07c\x02", "\x02\u066C\u066D\x07v\x02\x02\u066D\u066E\x07g\x02\x02", "\u066E\xEE\x03\x02\x02\x02\u066F\u0670\x07r\x02\x02", "\u0670\u0671\x07w\x02\x02\u0671\u0672\x07d\x02\x02\u0672", "\u0673\x07n\x02\x02\u0673\u0674\x07k\x02\x02\u0674\u0675", "\x07e\x02\x02\u0675\xF0\x03\x02\x02\x02\u0676\u0677", "\x07x\x02\x02\u0677\u0678\x07k\x02\x02\u0678\u0679\x07", "t\x02\x02\u0679\u067A\x07v\x02\x02\u067A\u067B\x07w\x02", "\x02\u067B\u067C\x07c\x02\x02\u067C\u067D\x07n\x02\x02", "\u067D\xF2\x03\x02\x02\x02\u067E\u067F\x07r\x02\x02", "\u067F\u0680\x07w\x02\x02\u0680\u0681\x07t\x02\x02\u0681", "\u0682\x07g\x02\x02\u0682\xF4\x03\x02\x02\x02\u0683", "\u0684\x07v\x02\x02\u0684\u0685\x07{\x02\x02\u0685\u0686", "\x07r\x02\x02\u0686\u0687\x07g\x02\x02\u0687\xF6\x03", "\x02\x02\x02\u0688\u0689\x07x\x02\x02\u0689\u068A\x07", "k\x02\x02\u068A\u068B\x07g\x02\x02\u068B\u068C\x07y\x02", "\x02\u068C\xF8\x03\x02\x02\x02\u068D\u068E\x07e\x02", "\x02\u068E\u068F\x07q\x02\x02\u068F\u0690\x07p\x02\x02", "\u0690\u0691\x07u\x02\x02\u0691\u0692\x07v\x02\x02\u0692", "\u0693\x07t\x02\x02\u0693\u0694\x07w\x02\x02\u0694\u0695", "\x07e\x02\x02\u0695\u0696\x07v\x02\x02\u0696\u0697\x07", "q\x02\x02\u0697\u0698\x07t\x02\x02\u0698\xFA\x03\x02", "\x02\x02\u0699\u069A\x07h\x02\x02\u069A\u069B\x07c\x02", "\x02\u069B\u069C\x07n\x02\x02\u069C\u069D\x07n\x02\x02", "\u069D\u069E\x07d\x02\x02\u069E\u069F\x07c\x02\x02\u069F", "\u06A0\x07e\x02\x02\u06A0\u06A1\x07m\x02\x02\u06A1\xFC", "\x03\x02\x02\x02\u06A2\u06A3\x07t\x02\x02\u06A3\u06A4", "\x07g\x02\x02\u06A4\u06A5\x07e\x02\x02\u06A5\u06A6\x07", "g\x02\x02\u06A6\u06A7\x07k\x02\x02\u06A7\u06A8\x07x\x02", "\x02\u06A8\u06A9\x07g\x02\x02\u06A9\xFE\x03\x02\x02", "\x02\u06AA\u06AE\x05\u0101\x81\x02\u06AB\u06AD\x05\u0103\x82", "\x02\u06AC\u06AB\x03\x02\x02\x02\u06AD\u06B0\x03\x02\x02", "\x02\u06AE\u06AC\x03\x02\x02\x02\u06AE\u06AF\x03\x02\x02", "\x02\u06AF\u0100\x03\x02\x02\x02\u06B0\u06AE\x03\x02\x02", "\x02\u06B1\u06B2\t\x06\x02\x02\u06B2\u0102\x03\x02\x02", "\x02\u06B3\u06B4\t\x07\x02\x02\u06B4\u0104\x03\x02\x02", "\x02\u06B5\u06B9\x07$\x02\x02\u06B6\u06B8\x05\u0107\x84", "\x02\u06B7\u06B6\x03\x02\x02\x02\u06B8\u06BB\x03\x02\x02", "\x02\u06B9\u06B7\x03\x02\x02\x02\u06B9\u06BA\x03\x02\x02", "\x02\u06BA\u06BC\x03\x02\x02\x02\u06BB\u06B9\x03\x02\x02", "\x02\u06BC\u06C6\x07$\x02\x02\u06BD\u06C1\x07)\x02\x02", "\u06BE\u06C0\x05\u0109\x85\x02\u06BF\u06BE\x03\x02\x02\x02", "\u06C0\u06C3\x03\x02\x02\x02\u06C1\u06BF\x03\x02\x02\x02", "\u06C1\u06C2\x03\x02\x02\x02\u06C2\u06C4\x03\x02\x02\x02", "\u06C3\u06C1\x03\x02\x02\x02\u06C4\u06C6\x07)\x02\x02", "\u06C5\u06B5\x03\x02\x02\x02\u06C5\u06BD\x03\x02\x02\x02", "\u06C6\u0106\x03\x02\x02\x02\u06C7\u06CB\n\b\x02\x02\u06C8", "\u06C9\x07^\x02\x02\u06C9\u06CB\x0B\x02\x02\x02\u06CA", "\u06C7\x03\x02\x02\x02\u06CA\u06C8\x03\x02\x02\x02\u06CB", "\u0108\x03\x02\x02\x02\u06CC\u06D0\n\t\x02\x02\u06CD\u06CE", "\x07^\x02\x02\u06CE\u06D0\x0B\x02\x02\x02\u06CF\u06CC", "\x03\x02\x02\x02\u06CF\u06CD\x03\x02\x02\x02\u06D0\u010A", "\x03\x02\x02\x02\u06D1\u06D3\t\x02\x02\x02\u06D2\u06D1", "\x03\x02\x02\x02\u06D3\u06D4\x03\x02\x02\x02\u06D4\u06D2", "\x03\x02\x02\x02\u06D4\u06D5\x03\x02\x02\x02\u06D5\u06D6", "\x03\x02\x02\x02\u06D6\u06D8\x070\x02\x02\u06D7\u06D9", "\t\x02\x02\x02\u06D8\u06D7\x03\x02\x02\x02\u06D9\u06DA", "\x03\x02\x02\x02\u06DA\u06D8\x03\x02\x02\x02\u06DA\u06DB", "\x03\x02\x02\x02\u06DB\u06E2\x03\x02\x02\x02\u06DC\u06DE", "\x070\x02\x02\u06DD\u06DF\t\x02\x02\x02\u06DE\u06DD\x03", "\x02\x02\x02\u06DF\u06E0\x03\x02\x02\x02\u06E0\u06DE\x03", "\x02\x02\x02\u06E0\u06E1\x03\x02\x02\x02\u06E1\u06E3\x03", "\x02\x02\x02\u06E2\u06DC\x03\x02\x02\x02\u06E2\u06E3\x03", "\x02\x02\x02\u06E3\u010C\x03\x02\x02\x02\u06E4\u06E6\t", "\n\x02\x02\u06E5\u06E4\x03\x02\x02\x02\u06E6\u06E7\x03", "\x02\x02\x02\u06E7\u06E5\x03\x02\x02\x02\u06E7\u06E8\x03", "\x02\x02\x02\u06E8\u06E9\x03\x02\x02\x02\u06E9\u06EA\b", "\x87\x02\x02\u06EA\u010E\x03\x02\x02\x02\u06EB\u06EC\x07", "1\x02\x02\u06EC\u06ED\x07,\x02\x02\u06ED\u06F1\x03\x02", "\x02\x02\u06EE\u06F0\x0B\x02\x02\x02\u06EF\u06EE\x03\x02", "\x02\x02\u06F0\u06F3\x03\x02\x02\x02\u06F1\u06F2\x03\x02", "\x02\x02\u06F1\u06EF\x03\x02\x02\x02\u06F2\u06F4\x03\x02", "\x02\x02\u06F3\u06F1\x03\x02\x02\x02\u06F4\u06F5\x07,", "\x02\x02\u06F5\u06F6\x071\x02\x02\u06F6\u06F7\x03\x02", "\x02\x02\u06F7\u06F8\b\x88\x03\x02\u06F8\u0110\x03\x02", "\x02\x02\u06F9\u06FA\x071\x02\x02\u06FA\u06FB\x071\x02", "\x02\u06FB\u06FF\x03\x02\x02\x02\u06FC\u06FE\n\x0B\x02", "\x02\u06FD\u06FC\x03\x02\x02\x02\u06FE\u0701\x03\x02\x02", "\x02\u06FF\u06FD\x03\x02\x02\x02\u06FF\u0700\x03\x02\x02", "\x02\u0700\u0702\x03\x02\x02\x02\u0701\u06FF\x03\x02\x02", "\x02\u0702\u0703\b\x89\x03\x02\u0703\u0112\x03\x02\x02", "\x02&\x02\u035E\u0437\u0515\u0525\u052B\u052D\u053F\u0545\u0547", "\u0552\u0556\u055A\u055E\u0562\u0567\u0570\u0575\u05AC\u05B4\u05B9\u05BC", "\u061B\u06AE\u06B9\u06C1\u06C5\u06CA\u06CF\u06D4\u06DA\u06E0\u06E2\u06E7", "\u06F1\u06FF\x04\b\x02\x02\x02\x03\x02"].join("");
 var atn = new antlr4.atn.ATNDeserializer().deserialize(serializedATN);
 var decisionsToDFA = atn.decisionToState.map(function (ds, index) {
   return new antlr4.dfa.DFA(ds, index);
@@ -51198,50 +50953,58 @@ SolidityLexer.T__86 = 87;
 SolidityLexer.T__87 = 88;
 SolidityLexer.T__88 = 89;
 SolidityLexer.T__89 = 90;
-SolidityLexer.Int = 91;
-SolidityLexer.Uint = 92;
-SolidityLexer.Byte = 93;
-SolidityLexer.Fixed = 94;
-SolidityLexer.Ufixed = 95;
-SolidityLexer.VersionLiteral = 96;
-SolidityLexer.BooleanLiteral = 97;
-SolidityLexer.DecimalNumber = 98;
-SolidityLexer.HexNumber = 99;
-SolidityLexer.NumberUnit = 100;
-SolidityLexer.HexLiteral = 101;
-SolidityLexer.ReservedKeyword = 102;
-SolidityLexer.AnonymousKeyword = 103;
-SolidityLexer.BreakKeyword = 104;
-SolidityLexer.ConstantKeyword = 105;
-SolidityLexer.ContinueKeyword = 106;
-SolidityLexer.ExternalKeyword = 107;
-SolidityLexer.IndexedKeyword = 108;
-SolidityLexer.InternalKeyword = 109;
-SolidityLexer.PayableKeyword = 110;
-SolidityLexer.PrivateKeyword = 111;
-SolidityLexer.PublicKeyword = 112;
-SolidityLexer.PureKeyword = 113;
-SolidityLexer.TypeKeyword = 114;
-SolidityLexer.ViewKeyword = 115;
-SolidityLexer.Identifier = 116;
-SolidityLexer.StringLiteral = 117;
-SolidityLexer.WS = 118;
-SolidityLexer.COMMENT = 119;
-SolidityLexer.LINE_COMMENT = 120;
+SolidityLexer.T__90 = 91;
+SolidityLexer.T__91 = 92;
+SolidityLexer.T__92 = 93;
+SolidityLexer.Int = 94;
+SolidityLexer.Uint = 95;
+SolidityLexer.Byte = 96;
+SolidityLexer.Fixed = 97;
+SolidityLexer.Ufixed = 98;
+SolidityLexer.BooleanLiteral = 99;
+SolidityLexer.DecimalNumber = 100;
+SolidityLexer.HexNumber = 101;
+SolidityLexer.NumberUnit = 102;
+SolidityLexer.HexLiteral = 103;
+SolidityLexer.ReservedKeyword = 104;
+SolidityLexer.AnonymousKeyword = 105;
+SolidityLexer.BreakKeyword = 106;
+SolidityLexer.ConstantKeyword = 107;
+SolidityLexer.ContinueKeyword = 108;
+SolidityLexer.LeaveKeyword = 109;
+SolidityLexer.ExternalKeyword = 110;
+SolidityLexer.IndexedKeyword = 111;
+SolidityLexer.InternalKeyword = 112;
+SolidityLexer.PayableKeyword = 113;
+SolidityLexer.PrivateKeyword = 114;
+SolidityLexer.PublicKeyword = 115;
+SolidityLexer.VirtualKeyword = 116;
+SolidityLexer.PureKeyword = 117;
+SolidityLexer.TypeKeyword = 118;
+SolidityLexer.ViewKeyword = 119;
+SolidityLexer.ConstructorKeyword = 120;
+SolidityLexer.FallbackKeyword = 121;
+SolidityLexer.ReceiveKeyword = 122;
+SolidityLexer.Identifier = 123;
+SolidityLexer.StringLiteralFragment = 124;
+SolidityLexer.VersionLiteral = 125;
+SolidityLexer.WS = 126;
+SolidityLexer.COMMENT = 127;
+SolidityLexer.LINE_COMMENT = 128;
 SolidityLexer.prototype.channelNames = ["DEFAULT_TOKEN_CHANNEL", "HIDDEN"];
 SolidityLexer.prototype.modeNames = ["DEFAULT_MODE"];
-SolidityLexer.prototype.literalNames = [null, "'pragma'", "';'", "'^'", "'~'", "'>='", "'>'", "'<'", "'<='", "'='", "'as'", "'import'", "'*'", "'from'", "'{'", "','", "'}'", "'contract'", "'interface'", "'library'", "'is'", "'('", "')'", "'using'", "'for'", "'struct'", "'constructor'", "'modifier'", "'function'", "'returns'", "'event'", "'enum'", "'['", "']'", "'address'", "'.'", "'mapping'", "'=>'", "'memory'", "'storage'", "'calldata'", "'if'", "'else'", "'while'", "'assembly'", "'do'", "'return'", "'throw'", "'emit'", "'var'", "'bool'", "'string'", "'byte'", "'++'", "'--'", "'new'", "'+'", "'-'", "'after'", "'delete'", "'!'", "'**'", "'/'", "'%'", "'<<'", "'>>'", "'&'", "'|'", "'=='", "'!='", "'&&'", "'||'", "'?'", "':'", "'|='", "'^='", "'&='", "'<<='", "'>>='", "'+='", "'-='", "'*='", "'/='", "'%='", "'let'", "':='", "'=:'", "'switch'", "'case'", "'default'", "'->'", null, null, null, null, null, null, null, null, null, null, null, null, "'anonymous'", "'break'", "'constant'", "'continue'", "'external'", "'indexed'", "'internal'", "'payable'", "'private'", "'public'", "'pure'", "'type'", "'view'"];
-SolidityLexer.prototype.symbolicNames = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, "Int", "Uint", "Byte", "Fixed", "Ufixed", "VersionLiteral", "BooleanLiteral", "DecimalNumber", "HexNumber", "NumberUnit", "HexLiteral", "ReservedKeyword", "AnonymousKeyword", "BreakKeyword", "ConstantKeyword", "ContinueKeyword", "ExternalKeyword", "IndexedKeyword", "InternalKeyword", "PayableKeyword", "PrivateKeyword", "PublicKeyword", "PureKeyword", "TypeKeyword", "ViewKeyword", "Identifier", "StringLiteral", "WS", "COMMENT", "LINE_COMMENT"];
-SolidityLexer.prototype.ruleNames = ["T__0", "T__1", "T__2", "T__3", "T__4", "T__5", "T__6", "T__7", "T__8", "T__9", "T__10", "T__11", "T__12", "T__13", "T__14", "T__15", "T__16", "T__17", "T__18", "T__19", "T__20", "T__21", "T__22", "T__23", "T__24", "T__25", "T__26", "T__27", "T__28", "T__29", "T__30", "T__31", "T__32", "T__33", "T__34", "T__35", "T__36", "T__37", "T__38", "T__39", "T__40", "T__41", "T__42", "T__43", "T__44", "T__45", "T__46", "T__47", "T__48", "T__49", "T__50", "T__51", "T__52", "T__53", "T__54", "T__55", "T__56", "T__57", "T__58", "T__59", "T__60", "T__61", "T__62", "T__63", "T__64", "T__65", "T__66", "T__67", "T__68", "T__69", "T__70", "T__71", "T__72", "T__73", "T__74", "T__75", "T__76", "T__77", "T__78", "T__79", "T__80", "T__81", "T__82", "T__83", "T__84", "T__85", "T__86", "T__87", "T__88", "T__89", "Int", "Uint", "Byte", "Fixed", "Ufixed", "VersionLiteral", "BooleanLiteral", "DecimalNumber", "DecimalDigits", "HexNumber", "HexDigits", "NumberUnit", "HexLiteral", "HexPair", "HexCharacter", "ReservedKeyword", "AnonymousKeyword", "BreakKeyword", "ConstantKeyword", "ContinueKeyword", "ExternalKeyword", "IndexedKeyword", "InternalKeyword", "PayableKeyword", "PrivateKeyword", "PublicKeyword", "PureKeyword", "TypeKeyword", "ViewKeyword", "Identifier", "IdentifierStart", "IdentifierPart", "StringLiteral", "DoubleQuotedStringCharacter", "SingleQuotedStringCharacter", "WS", "COMMENT", "LINE_COMMENT"];
+SolidityLexer.prototype.literalNames = [null, "'pragma'", "';'", "'^'", "'~'", "'>='", "'>'", "'<'", "'<='", "'='", "'as'", "'import'", "'*'", "'from'", "'{'", "','", "'}'", "'abstract'", "'contract'", "'interface'", "'library'", "'is'", "'('", "')'", "'using'", "'for'", "'struct'", "'modifier'", "'function'", "'returns'", "'event'", "'enum'", "'['", "']'", "'address'", "'.'", "'mapping'", "'=>'", "'memory'", "'storage'", "'calldata'", "'if'", "'else'", "'try'", "'catch'", "'while'", "'assembly'", "'do'", "'return'", "'throw'", "'emit'", "'var'", "'bool'", "'string'", "'byte'", "'++'", "'--'", "'new'", "':'", "'+'", "'-'", "'after'", "'delete'", "'!'", "'**'", "'/'", "'%'", "'<<'", "'>>'", "'&'", "'|'", "'=='", "'!='", "'&&'", "'||'", "'?'", "'|='", "'^='", "'&='", "'<<='", "'>>='", "'+='", "'-='", "'*='", "'/='", "'%='", "'let'", "':='", "'=:'", "'switch'", "'case'", "'default'", "'->'", "'override'", null, null, null, null, null, null, null, null, null, null, null, "'anonymous'", "'break'", "'constant'", "'continue'", "'leave'", "'external'", "'indexed'", "'internal'", "'payable'", "'private'", "'public'", "'virtual'", "'pure'", "'type'", "'view'", "'constructor'", "'fallback'", "'receive'"];
+SolidityLexer.prototype.symbolicNames = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, "Int", "Uint", "Byte", "Fixed", "Ufixed", "BooleanLiteral", "DecimalNumber", "HexNumber", "NumberUnit", "HexLiteral", "ReservedKeyword", "AnonymousKeyword", "BreakKeyword", "ConstantKeyword", "ContinueKeyword", "LeaveKeyword", "ExternalKeyword", "IndexedKeyword", "InternalKeyword", "PayableKeyword", "PrivateKeyword", "PublicKeyword", "VirtualKeyword", "PureKeyword", "TypeKeyword", "ViewKeyword", "ConstructorKeyword", "FallbackKeyword", "ReceiveKeyword", "Identifier", "StringLiteralFragment", "VersionLiteral", "WS", "COMMENT", "LINE_COMMENT"];
+SolidityLexer.prototype.ruleNames = ["T__0", "T__1", "T__2", "T__3", "T__4", "T__5", "T__6", "T__7", "T__8", "T__9", "T__10", "T__11", "T__12", "T__13", "T__14", "T__15", "T__16", "T__17", "T__18", "T__19", "T__20", "T__21", "T__22", "T__23", "T__24", "T__25", "T__26", "T__27", "T__28", "T__29", "T__30", "T__31", "T__32", "T__33", "T__34", "T__35", "T__36", "T__37", "T__38", "T__39", "T__40", "T__41", "T__42", "T__43", "T__44", "T__45", "T__46", "T__47", "T__48", "T__49", "T__50", "T__51", "T__52", "T__53", "T__54", "T__55", "T__56", "T__57", "T__58", "T__59", "T__60", "T__61", "T__62", "T__63", "T__64", "T__65", "T__66", "T__67", "T__68", "T__69", "T__70", "T__71", "T__72", "T__73", "T__74", "T__75", "T__76", "T__77", "T__78", "T__79", "T__80", "T__81", "T__82", "T__83", "T__84", "T__85", "T__86", "T__87", "T__88", "T__89", "T__90", "T__91", "T__92", "Int", "Uint", "Byte", "Fixed", "Ufixed", "BooleanLiteral", "DecimalNumber", "DecimalDigits", "HexNumber", "HexDigits", "NumberUnit", "HexLiteral", "HexPair", "HexCharacter", "ReservedKeyword", "AnonymousKeyword", "BreakKeyword", "ConstantKeyword", "ContinueKeyword", "LeaveKeyword", "ExternalKeyword", "IndexedKeyword", "InternalKeyword", "PayableKeyword", "PrivateKeyword", "PublicKeyword", "VirtualKeyword", "PureKeyword", "TypeKeyword", "ViewKeyword", "ConstructorKeyword", "FallbackKeyword", "ReceiveKeyword", "Identifier", "IdentifierStart", "IdentifierPart", "StringLiteralFragment", "DoubleQuotedStringCharacter", "SingleQuotedStringCharacter", "VersionLiteral", "WS", "COMMENT", "LINE_COMMENT"];
 SolidityLexer.prototype.grammarFileName = "Solidity.g4";
 exports.SolidityLexer = SolidityLexer;
 
 /***/ }),
 
-/***/ "./node_modules/solidity-parser-antlr/dist/lib/SolidityListener.js":
-/*!*************************************************************************!*\
-  !*** ./node_modules/solidity-parser-antlr/dist/lib/SolidityListener.js ***!
-  \*************************************************************************/
+/***/ "./node_modules/solidity-parser-diligence/dist/lib/SolidityListener.js":
+/*!*****************************************************************************!*\
+  !*** ./node_modules/solidity-parser-diligence/dist/lib/SolidityListener.js ***!
+  \*****************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -51249,7 +51012,7 @@ exports.SolidityLexer = SolidityLexer;
  // Generated from solidity-antlr4/Solidity.g4 by ANTLR 4.7.2
 // jshint ignore: start
 
-var antlr4 = __webpack_require__(/*! ../antlr4/index */ "./node_modules/solidity-parser-antlr/dist/antlr4/index.js"); // This class defines a complete listener for a parse tree produced by SolidityParser.
+var antlr4 = __webpack_require__(/*! ../antlr4/index */ "./node_modules/solidity-parser-diligence/dist/antlr4/index.js"); // This class defines a complete listener for a parse tree produced by SolidityParser.
 
 
 function SolidityListener() {
@@ -51347,13 +51110,7 @@ SolidityListener.prototype.exitUsingForDeclaration = function (ctx) {}; // Enter
 SolidityListener.prototype.enterStructDefinition = function (ctx) {}; // Exit a parse tree produced by SolidityParser#structDefinition.
 
 
-SolidityListener.prototype.exitStructDefinition = function (ctx) {}; // Enter a parse tree produced by SolidityParser#constructorDefinition.
-
-
-SolidityListener.prototype.enterConstructorDefinition = function (ctx) {}; // Exit a parse tree produced by SolidityParser#constructorDefinition.
-
-
-SolidityListener.prototype.exitConstructorDefinition = function (ctx) {}; // Enter a parse tree produced by SolidityParser#modifierDefinition.
+SolidityListener.prototype.exitStructDefinition = function (ctx) {}; // Enter a parse tree produced by SolidityParser#modifierDefinition.
 
 
 SolidityListener.prototype.enterModifierDefinition = function (ctx) {}; // Exit a parse tree produced by SolidityParser#modifierDefinition.
@@ -51371,7 +51128,13 @@ SolidityListener.prototype.exitModifierInvocation = function (ctx) {}; // Enter 
 SolidityListener.prototype.enterFunctionDefinition = function (ctx) {}; // Exit a parse tree produced by SolidityParser#functionDefinition.
 
 
-SolidityListener.prototype.exitFunctionDefinition = function (ctx) {}; // Enter a parse tree produced by SolidityParser#returnParameters.
+SolidityListener.prototype.exitFunctionDefinition = function (ctx) {}; // Enter a parse tree produced by SolidityParser#functionDescriptor.
+
+
+SolidityListener.prototype.enterFunctionDescriptor = function (ctx) {}; // Exit a parse tree produced by SolidityParser#functionDescriptor.
+
+
+SolidityListener.prototype.exitFunctionDescriptor = function (ctx) {}; // Enter a parse tree produced by SolidityParser#returnParameters.
 
 
 SolidityListener.prototype.enterReturnParameters = function (ctx) {}; // Exit a parse tree produced by SolidityParser#returnParameters.
@@ -51503,7 +51266,19 @@ SolidityListener.prototype.exitExpressionStatement = function (ctx) {}; // Enter
 SolidityListener.prototype.enterIfStatement = function (ctx) {}; // Exit a parse tree produced by SolidityParser#ifStatement.
 
 
-SolidityListener.prototype.exitIfStatement = function (ctx) {}; // Enter a parse tree produced by SolidityParser#whileStatement.
+SolidityListener.prototype.exitIfStatement = function (ctx) {}; // Enter a parse tree produced by SolidityParser#tryStatement.
+
+
+SolidityListener.prototype.enterTryStatement = function (ctx) {}; // Exit a parse tree produced by SolidityParser#tryStatement.
+
+
+SolidityListener.prototype.exitTryStatement = function (ctx) {}; // Enter a parse tree produced by SolidityParser#catchClause.
+
+
+SolidityListener.prototype.enterCatchClause = function (ctx) {}; // Exit a parse tree produced by SolidityParser#catchClause.
+
+
+SolidityListener.prototype.exitCatchClause = function (ctx) {}; // Enter a parse tree produced by SolidityParser#whileStatement.
 
 
 SolidityListener.prototype.enterWhileStatement = function (ctx) {}; // Exit a parse tree produced by SolidityParser#whileStatement.
@@ -51743,13 +51518,13 @@ SolidityListener.prototype.exitSubAssembly = function (ctx) {}; // Enter a parse
 SolidityListener.prototype.enterTupleExpression = function (ctx) {}; // Exit a parse tree produced by SolidityParser#tupleExpression.
 
 
-SolidityListener.prototype.exitTupleExpression = function (ctx) {}; // Enter a parse tree produced by SolidityParser#elementaryTypeNameExpression.
+SolidityListener.prototype.exitTupleExpression = function (ctx) {}; // Enter a parse tree produced by SolidityParser#typeNameExpression.
 
 
-SolidityListener.prototype.enterElementaryTypeNameExpression = function (ctx) {}; // Exit a parse tree produced by SolidityParser#elementaryTypeNameExpression.
+SolidityListener.prototype.enterTypeNameExpression = function (ctx) {}; // Exit a parse tree produced by SolidityParser#typeNameExpression.
 
 
-SolidityListener.prototype.exitElementaryTypeNameExpression = function (ctx) {}; // Enter a parse tree produced by SolidityParser#numberLiteral.
+SolidityListener.prototype.exitTypeNameExpression = function (ctx) {}; // Enter a parse tree produced by SolidityParser#numberLiteral.
 
 
 SolidityListener.prototype.enterNumberLiteral = function (ctx) {}; // Exit a parse tree produced by SolidityParser#numberLiteral.
@@ -51761,16 +51536,28 @@ SolidityListener.prototype.exitNumberLiteral = function (ctx) {}; // Enter a par
 SolidityListener.prototype.enterIdentifier = function (ctx) {}; // Exit a parse tree produced by SolidityParser#identifier.
 
 
-SolidityListener.prototype.exitIdentifier = function (ctx) {};
+SolidityListener.prototype.exitIdentifier = function (ctx) {}; // Enter a parse tree produced by SolidityParser#overrideSpecifier.
+
+
+SolidityListener.prototype.enterOverrideSpecifier = function (ctx) {}; // Exit a parse tree produced by SolidityParser#overrideSpecifier.
+
+
+SolidityListener.prototype.exitOverrideSpecifier = function (ctx) {}; // Enter a parse tree produced by SolidityParser#stringLiteral.
+
+
+SolidityListener.prototype.enterStringLiteral = function (ctx) {}; // Exit a parse tree produced by SolidityParser#stringLiteral.
+
+
+SolidityListener.prototype.exitStringLiteral = function (ctx) {};
 
 exports.SolidityListener = SolidityListener;
 
 /***/ }),
 
-/***/ "./node_modules/solidity-parser-antlr/dist/lib/SolidityParser.js":
-/*!***********************************************************************!*\
-  !*** ./node_modules/solidity-parser-antlr/dist/lib/SolidityParser.js ***!
-  \***********************************************************************/
+/***/ "./node_modules/solidity-parser-diligence/dist/lib/SolidityParser.js":
+/*!***************************************************************************!*\
+  !*** ./node_modules/solidity-parser-diligence/dist/lib/SolidityParser.js ***!
+  \***************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -51778,20 +51565,20 @@ exports.SolidityListener = SolidityListener;
  // Generated from solidity-antlr4/Solidity.g4 by ANTLR 4.7.2
 // jshint ignore: start
 
-var antlr4 = __webpack_require__(/*! ../antlr4/index */ "./node_modules/solidity-parser-antlr/dist/antlr4/index.js");
+var antlr4 = __webpack_require__(/*! ../antlr4/index */ "./node_modules/solidity-parser-diligence/dist/antlr4/index.js");
 
-var SolidityListener = __webpack_require__(/*! ./SolidityListener */ "./node_modules/solidity-parser-antlr/dist/lib/SolidityListener.js").SolidityListener;
+var SolidityListener = __webpack_require__(/*! ./SolidityListener */ "./node_modules/solidity-parser-diligence/dist/lib/SolidityListener.js").SolidityListener;
 
 var grammarFileName = "Solidity.g4";
-var serializedATN = ['\x03\u608B\uA72A\u8133\uB9ED\u417C\u3BE7\u7786\u5964', '\x03z\u03C0\x04\x02\t\x02\x04\x03\t\x03\x04\x04\t', '\x04\x04\x05\t\x05\x04\x06\t\x06\x04\x07\t\x07\x04', '\b\t\b\x04\t\t\t\x04\n\t\n\x04\x0B\t\x0B\x04\f\t\f\x04', '\r\t\r\x04\x0E\t\x0E\x04\x0F\t\x0F\x04\x10\t\x10\x04', '\x11\t\x11\x04\x12\t\x12\x04\x13\t\x13\x04\x14\t', '\x14\x04\x15\t\x15\x04\x16\t\x16\x04\x17\t\x17\x04', '\x18\t\x18\x04\x19\t\x19\x04\x1A\t\x1A\x04\x1B\t', '\x1B\x04\x1C\t\x1C\x04\x1D\t\x1D\x04\x1E\t\x1E\x04', '\x1F\t\x1F\x04 \t \x04!\t!\x04"\t"\x04#\t#\x04$\t$\x04', '%\t%\x04&\t&\x04\'\t\'\x04(\t(\x04)\t)\x04*\t*\x04+\t+\x04', ',\t,\x04-\t-\x04.\t.\x04/\t/\x040\t0\x041\t1\x042\t2\x04', '3\t3\x044\t4\x045\t5\x046\t6\x047\t7\x048\t8\x049\t9\x04', ':\t:\x04;\t;\x04<\t<\x04=\t=\x04>\t>\x04?\t?\x04@\t@\x04', 'A\tA\x04B\tB\x04C\tC\x04D\tD\x04E\tE\x04F\tF\x04G\tG\x04', 'H\tH\x04I\tI\x04J\tJ\x04K\tK\x04L\tL\x04M\tM\x04N\tN\x04', 'O\tO\x04P\tP\x04Q\tQ\x04R\tR\x04S\tS\x04T\tT\x04U\tU\x03', '\x02\x03\x02\x03\x02\x07\x02\xAE\n\x02\f\x02\x0E', '\x02\xB1\x0B\x02\x03\x02\x03\x02\x03\x03\x03\x03', '\x03\x03\x03\x03\x03\x03\x03\x04\x03\x04\x03\x05', '\x03\x05\x05\x05\xBE\n\x05\x03\x06\x03\x06\x05', '\x06\xC2\n\x06\x03\x07\x03\x07\x03\b\x05\b\xC7\n', '\b\x03\b\x03\b\x03\t\x03\t\x03\t\x05\t\xCE\n\t\x03\n', '\x03\n\x03\n\x03\n\x05\n\xD4\n\n\x03\n\x03\n\x03\n\x03', '\n\x05\n\xDA\n\n\x03\n\x03\n\x05\n\xDE\n\n\x03\n\x03', '\n\x03\n\x03\n\x03\n\x03\n\x03\n\x03\n\x07\n\xE8\n\n', '\f\n\x0E\n\xEB\x0B\n\x03\n\x03\n\x03\n\x03\n\x03\n\x05', '\n\xF2\n\n\x03\x0B\x03\x0B\x03\x0B\x03\x0B\x03\x0B', '\x03\x0B\x07\x0B\xFA\n\x0B\f\x0B\x0E\x0B\xFD\x0B', '\x0B\x05\x0B\xFF\n\x0B\x03\x0B\x03\x0B\x07\x0B', '\u0103\n\x0B\f\x0B\x0E\x0B\u0106\x0B\x0B\x03\x0B\x03', '\x0B\x03\f\x03\f\x03\f\x05\f\u010D\n\f\x03\f\x05\f\u0110', '\n\f\x03\r\x03\r\x03\r\x03\r\x03\r\x03\r\x03\r\x03\r', '\x05\r\u011A\n\r\x03\x0E\x03\x0E\x07\x0E\u011E\n\x0E', '\f\x0E\x0E\x0E\u0121\x0B\x0E\x03\x0E\x03\x0E\x03', '\x0E\x05\x0E\u0126\n\x0E\x03\x0E\x03\x0E\x03\x0F', '\x03\x0F\x03\x0F\x03\x0F\x03\x0F\x05\x0F\u012F\n', '\x0F\x03\x0F\x03\x0F\x03\x10\x03\x10\x03\x10\x03', '\x10\x03\x10\x03\x10\x03\x10\x03\x10\x07\x10\u013B', '\n\x10\f\x10\x0E\x10\u013E\x0B\x10\x05\x10\u0140\n\x10', '\x03\x10\x03\x10\x03\x11\x03\x11\x03\x11\x03\x11', '\x03\x11\x03\x12\x03\x12\x03\x12\x05\x12\u014C\n', '\x12\x03\x12\x03\x12\x03\x13\x03\x13\x03\x13\x05', '\x13\u0153\n\x13\x03\x13\x05\x13\u0156\n\x13\x03\x14', '\x03\x14\x05\x14\u015A\n\x14\x03\x14\x03\x14\x03', '\x14\x05\x14\u015F\n\x14\x03\x14\x03\x14\x05\x14', '\u0163\n\x14\x03\x15\x03\x15\x03\x15\x03\x16\x03', '\x16\x03\x16\x03\x16\x03\x16\x03\x16\x07\x16\u016E', '\n\x16\f\x16\x0E\x16\u0171\x0B\x16\x03\x17\x03\x17', '\x03\x17\x03\x17\x05\x17\u0177\n\x17\x03\x17\x03', '\x17\x03\x18\x03\x18\x03\x19\x03\x19\x03\x19\x03', '\x19\x05\x19\u0181\n\x19\x03\x19\x03\x19\x07\x19', '\u0185\n\x19\f\x19\x0E\x19\u0188\x0B\x19\x03\x19\x03', '\x19\x03\x1A\x03\x1A\x03\x1A\x03\x1A\x07\x1A\u0190', '\n\x1A\f\x1A\x0E\x1A\u0193\x0B\x1A\x05\x1A\u0195\n\x1A', '\x03\x1A\x03\x1A\x03\x1B\x03\x1B\x05\x1B\u019B\n', '\x1B\x03\x1B\x05\x1B\u019E\n\x1B\x03\x1C\x03\x1C', '\x03\x1C\x03\x1C\x07\x1C\u01A4\n\x1C\f\x1C\x0E\x1C', '\u01A7\x0B\x1C\x05\x1C\u01A9\n\x1C\x03\x1C\x03\x1C', '\x03\x1D\x03\x1D\x05\x1D\u01AF\n\x1D\x03\x1D\x05', '\x1D\u01B2\n\x1D\x03\x1E\x03\x1E\x03\x1E\x03\x1E', '\x07\x1E\u01B8\n\x1E\f\x1E\x0E\x1E\u01BB\x0B\x1E\x05', '\x1E\u01BD\n\x1E\x03\x1E\x03\x1E\x03\x1F\x03\x1F', '\x05\x1F\u01C3\n\x1F\x03 \x03 \x05 \u01C7\n \x03 \x03', ' \x03!\x03!\x03!\x03!\x03!\x03!\x03!\x05!\u01D2\n!\x03', '!\x03!\x03!\x05!\u01D7\n!\x03!\x07!\u01DA\n!\f!\x0E!\u01DD', '\x0B!\x03"\x03"\x03"\x07"\u01E2\n"\f"\x0E"\u01E5', '\x0B"\x03#\x03#\x03#\x03#\x03#\x03#\x03#\x03$\x03', '$\x03$\x03$\x03$\x07$\u01F3\n$\f$\x0E$\u01F6\x0B$\x03', '$\x03$\x05$\u01FA\n$\x03%\x03%\x03&\x03&\x03\'\x03\'', '\x07\'\u0202\n\'\f\'\x0E\'\u0205\x0B\'\x03\'\x03\'\x03(', '\x03(\x03(\x03(\x03(\x03(\x03(\x03(\x03(\x03(\x03', '(\x03(\x05(\u0215\n(\x03)\x03)\x03)\x03*\x03*\x03*\x03', '*\x03*\x03*\x03*\x05*\u0221\n*\x03+\x03+\x03+\x03+\x03', '+\x03+\x03,\x03,\x05,\u022B\n,\x03-\x03-\x03-\x03-\x05', '-\u0231\n-\x03-\x03-\x05-\u0235\n-\x03-\x05-\u0238\n-\x03', '-\x03-\x03-\x03.\x03.\x05.\u023F\n.\x03.\x03.\x03/\x03', '/\x03/\x03/\x03/\x03/\x03/\x03/\x030\x030\x030\x03', '1\x031\x031\x032\x032\x052\u0253\n2\x032\x032\x033\x03', '3\x033\x034\x034\x034\x034\x035\x035\x035\x035\x03', '5\x035\x035\x055\u0265\n5\x035\x035\x055\u0269\n5\x03', '5\x035\x036\x056\u026E\n6\x036\x036\x056\u0272\n6\x07', '6\u0274\n6\f6\x0E6\u0277\x0B6\x037\x037\x057\u027B\n7\x03', '7\x077\u027E\n7\f7\x0E7\u0281\x0B7\x037\x057\u0284\n7\x03', '7\x037\x038\x038\x039\x039\x039\x039\x039\x039\x03', '9\x039\x039\x039\x039\x039\x039\x039\x039\x039\x03', '9\x039\x059\u029C\n9\x039\x039\x039\x039\x039\x039\x03', '9\x039\x039\x039\x039\x039\x039\x039\x039\x039\x03', '9\x039\x039\x039\x039\x039\x039\x039\x039\x039\x03', '9\x039\x039\x039\x039\x039\x039\x039\x039\x039\x03', '9\x039\x039\x039\x039\x039\x039\x039\x039\x039\x03', '9\x039\x039\x039\x039\x039\x039\x039\x039\x039\x03', '9\x079\u02D7\n9\f9\x0E9\u02DA\x0B9\x03:\x03:\x03:\x03', ':\x03:\x03:\x03:\x05:\u02E3\n:\x03:\x03:\x03:\x03:\x03', ':\x05:\u02EA\n:\x05:\u02EC\n:\x03;\x03;\x03;\x07;\u02F1', '\n;\f;\x0E;\u02F4\x0B;\x03<\x03<\x03<\x07<\u02F9\n<\f<\x0E', '<\u02FC\x0B<\x03<\x05<\u02FF\n<\x03=\x03=\x03=\x03=\x03', '>\x03>\x05>\u0307\n>\x03>\x03>\x05>\u030B\n>\x05>\u030D', '\n>\x03?\x03?\x03?\x03?\x03?\x03@\x03@\x07@\u0316\n', '@\f@\x0E@\u0319\x0B@\x03@\x03@\x03A\x03A\x03A\x03A\x03', 'A\x03A\x03A\x03A\x03A\x03A\x03A\x03A\x03A\x03A\x03', 'A\x03A\x03A\x05A\u032E\nA\x03B\x03B\x05B\u0332\nB\x03', 'C\x03C\x03C\x03C\x05C\u0338\nC\x03C\x03C\x05C\u033C\n', 'C\x03C\x03C\x07C\u0340\nC\fC\x0EC\u0343\x0BC\x03C\x05', 'C\u0346\nC\x03D\x03D\x03D\x03D\x05D\u034C\nD\x03E\x03', 'E\x03E\x03E\x03F\x03F\x03F\x03F\x03F\x05F\u0357\nF\x03', 'G\x03G\x03G\x07G\u035C\nG\fG\x0EG\u035F\x0BG\x03H\x03', 'H\x03H\x03I\x03I\x03I\x03J\x03J\x03J\x07J\u036A\nJ\f', 'J\x0EJ\u036D\x0BJ\x03K\x03K\x03K\x03K\x03K\x03K\x05', 'K\u0375\nK\x03L\x03L\x03L\x03L\x05L\u037B\nL\x03L\x03', 'L\x05L\u037F\nL\x03L\x03L\x03M\x03M\x03M\x03N\x03N\x03', 'N\x05N\u0389\nN\x03N\x03N\x03N\x05N\u038E\nN\x03N\x03', 'N\x03O\x03O\x03O\x03O\x03P\x03P\x03Q\x03Q\x03Q\x03', 'Q\x03R\x03R\x05R\u039E\nR\x03R\x03R\x05R\u03A2\nR\x07', 'R\u03A4\nR\fR\x0ER\u03A7\x0BR\x03R\x03R\x03R\x03R\x03', 'R\x07R\u03AE\nR\fR\x0ER\u03B1\x0BR\x05R\u03B3\nR\x03R\x05', 'R\u03B6\nR\x03S\x03S\x03T\x03T\x05T\u03BC\nT\x03U\x03', 'U\x03U\x02\x04@pV\x02\x04\x06\b\n\f\x0E\x10\x12\x14', '\x16\x18\x1A\x1C\x1E "$&(*,.02468:<>@BDFHJLNPRTVXZ\\^`bd', 'fhjlnprtvxz|~\x80\x82\x84\x86\x88\x8A\x8C\x8E\x90', '\x92\x94\x96\x98\x9A\x9C\x9E\xA0\xA2\xA4\xA6\xA8', '\x02\x13\x03\x02\x05\x0B\x03\x02\x13\x15\x05\x02', 'kkooqr\x03\x02(*\x06\x02kkppssuu\x05\x02$$36]a\x03\x02', '78\x03\x02:;\x03\x02<=\x04\x02\x0E\x0E@A\x03\x02', 'BC\x03\x02\x07\n\x03\x02FG\x04\x02\x0B\x0BLU\x05', '\x02deggww\x03\x02de\x05\x02\x0F\x0F**vv\x02\u041A\x02', '\xAF\x03\x02\x02\x02\x04\xB4\x03\x02\x02\x02\x06', '\xB9\x03\x02\x02\x02\b\xBD\x03\x02\x02\x02\n\xBF', '\x03\x02\x02\x02\f\xC3\x03\x02\x02\x02\x0E\xC6', '\x03\x02\x02\x02\x10\xCA\x03\x02\x02\x02\x12\xF1', '\x03\x02\x02\x02\x14\xF3\x03\x02\x02\x02\x16\u0109', '\x03\x02\x02\x02\x18\u0119\x03\x02\x02\x02\x1A\u011B', '\x03\x02\x02\x02\x1C\u0129\x03\x02\x02\x02\x1E\u0132', '\x03\x02\x02\x02 \u0143\x03\x02\x02\x02"\u0148\x03', '\x02\x02\x02$\u014F\x03\x02\x02\x02&\u0157\x03\x02', '\x02\x02(\u0164\x03\x02\x02\x02*\u016F\x03\x02\x02', '\x02,\u0172\x03\x02\x02\x02.\u017A\x03\x02\x02\x02', '0\u017C\x03\x02\x02\x022\u018B\x03\x02\x02\x024\u0198', '\x03\x02\x02\x026\u019F\x03\x02\x02\x028\u01AC\x03', '\x02\x02\x02:\u01B3\x03\x02\x02\x02<\u01C0\x03\x02', '\x02\x02>\u01C4\x03\x02\x02\x02@\u01D1\x03\x02\x02', '\x02B\u01DE\x03\x02\x02\x02D\u01E6\x03\x02\x02\x02', 'F\u01ED\x03\x02\x02\x02H\u01FB\x03\x02\x02\x02J\u01FD', '\x03\x02\x02\x02L\u01FF\x03\x02\x02\x02N\u0214\x03', '\x02\x02\x02P\u0216\x03\x02\x02\x02R\u0219\x03\x02', '\x02\x02T\u0222\x03\x02\x02\x02V\u022A\x03\x02\x02', '\x02X\u022C\x03\x02\x02\x02Z\u023C\x03\x02\x02\x02', '\\\u0242\x03\x02\x02\x02^\u024A\x03\x02\x02\x02`\u024D', '\x03\x02\x02\x02b\u0250\x03\x02\x02\x02d\u0256\x03', '\x02\x02\x02f\u0259\x03\x02\x02\x02h\u0264\x03\x02', '\x02\x02j\u026D\x03\x02\x02\x02l\u0278\x03\x02\x02', '\x02n\u0287\x03\x02\x02\x02p\u029B\x03\x02\x02\x02', 'r\u02EB\x03\x02\x02\x02t\u02ED\x03\x02\x02\x02v\u02F5', '\x03\x02\x02\x02x\u0300\x03\x02\x02\x02z\u030C\x03', '\x02\x02\x02|\u030E\x03\x02\x02\x02~\u0313\x03\x02', '\x02\x02\x80\u032D\x03\x02\x02\x02\x82\u0331\x03\x02', '\x02\x02\x84\u0337\x03\x02\x02\x02\x86\u0347\x03\x02', '\x02\x02\x88\u034D\x03\x02\x02\x02\x8A\u0356\x03\x02', '\x02\x02\x8C\u0358\x03\x02\x02\x02\x8E\u0360\x03\x02', '\x02\x02\x90\u0363\x03\x02\x02\x02\x92\u0366\x03\x02', '\x02\x02\x94\u0374\x03\x02\x02\x02\x96\u0376\x03\x02', '\x02\x02\x98\u0382\x03\x02\x02\x02\x9A\u0385\x03\x02', '\x02\x02\x9C\u0391\x03\x02\x02\x02\x9E\u0395\x03\x02', '\x02\x02\xA0\u0397\x03\x02\x02\x02\xA2\u03B5\x03\x02', '\x02\x02\xA4\u03B7\x03\x02\x02\x02\xA6\u03B9\x03\x02', '\x02\x02\xA8\u03BD\x03\x02\x02\x02\xAA\xAE\x05\x04', '\x03\x02\xAB\xAE\x05\x12\n\x02\xAC\xAE\x05\x14', '\x0B\x02\xAD\xAA\x03\x02\x02\x02\xAD\xAB\x03\x02', '\x02\x02\xAD\xAC\x03\x02\x02\x02\xAE\xB1\x03\x02', '\x02\x02\xAF\xAD\x03\x02\x02\x02\xAF\xB0\x03\x02', '\x02\x02\xB0\xB2\x03\x02\x02\x02\xB1\xAF\x03\x02', '\x02\x02\xB2\xB3\x07\x02\x02\x03\xB3\x03\x03\x02', '\x02\x02\xB4\xB5\x07\x03\x02\x02\xB5\xB6\x05\x06', '\x04\x02\xB6\xB7\x05\b\x05\x02\xB7\xB8\x07\x04', '\x02\x02\xB8\x05\x03\x02\x02\x02\xB9\xBA\x05\xA8', 'U\x02\xBA\x07\x03\x02\x02\x02\xBB\xBE\x05\n\x06', '\x02\xBC\xBE\x05p9\x02\xBD\xBB\x03\x02\x02\x02', '\xBD\xBC\x03\x02\x02\x02\xBE\t\x03\x02\x02\x02', '\xBF\xC1\x05\x0E\b\x02\xC0\xC2\x05\x0E\b\x02\xC1', '\xC0\x03\x02\x02\x02\xC1\xC2\x03\x02\x02\x02\xC2', '\x0B\x03\x02\x02\x02\xC3\xC4\t\x02\x02\x02\xC4', '\r\x03\x02\x02\x02\xC5\xC7\x05\f\x07\x02\xC6\xC5', '\x03\x02\x02\x02\xC6\xC7\x03\x02\x02\x02\xC7\xC8', '\x03\x02\x02\x02\xC8\xC9\x07b\x02\x02\xC9\x0F', '\x03\x02\x02\x02\xCA\xCD\x05\xA8U\x02\xCB\xCC', '\x07\f\x02\x02\xCC\xCE\x05\xA8U\x02\xCD\xCB\x03', '\x02\x02\x02\xCD\xCE\x03\x02\x02\x02\xCE\x11\x03', '\x02\x02\x02\xCF\xD0\x07\r\x02\x02\xD0\xD3\x07', 'w\x02\x02\xD1\xD2\x07\f\x02\x02\xD2\xD4\x05\xA8', 'U\x02\xD3\xD1\x03\x02\x02\x02\xD3\xD4\x03\x02', '\x02\x02\xD4\xD5\x03\x02\x02\x02\xD5\xF2\x07\x04', '\x02\x02\xD6\xD9\x07\r\x02\x02\xD7\xDA\x07\x0E', '\x02\x02\xD8\xDA\x05\xA8U\x02\xD9\xD7\x03\x02', '\x02\x02\xD9\xD8\x03\x02\x02\x02\xDA\xDD\x03\x02', '\x02\x02\xDB\xDC\x07\f\x02\x02\xDC\xDE\x05\xA8', 'U\x02\xDD\xDB\x03\x02\x02\x02\xDD\xDE\x03\x02', '\x02\x02\xDE\xDF\x03\x02\x02\x02\xDF\xE0\x07\x0F', '\x02\x02\xE0\xE1\x07w\x02\x02\xE1\xF2\x07\x04', '\x02\x02\xE2\xE3\x07\r\x02\x02\xE3\xE4\x07\x10', '\x02\x02\xE4\xE9\x05\x10\t\x02\xE5\xE6\x07\x11', '\x02\x02\xE6\xE8\x05\x10\t\x02\xE7\xE5\x03\x02', '\x02\x02\xE8\xEB\x03\x02\x02\x02\xE9\xE7\x03\x02', '\x02\x02\xE9\xEA\x03\x02\x02\x02\xEA\xEC\x03\x02', '\x02\x02\xEB\xE9\x03\x02\x02\x02\xEC\xED\x07\x12', '\x02\x02\xED\xEE\x07\x0F\x02\x02\xEE\xEF\x07w', '\x02\x02\xEF\xF0\x07\x04\x02\x02\xF0\xF2\x03\x02', '\x02\x02\xF1\xCF\x03\x02\x02\x02\xF1\xD6\x03\x02', '\x02\x02\xF1\xE2\x03\x02\x02\x02\xF2\x13\x03\x02', '\x02\x02\xF3\xF4\t\x03\x02\x02\xF4\xFE\x05\xA8', 'U\x02\xF5\xF6\x07\x16\x02\x02\xF6\xFB\x05\x16', '\f\x02\xF7\xF8\x07\x11\x02\x02\xF8\xFA\x05\x16', '\f\x02\xF9\xF7\x03\x02\x02\x02\xFA\xFD\x03\x02', '\x02\x02\xFB\xF9\x03\x02\x02\x02\xFB\xFC\x03\x02', '\x02\x02\xFC\xFF\x03\x02\x02\x02\xFD\xFB\x03\x02', '\x02\x02\xFE\xF5\x03\x02\x02\x02\xFE\xFF\x03\x02', '\x02\x02\xFF\u0100\x03\x02\x02\x02\u0100\u0104\x07\x10', '\x02\x02\u0101\u0103\x05\x18\r\x02\u0102\u0101\x03\x02', '\x02\x02\u0103\u0106\x03\x02\x02\x02\u0104\u0102\x03\x02', '\x02\x02\u0104\u0105\x03\x02\x02\x02\u0105\u0107\x03\x02', '\x02\x02\u0106\u0104\x03\x02\x02\x02\u0107\u0108\x07\x12', '\x02\x02\u0108\x15\x03\x02\x02\x02\u0109\u010F\x05B', '"\x02\u010A\u010C\x07\x17\x02\x02\u010B\u010D\x05t;\x02', '\u010C\u010B\x03\x02\x02\x02\u010C\u010D\x03\x02\x02\x02', '\u010D\u010E\x03\x02\x02\x02\u010E\u0110\x07\x18\x02\x02', '\u010F\u010A\x03\x02\x02\x02\u010F\u0110\x03\x02\x02\x02', '\u0110\x17\x03\x02\x02\x02\u0111\u011A\x05\x1A\x0E\x02', '\u0112\u011A\x05\x1C\x0F\x02\u0113\u011A\x05\x1E\x10\x02', '\u0114\u011A\x05 \x11\x02\u0115\u011A\x05"\x12\x02\u0116', '\u011A\x05&\x14\x02\u0117\u011A\x05,\x17\x02\u0118\u011A', '\x050\x19\x02\u0119\u0111\x03\x02\x02\x02\u0119\u0112', '\x03\x02\x02\x02\u0119\u0113\x03\x02\x02\x02\u0119\u0114', '\x03\x02\x02\x02\u0119\u0115\x03\x02\x02\x02\u0119\u0116', '\x03\x02\x02\x02\u0119\u0117\x03\x02\x02\x02\u0119\u0118', '\x03\x02\x02\x02\u011A\x19\x03\x02\x02\x02\u011B\u011F', '\x05@!\x02\u011C\u011E\t\x04\x02\x02\u011D\u011C\x03\x02', '\x02\x02\u011E\u0121\x03\x02\x02\x02\u011F\u011D\x03\x02', '\x02\x02\u011F\u0120\x03\x02\x02\x02\u0120\u0122\x03\x02', '\x02\x02\u0121\u011F\x03\x02\x02\x02\u0122\u0125\x05\xA8', 'U\x02\u0123\u0124\x07\x0B\x02\x02\u0124\u0126\x05p9\x02', '\u0125\u0123\x03\x02\x02\x02\u0125\u0126\x03\x02\x02\x02', '\u0126\u0127\x03\x02\x02\x02\u0127\u0128\x07\x04\x02\x02', '\u0128\x1B\x03\x02\x02\x02\u0129\u012A\x07\x19\x02\x02', '\u012A\u012B\x05\xA8U\x02\u012B\u012E\x07\x1A\x02\x02', '\u012C\u012F\x07\x0E\x02\x02\u012D\u012F\x05@!\x02\u012E', '\u012C\x03\x02\x02\x02\u012E\u012D\x03\x02\x02\x02\u012F', '\u0130\x03\x02\x02\x02\u0130\u0131\x07\x04\x02\x02\u0131', '\x1D\x03\x02\x02\x02\u0132\u0133\x07\x1B\x02\x02\u0133', '\u0134\x05\xA8U\x02\u0134\u013F\x07\x10\x02\x02\u0135', '\u0136\x05> \x02\u0136\u013C\x07\x04\x02\x02\u0137\u0138', '\x05> \x02\u0138\u0139\x07\x04\x02\x02\u0139\u013B\x03', '\x02\x02\x02\u013A\u0137\x03\x02\x02\x02\u013B\u013E\x03', '\x02\x02\x02\u013C\u013A\x03\x02\x02\x02\u013C\u013D\x03', '\x02\x02\x02\u013D\u0140\x03\x02\x02\x02\u013E\u013C\x03', '\x02\x02\x02\u013F\u0135\x03\x02\x02\x02\u013F\u0140\x03', '\x02\x02\x02\u0140\u0141\x03\x02\x02\x02\u0141\u0142\x07', '\x12\x02\x02\u0142\x1F\x03\x02\x02\x02\u0143\u0144\x07', '\x1C\x02\x02\u0144\u0145\x052\x1A\x02\u0145\u0146\x05', '*\x16\x02\u0146\u0147\x05L\'\x02\u0147!\x03\x02\x02\x02', '\u0148\u0149\x07\x1D\x02\x02\u0149\u014B\x05\xA8U\x02', '\u014A\u014C\x052\x1A\x02\u014B\u014A\x03\x02\x02\x02', '\u014B\u014C\x03\x02\x02\x02\u014C\u014D\x03\x02\x02\x02', '\u014D\u014E\x05L\'\x02\u014E#\x03\x02\x02\x02\u014F\u0155', '\x05\xA8U\x02\u0150\u0152\x07\x17\x02\x02\u0151\u0153', '\x05t;\x02\u0152\u0151\x03\x02\x02\x02\u0152\u0153\x03', '\x02\x02\x02\u0153\u0154\x03\x02\x02\x02\u0154\u0156\x07', '\x18\x02\x02\u0155\u0150\x03\x02\x02\x02\u0155\u0156\x03', '\x02\x02\x02\u0156%\x03\x02\x02\x02\u0157\u0159\x07', '\x1E\x02\x02\u0158\u015A\x05\xA8U\x02\u0159\u0158\x03', '\x02\x02\x02\u0159\u015A\x03\x02\x02\x02\u015A\u015B\x03', '\x02\x02\x02\u015B\u015C\x052\x1A\x02\u015C\u015E\x05', '*\x16\x02\u015D\u015F\x05(\x15\x02\u015E\u015D\x03\x02', '\x02\x02\u015E\u015F\x03\x02\x02\x02\u015F\u0162\x03\x02', '\x02\x02\u0160\u0163\x07\x04\x02\x02\u0161\u0163\x05L', '\'\x02\u0162\u0160\x03\x02\x02\x02\u0162\u0161\x03\x02', '\x02\x02\u0163\'\x03\x02\x02\x02\u0164\u0165\x07\x1F', '\x02\x02\u0165\u0166\x052\x1A\x02\u0166)\x03\x02\x02', '\x02\u0167\u016E\x05$\x13\x02\u0168\u016E\x05J&\x02\u0169', '\u016E\x07m\x02\x02\u016A\u016E\x07r\x02\x02\u016B\u016E', '\x07o\x02\x02\u016C\u016E\x07q\x02\x02\u016D\u0167\x03', '\x02\x02\x02\u016D\u0168\x03\x02\x02\x02\u016D\u0169\x03', '\x02\x02\x02\u016D\u016A\x03\x02\x02\x02\u016D\u016B\x03', '\x02\x02\x02\u016D\u016C\x03\x02\x02\x02\u016E\u0171\x03', '\x02\x02\x02\u016F\u016D\x03\x02\x02\x02\u016F\u0170\x03', '\x02\x02\x02\u0170+\x03\x02\x02\x02\u0171\u016F\x03', '\x02\x02\x02\u0172\u0173\x07 \x02\x02\u0173\u0174\x05', '\xA8U\x02\u0174\u0176\x056\x1C\x02\u0175\u0177\x07i\x02', '\x02\u0176\u0175\x03\x02\x02\x02\u0176\u0177\x03\x02\x02', '\x02\u0177\u0178\x03\x02\x02\x02\u0178\u0179\x07\x04\x02', '\x02\u0179-\x03\x02\x02\x02\u017A\u017B\x05\xA8U\x02', '\u017B/\x03\x02\x02\x02\u017C\u017D\x07!\x02\x02\u017D', '\u017E\x05\xA8U\x02\u017E\u0180\x07\x10\x02\x02\u017F', '\u0181\x05.\x18\x02\u0180\u017F\x03\x02\x02\x02\u0180', '\u0181\x03\x02\x02\x02\u0181\u0186\x03\x02\x02\x02\u0182', '\u0183\x07\x11\x02\x02\u0183\u0185\x05.\x18\x02\u0184', '\u0182\x03\x02\x02\x02\u0185\u0188\x03\x02\x02\x02\u0186', '\u0184\x03\x02\x02\x02\u0186\u0187\x03\x02\x02\x02\u0187', '\u0189\x03\x02\x02\x02\u0188\u0186\x03\x02\x02\x02\u0189', '\u018A\x07\x12\x02\x02\u018A1\x03\x02\x02\x02\u018B', '\u0194\x07\x17\x02\x02\u018C\u0191\x054\x1B\x02\u018D', '\u018E\x07\x11\x02\x02\u018E\u0190\x054\x1B\x02\u018F', '\u018D\x03\x02\x02\x02\u0190\u0193\x03\x02\x02\x02\u0191', '\u018F\x03\x02\x02\x02\u0191\u0192\x03\x02\x02\x02\u0192', '\u0195\x03\x02\x02\x02\u0193\u0191\x03\x02\x02\x02\u0194', '\u018C\x03\x02\x02\x02\u0194\u0195\x03\x02\x02\x02\u0195', '\u0196\x03\x02\x02\x02\u0196\u0197\x07\x18\x02\x02\u0197', '3\x03\x02\x02\x02\u0198\u019A\x05@!\x02\u0199\u019B\x05', 'H%\x02\u019A\u0199\x03\x02\x02\x02\u019A\u019B\x03\x02', '\x02\x02\u019B\u019D\x03\x02\x02\x02\u019C\u019E\x05\xA8', 'U\x02\u019D\u019C\x03\x02\x02\x02\u019D\u019E\x03\x02', '\x02\x02\u019E5\x03\x02\x02\x02\u019F\u01A8\x07\x17', '\x02\x02\u01A0\u01A5\x058\x1D\x02\u01A1\u01A2\x07\x11', '\x02\x02\u01A2\u01A4\x058\x1D\x02\u01A3\u01A1\x03\x02', '\x02\x02\u01A4\u01A7\x03\x02\x02\x02\u01A5\u01A3\x03\x02', '\x02\x02\u01A5\u01A6\x03\x02\x02\x02\u01A6\u01A9\x03\x02', '\x02\x02\u01A7\u01A5\x03\x02\x02\x02\u01A8\u01A0\x03\x02', '\x02\x02\u01A8\u01A9\x03\x02\x02\x02\u01A9\u01AA\x03\x02', '\x02\x02\u01AA\u01AB\x07\x18\x02\x02\u01AB7\x03\x02', '\x02\x02\u01AC\u01AE\x05@!\x02\u01AD\u01AF\x07n\x02\x02', '\u01AE\u01AD\x03\x02\x02\x02\u01AE\u01AF\x03\x02\x02\x02', '\u01AF\u01B1\x03\x02\x02\x02\u01B0\u01B2\x05\xA8U\x02', '\u01B1\u01B0\x03\x02\x02\x02\u01B1\u01B2\x03\x02\x02\x02', '\u01B29\x03\x02\x02\x02\u01B3\u01BC\x07\x17\x02\x02', '\u01B4\u01B9\x05<\x1F\x02\u01B5\u01B6\x07\x11\x02\x02', '\u01B6\u01B8\x05<\x1F\x02\u01B7\u01B5\x03\x02\x02\x02', '\u01B8\u01BB\x03\x02\x02\x02\u01B9\u01B7\x03\x02\x02\x02', '\u01B9\u01BA\x03\x02\x02\x02\u01BA\u01BD\x03\x02\x02\x02', '\u01BB\u01B9\x03\x02\x02\x02\u01BC\u01B4\x03\x02\x02\x02', '\u01BC\u01BD\x03\x02\x02\x02\u01BD\u01BE\x03\x02\x02\x02', '\u01BE\u01BF\x07\x18\x02\x02\u01BF;\x03\x02\x02\x02', '\u01C0\u01C2\x05@!\x02\u01C1\u01C3\x05H%\x02\u01C2\u01C1\x03', '\x02\x02\x02\u01C2\u01C3\x03\x02\x02\x02\u01C3=\x03', '\x02\x02\x02\u01C4\u01C6\x05@!\x02\u01C5\u01C7\x05H%\x02', '\u01C6\u01C5\x03\x02\x02\x02\u01C6\u01C7\x03\x02\x02\x02', '\u01C7\u01C8\x03\x02\x02\x02\u01C8\u01C9\x05\xA8U\x02', '\u01C9?\x03\x02\x02\x02\u01CA\u01CB\b!\x01\x02\u01CB\u01D2', '\x05n8\x02\u01CC\u01D2\x05B"\x02\u01CD\u01D2\x05D#\x02', '\u01CE\u01D2\x05F$\x02\u01CF\u01D0\x07$\x02\x02\u01D0\u01D2', '\x07p\x02\x02\u01D1\u01CA\x03\x02\x02\x02\u01D1\u01CC', '\x03\x02\x02\x02\u01D1\u01CD\x03\x02\x02\x02\u01D1\u01CE', '\x03\x02\x02\x02\u01D1\u01CF\x03\x02\x02\x02\u01D2\u01DB', '\x03\x02\x02\x02\u01D3\u01D4\f\x05\x02\x02\u01D4\u01D6', '\x07"\x02\x02\u01D5\u01D7\x05p9\x02\u01D6\u01D5\x03\x02', '\x02\x02\u01D6\u01D7\x03\x02\x02\x02\u01D7\u01D8\x03\x02', '\x02\x02\u01D8\u01DA\x07#\x02\x02\u01D9\u01D3\x03\x02', '\x02\x02\u01DA\u01DD\x03\x02\x02\x02\u01DB\u01D9\x03\x02', '\x02\x02\u01DB\u01DC\x03\x02\x02\x02\u01DCA\x03\x02', '\x02\x02\u01DD\u01DB\x03\x02\x02\x02\u01DE\u01E3\x05\xA8', 'U\x02\u01DF\u01E0\x07%\x02\x02\u01E0\u01E2\x05\xA8U\x02', '\u01E1\u01DF\x03\x02\x02\x02\u01E2\u01E5\x03\x02\x02\x02', '\u01E3\u01E1\x03\x02\x02\x02\u01E3\u01E4\x03\x02\x02\x02', '\u01E4C\x03\x02\x02\x02\u01E5\u01E3\x03\x02\x02\x02', '\u01E6\u01E7\x07&\x02\x02\u01E7\u01E8\x07\x17\x02\x02', '\u01E8\u01E9\x05n8\x02\u01E9\u01EA\x07\'\x02\x02\u01EA\u01EB', '\x05@!\x02\u01EB\u01EC\x07\x18\x02\x02\u01ECE\x03\x02', '\x02\x02\u01ED\u01EE\x07\x1E\x02\x02\u01EE\u01F4\x05:', '\x1E\x02\u01EF\u01F3\x07o\x02\x02\u01F0\u01F3\x07m\x02', '\x02\u01F1\u01F3\x05J&\x02\u01F2\u01EF\x03\x02\x02\x02', '\u01F2\u01F0\x03\x02\x02\x02\u01F2\u01F1\x03\x02\x02\x02', '\u01F3\u01F6\x03\x02\x02\x02\u01F4\u01F2\x03\x02\x02\x02', '\u01F4\u01F5\x03\x02\x02\x02\u01F5\u01F9\x03\x02\x02\x02', '\u01F6\u01F4\x03\x02\x02\x02\u01F7\u01F8\x07\x1F\x02\x02', '\u01F8\u01FA\x05:\x1E\x02\u01F9\u01F7\x03\x02\x02\x02', '\u01F9\u01FA\x03\x02\x02\x02\u01FAG\x03\x02\x02\x02', '\u01FB\u01FC\t\x05\x02\x02\u01FCI\x03\x02\x02\x02\u01FD', '\u01FE\t\x06\x02\x02\u01FEK\x03\x02\x02\x02\u01FF\u0203', '\x07\x10\x02\x02\u0200\u0202\x05N(\x02\u0201\u0200\x03', '\x02\x02\x02\u0202\u0205\x03\x02\x02\x02\u0203\u0201\x03', '\x02\x02\x02\u0203\u0204\x03\x02\x02\x02\u0204\u0206\x03', '\x02\x02\x02\u0205\u0203\x03\x02\x02\x02\u0206\u0207\x07', '\x12\x02\x02\u0207M\x03\x02\x02\x02\u0208\u0215\x05', 'R*\x02\u0209\u0215\x05T+\x02\u020A\u0215\x05X-\x02\u020B\u0215', '\x05L\'\x02\u020C\u0215\x05Z.\x02\u020D\u0215\x05\\/\x02', '\u020E\u0215\x05^0\x02\u020F\u0215\x05`1\x02\u0210\u0215\x05', 'b2\x02\u0211\u0215\x05d3\x02\u0212\u0215\x05f4\x02\u0213\u0215', '\x05V,\x02\u0214\u0208\x03\x02\x02\x02\u0214\u0209\x03', '\x02\x02\x02\u0214\u020A\x03\x02\x02\x02\u0214\u020B\x03', '\x02\x02\x02\u0214\u020C\x03\x02\x02\x02\u0214\u020D\x03', '\x02\x02\x02\u0214\u020E\x03\x02\x02\x02\u0214\u020F\x03', '\x02\x02\x02\u0214\u0210\x03\x02\x02\x02\u0214\u0211\x03', '\x02\x02\x02\u0214\u0212\x03\x02\x02\x02\u0214\u0213\x03', '\x02\x02\x02\u0215O\x03\x02\x02\x02\u0216\u0217\x05', 'p9\x02\u0217\u0218\x07\x04\x02\x02\u0218Q\x03\x02\x02', '\x02\u0219\u021A\x07+\x02\x02\u021A\u021B\x07\x17\x02', '\x02\u021B\u021C\x05p9\x02\u021C\u021D\x07\x18\x02\x02', '\u021D\u0220\x05N(\x02\u021E\u021F\x07,\x02\x02\u021F\u0221', '\x05N(\x02\u0220\u021E\x03\x02\x02\x02\u0220\u0221\x03', '\x02\x02\x02\u0221S\x03\x02\x02\x02\u0222\u0223\x07', '-\x02\x02\u0223\u0224\x07\x17\x02\x02\u0224\u0225\x05', 'p9\x02\u0225\u0226\x07\x18\x02\x02\u0226\u0227\x05N(\x02', '\u0227U\x03\x02\x02\x02\u0228\u022B\x05h5\x02\u0229\u022B', '\x05P)\x02\u022A\u0228\x03\x02\x02\x02\u022A\u0229\x03', '\x02\x02\x02\u022BW\x03\x02\x02\x02\u022C\u022D\x07', '\x1A\x02\x02\u022D\u0230\x07\x17\x02\x02\u022E\u0231\x05', 'V,\x02\u022F\u0231\x07\x04\x02\x02\u0230\u022E\x03\x02', '\x02\x02\u0230\u022F\x03\x02\x02\x02\u0231\u0234\x03\x02', '\x02\x02\u0232\u0235\x05P)\x02\u0233\u0235\x07\x04\x02', '\x02\u0234\u0232\x03\x02\x02\x02\u0234\u0233\x03\x02\x02', '\x02\u0235\u0237\x03\x02\x02\x02\u0236\u0238\x05p9\x02', '\u0237\u0236\x03\x02\x02\x02\u0237\u0238\x03\x02\x02\x02', '\u0238\u0239\x03\x02\x02\x02\u0239\u023A\x07\x18\x02\x02', '\u023A\u023B\x05N(\x02\u023BY\x03\x02\x02\x02\u023C\u023E', '\x07.\x02\x02\u023D\u023F\x07w\x02\x02\u023E\u023D\x03', '\x02\x02\x02\u023E\u023F\x03\x02\x02\x02\u023F\u0240\x03', '\x02\x02\x02\u0240\u0241\x05~@\x02\u0241[\x03\x02\x02', '\x02\u0242\u0243\x07/\x02\x02\u0243\u0244\x05N(\x02\u0244', '\u0245\x07-\x02\x02\u0245\u0246\x07\x17\x02\x02\u0246', '\u0247\x05p9\x02\u0247\u0248\x07\x18\x02\x02\u0248\u0249', '\x07\x04\x02\x02\u0249]\x03\x02\x02\x02\u024A\u024B', '\x07l\x02\x02\u024B\u024C\x07\x04\x02\x02\u024C_\x03', '\x02\x02\x02\u024D\u024E\x07j\x02\x02\u024E\u024F\x07', '\x04\x02\x02\u024Fa\x03\x02\x02\x02\u0250\u0252\x07', '0\x02\x02\u0251\u0253\x05p9\x02\u0252\u0251\x03\x02\x02', '\x02\u0252\u0253\x03\x02\x02\x02\u0253\u0254\x03\x02\x02', '\x02\u0254\u0255\x07\x04\x02\x02\u0255c\x03\x02\x02', '\x02\u0256\u0257\x071\x02\x02\u0257\u0258\x07\x04\x02', '\x02\u0258e\x03\x02\x02\x02\u0259\u025A\x072\x02\x02', '\u025A\u025B\x05|?\x02\u025B\u025C\x07\x04\x02\x02\u025C', 'g\x03\x02\x02\x02\u025D\u025E\x073\x02\x02\u025E\u0265', '\x05l7\x02\u025F\u0265\x05> \x02\u0260\u0261\x07\x17\x02', '\x02\u0261\u0262\x05j6\x02\u0262\u0263\x07\x18\x02\x02', '\u0263\u0265\x03\x02\x02\x02\u0264\u025D\x03\x02\x02\x02', '\u0264\u025F\x03\x02\x02\x02\u0264\u0260\x03\x02\x02\x02', '\u0265\u0268\x03\x02\x02\x02\u0266\u0267\x07\x0B\x02\x02', '\u0267\u0269\x05p9\x02\u0268\u0266\x03\x02\x02\x02\u0268', '\u0269\x03\x02\x02\x02\u0269\u026A\x03\x02\x02\x02\u026A', '\u026B\x07\x04\x02\x02\u026Bi\x03\x02\x02\x02\u026C', '\u026E\x05> \x02\u026D\u026C\x03\x02\x02\x02\u026D\u026E', '\x03\x02\x02\x02\u026E\u0275\x03\x02\x02\x02\u026F\u0271', '\x07\x11\x02\x02\u0270\u0272\x05> \x02\u0271\u0270\x03', '\x02\x02\x02\u0271\u0272\x03\x02\x02\x02\u0272\u0274\x03', '\x02\x02\x02\u0273\u026F\x03\x02\x02\x02\u0274\u0277\x03', '\x02\x02\x02\u0275\u0273\x03\x02\x02\x02\u0275\u0276\x03', '\x02\x02\x02\u0276k\x03\x02\x02\x02\u0277\u0275\x03', '\x02\x02\x02\u0278\u027F\x07\x17\x02\x02\u0279\u027B\x05', '\xA8U\x02\u027A\u0279\x03\x02\x02\x02\u027A\u027B\x03', '\x02\x02\x02\u027B\u027C\x03\x02\x02\x02\u027C\u027E\x07', '\x11\x02\x02\u027D\u027A\x03\x02\x02\x02\u027E\u0281\x03', '\x02\x02\x02\u027F\u027D\x03\x02\x02\x02\u027F\u0280\x03', '\x02\x02\x02\u0280\u0283\x03\x02\x02\x02\u0281\u027F\x03', '\x02\x02\x02\u0282\u0284\x05\xA8U\x02\u0283\u0282\x03', '\x02\x02\x02\u0283\u0284\x03\x02\x02\x02\u0284\u0285\x03', '\x02\x02\x02\u0285\u0286\x07\x18\x02\x02\u0286m\x03', '\x02\x02\x02\u0287\u0288\t\x07\x02\x02\u0288o\x03\x02', '\x02\x02\u0289\u028A\b9\x01\x02\u028A\u028B\x079\x02\x02', '\u028B\u029C\x05@!\x02\u028C\u028D\x07\x17\x02\x02\u028D', '\u028E\x05p9\x02\u028E\u028F\x07\x18\x02\x02\u028F\u029C', '\x03\x02\x02\x02\u0290\u0291\t\b\x02\x02\u0291\u029C\x05', 'p9\x15\u0292\u0293\t\t\x02\x02\u0293\u029C\x05p9\x14\u0294', '\u0295\t\n\x02\x02\u0295\u029C\x05p9\x13\u0296\u0297\x07>', '\x02\x02\u0297\u029C\x05p9\x12\u0298\u0299\x07\x06\x02', '\x02\u0299\u029C\x05p9\x11\u029A\u029C\x05r:\x02\u029B\u0289', '\x03\x02\x02\x02\u029B\u028C\x03\x02\x02\x02\u029B\u0290', '\x03\x02\x02\x02\u029B\u0292\x03\x02\x02\x02\u029B\u0294', '\x03\x02\x02\x02\u029B\u0296\x03\x02\x02\x02\u029B\u0298', '\x03\x02\x02\x02\u029B\u029A\x03\x02\x02\x02\u029C\u02D8', '\x03\x02\x02\x02\u029D\u029E\f\x10\x02\x02\u029E\u029F', '\x07?\x02\x02\u029F\u02D7\x05p9\x11\u02A0\u02A1\f\x0F\x02', '\x02\u02A1\u02A2\t\x0B\x02\x02\u02A2\u02D7\x05p9\x10\u02A3', '\u02A4\f\x0E\x02\x02\u02A4\u02A5\t\t\x02\x02\u02A5\u02D7\x05', 'p9\x0F\u02A6\u02A7\f\r\x02\x02\u02A7\u02A8\t\f\x02\x02\u02A8', '\u02D7\x05p9\x0E\u02A9\u02AA\f\f\x02\x02\u02AA\u02AB\x07D', '\x02\x02\u02AB\u02D7\x05p9\r\u02AC\u02AD\f\x0B\x02\x02\u02AD', '\u02AE\x07\x05\x02\x02\u02AE\u02D7\x05p9\f\u02AF\u02B0\f\n', '\x02\x02\u02B0\u02B1\x07E\x02\x02\u02B1\u02D7\x05p9\x0B', '\u02B2\u02B3\f\t\x02\x02\u02B3\u02B4\t\r\x02\x02\u02B4\u02D7', '\x05p9\n\u02B5\u02B6\f\b\x02\x02\u02B6\u02B7\t\x0E\x02\x02', '\u02B7\u02D7\x05p9\t\u02B8\u02B9\f\x07\x02\x02\u02B9\u02BA\x07', 'H\x02\x02\u02BA\u02D7\x05p9\b\u02BB\u02BC\f\x06\x02\x02', '\u02BC\u02BD\x07I\x02\x02\u02BD\u02D7\x05p9\x07\u02BE\u02BF', '\f\x05\x02\x02\u02BF\u02C0\x07J\x02\x02\u02C0\u02C1\x05', 'p9\x02\u02C1\u02C2\x07K\x02\x02\u02C2\u02C3\x05p9\x06\u02C3', '\u02D7\x03\x02\x02\x02\u02C4\u02C5\f\x04\x02\x02\u02C5', '\u02C6\t\x0F\x02\x02\u02C6\u02D7\x05p9\x05\u02C7\u02C8\f\x1B', '\x02\x02\u02C8\u02D7\t\b\x02\x02\u02C9\u02CA\f\x19\x02\x02', '\u02CA\u02CB\x07"\x02\x02\u02CB\u02CC\x05p9\x02\u02CC\u02CD', '\x07#\x02\x02\u02CD\u02D7\x03\x02\x02\x02\u02CE\u02CF', '\f\x18\x02\x02\u02CF\u02D0\x07\x17\x02\x02\u02D0\u02D1', '\x05z>\x02\u02D1\u02D2\x07\x18\x02\x02\u02D2\u02D7\x03', '\x02\x02\x02\u02D3\u02D4\f\x17\x02\x02\u02D4\u02D5\x07', '%\x02\x02\u02D5\u02D7\x05\xA8U\x02\u02D6\u029D\x03\x02', '\x02\x02\u02D6\u02A0\x03\x02\x02\x02\u02D6\u02A3\x03\x02', '\x02\x02\u02D6\u02A6\x03\x02\x02\x02\u02D6\u02A9\x03\x02', '\x02\x02\u02D6\u02AC\x03\x02\x02\x02\u02D6\u02AF\x03\x02', '\x02\x02\u02D6\u02B2\x03\x02\x02\x02\u02D6\u02B5\x03\x02', '\x02\x02\u02D6\u02B8\x03\x02\x02\x02\u02D6\u02BB\x03\x02', '\x02\x02\u02D6\u02BE\x03\x02\x02\x02\u02D6\u02C4\x03\x02', '\x02\x02\u02D6\u02C7\x03\x02\x02\x02\u02D6\u02C9\x03\x02', '\x02\x02\u02D6\u02CE\x03\x02\x02\x02\u02D6\u02D3\x03\x02', '\x02\x02\u02D7\u02DA\x03\x02\x02\x02\u02D8\u02D6\x03\x02', '\x02\x02\u02D8\u02D9\x03\x02\x02\x02\u02D9q\x03\x02', '\x02\x02\u02DA\u02D8\x03\x02\x02\x02\u02DB\u02EC\x07c', '\x02\x02\u02DC\u02EC\x05\xA6T\x02\u02DD\u02EC\x07g\x02', '\x02\u02DE\u02EC\x07w\x02\x02\u02DF\u02E2\x05\xA8U\x02', '\u02E0\u02E1\x07"\x02\x02\u02E1\u02E3\x07#\x02\x02\u02E2', '\u02E0\x03\x02\x02\x02\u02E2\u02E3\x03\x02\x02\x02\u02E3', '\u02EC\x03\x02\x02\x02\u02E4\u02EC\x07t\x02\x02\u02E5', '\u02EC\x05\xA2R\x02\u02E6\u02E9\x05\xA4S\x02\u02E7\u02E8', '\x07"\x02\x02\u02E8\u02EA\x07#\x02\x02\u02E9\u02E7\x03', '\x02\x02\x02\u02E9\u02EA\x03\x02\x02\x02\u02EA\u02EC\x03', '\x02\x02\x02\u02EB\u02DB\x03\x02\x02\x02\u02EB\u02DC\x03', '\x02\x02\x02\u02EB\u02DD\x03\x02\x02\x02\u02EB\u02DE\x03', '\x02\x02\x02\u02EB\u02DF\x03\x02\x02\x02\u02EB\u02E4\x03', '\x02\x02\x02\u02EB\u02E5\x03\x02\x02\x02\u02EB\u02E6\x03', '\x02\x02\x02\u02ECs\x03\x02\x02\x02\u02ED\u02F2\x05', 'p9\x02\u02EE\u02EF\x07\x11\x02\x02\u02EF\u02F1\x05p9\x02', '\u02F0\u02EE\x03\x02\x02\x02\u02F1\u02F4\x03\x02\x02\x02', '\u02F2\u02F0\x03\x02\x02\x02\u02F2\u02F3\x03\x02\x02\x02', '\u02F3u\x03\x02\x02\x02\u02F4\u02F2\x03\x02\x02\x02', '\u02F5\u02FA\x05x=\x02\u02F6\u02F7\x07\x11\x02\x02\u02F7', '\u02F9\x05x=\x02\u02F8\u02F6\x03\x02\x02\x02\u02F9\u02FC', '\x03\x02\x02\x02\u02FA\u02F8\x03\x02\x02\x02\u02FA\u02FB', '\x03\x02\x02\x02\u02FB\u02FE\x03\x02\x02\x02\u02FC\u02FA', '\x03\x02\x02\x02\u02FD\u02FF\x07\x11\x02\x02\u02FE\u02FD', '\x03\x02\x02\x02\u02FE\u02FF\x03\x02\x02\x02\u02FFw', '\x03\x02\x02\x02\u0300\u0301\x05\xA8U\x02\u0301\u0302', '\x07K\x02\x02\u0302\u0303\x05p9\x02\u0303y\x03\x02\x02', '\x02\u0304\u0306\x07\x10\x02\x02\u0305\u0307\x05v<\x02', '\u0306\u0305\x03\x02\x02\x02\u0306\u0307\x03\x02\x02\x02', '\u0307\u0308\x03\x02\x02\x02\u0308\u030D\x07\x12\x02\x02', '\u0309\u030B\x05t;\x02\u030A\u0309\x03\x02\x02\x02\u030A', '\u030B\x03\x02\x02\x02\u030B\u030D\x03\x02\x02\x02\u030C', '\u0304\x03\x02\x02\x02\u030C\u030A\x03\x02\x02\x02\u030D', '{\x03\x02\x02\x02\u030E\u030F\x05p9\x02\u030F\u0310\x07', '\x17\x02\x02\u0310\u0311\x05z>\x02\u0311\u0312\x07\x18', '\x02\x02\u0312}\x03\x02\x02\x02\u0313\u0317\x07\x10', '\x02\x02\u0314\u0316\x05\x80A\x02\u0315\u0314\x03\x02', '\x02\x02\u0316\u0319\x03\x02\x02\x02\u0317\u0315\x03\x02', '\x02\x02\u0317\u0318\x03\x02\x02\x02\u0318\u031A\x03\x02', '\x02\x02\u0319\u0317\x03\x02\x02\x02\u031A\u031B\x07\x12', '\x02\x02\u031B\x7F\x03\x02\x02\x02\u031C\u032E\x05\xA8', 'U\x02\u031D\u032E\x05~@\x02\u031E\u032E\x05\x82B\x02\u031F', '\u032E\x05\x86D\x02\u0320\u032E\x05\x88E\x02\u0321\u032E', '\x05\x8EH\x02\u0322\u032E\x05\x90I\x02\u0323\u032E\x05', '\x92J\x02\u0324\u032E\x05\x96L\x02\u0325\u032E\x05\x9A', 'N\x02\u0326\u032E\x05\x9CO\x02\u0327\u032E\x07j\x02\x02', '\u0328\u032E\x07l\x02\x02\u0329\u032E\x05\xA0Q\x02\u032A', '\u032E\x05\xA6T\x02\u032B\u032E\x07w\x02\x02\u032C\u032E', '\x07g\x02\x02\u032D\u031C\x03\x02\x02\x02\u032D\u031D', '\x03\x02\x02\x02\u032D\u031E\x03\x02\x02\x02\u032D\u031F', '\x03\x02\x02\x02\u032D\u0320\x03\x02\x02\x02\u032D\u0321', '\x03\x02\x02\x02\u032D\u0322\x03\x02\x02\x02\u032D\u0323', '\x03\x02\x02\x02\u032D\u0324\x03\x02\x02\x02\u032D\u0325', '\x03\x02\x02\x02\u032D\u0326\x03\x02\x02\x02\u032D\u0327', '\x03\x02\x02\x02\u032D\u0328\x03\x02\x02\x02\u032D\u0329', '\x03\x02\x02\x02\u032D\u032A\x03\x02\x02\x02\u032D\u032B', '\x03\x02\x02\x02\u032D\u032C\x03\x02\x02\x02\u032E\x81', '\x03\x02\x02\x02\u032F\u0332\x05\x84C\x02\u0330\u0332', '\x05\x9EP\x02\u0331\u032F\x03\x02\x02\x02\u0331\u0330', '\x03\x02\x02\x02\u0332\x83\x03\x02\x02\x02\u0333\u0338', '\x070\x02\x02\u0334\u0338\x07$\x02\x02\u0335\u0338\x07', '6\x02\x02\u0336\u0338\x05\xA8U\x02\u0337\u0333\x03\x02', '\x02\x02\u0337\u0334\x03\x02\x02\x02\u0337\u0335\x03\x02', '\x02\x02\u0337\u0336\x03\x02\x02\x02\u0338\u0345\x03\x02', '\x02\x02\u0339\u033B\x07\x17\x02\x02\u033A\u033C\x05\x82', 'B\x02\u033B\u033A\x03\x02\x02\x02\u033B\u033C\x03\x02', '\x02\x02\u033C\u0341\x03\x02\x02\x02\u033D\u033E\x07\x11', '\x02\x02\u033E\u0340\x05\x82B\x02\u033F\u033D\x03\x02', '\x02\x02\u0340\u0343\x03\x02\x02\x02\u0341\u033F\x03\x02', '\x02\x02\u0341\u0342\x03\x02\x02\x02\u0342\u0344\x03\x02', '\x02\x02\u0343\u0341\x03\x02\x02\x02\u0344\u0346\x07\x18', '\x02\x02\u0345\u0339\x03\x02\x02\x02\u0345\u0346\x03\x02', '\x02\x02\u0346\x85\x03\x02\x02\x02\u0347\u0348\x07V', '\x02\x02\u0348\u034B\x05\x8AF\x02\u0349\u034A\x07W\x02', '\x02\u034A\u034C\x05\x82B\x02\u034B\u0349\x03\x02\x02', '\x02\u034B\u034C\x03\x02\x02\x02\u034C\x87\x03\x02\x02', '\x02\u034D\u034E\x05\x8AF\x02\u034E\u034F\x07W\x02\x02', '\u034F\u0350\x05\x82B\x02\u0350\x89\x03\x02\x02\x02', '\u0351\u0357\x05\xA8U\x02\u0352\u0353\x07\x17\x02\x02', '\u0353\u0354\x05\x8CG\x02\u0354\u0355\x07\x18\x02\x02', '\u0355\u0357\x03\x02\x02\x02\u0356\u0351\x03\x02\x02\x02', '\u0356\u0352\x03\x02\x02\x02\u0357\x8B\x03\x02\x02\x02', '\u0358\u035D\x05\xA8U\x02\u0359\u035A\x07\x11\x02\x02', '\u035A\u035C\x05\xA8U\x02\u035B\u0359\x03\x02\x02\x02', '\u035C\u035F\x03\x02\x02\x02\u035D\u035B\x03\x02\x02\x02', '\u035D\u035E\x03\x02\x02\x02\u035E\x8D\x03\x02\x02\x02', '\u035F\u035D\x03\x02\x02\x02\u0360\u0361\x07X\x02\x02', '\u0361\u0362\x05\xA8U\x02\u0362\x8F\x03\x02\x02\x02', '\u0363\u0364\x05\xA8U\x02\u0364\u0365\x07K\x02\x02\u0365', '\x91\x03\x02\x02\x02\u0366\u0367\x07Y\x02\x02\u0367', '\u036B\x05\x82B\x02\u0368\u036A\x05\x94K\x02\u0369\u0368', '\x03\x02\x02\x02\u036A\u036D\x03\x02\x02\x02\u036B\u0369', '\x03\x02\x02\x02\u036B\u036C\x03\x02\x02\x02\u036C\x93', '\x03\x02\x02\x02\u036D\u036B\x03\x02\x02\x02\u036E\u036F', '\x07Z\x02\x02\u036F\u0370\x05\x9EP\x02\u0370\u0371\x05', '~@\x02\u0371\u0375\x03\x02\x02\x02\u0372\u0373\x07[\x02', '\x02\u0373\u0375\x05~@\x02\u0374\u036E\x03\x02\x02\x02', '\u0374\u0372\x03\x02\x02\x02\u0375\x95\x03\x02\x02\x02', '\u0376\u0377\x07\x1E\x02\x02\u0377\u0378\x05\xA8U\x02', '\u0378\u037A\x07\x17\x02\x02\u0379\u037B\x05\x8CG\x02', '\u037A\u0379\x03\x02\x02\x02\u037A\u037B\x03\x02\x02\x02', '\u037B\u037C\x03\x02\x02\x02\u037C\u037E\x07\x18\x02\x02', '\u037D\u037F\x05\x98M\x02\u037E\u037D\x03\x02\x02\x02', '\u037E\u037F\x03\x02\x02\x02\u037F\u0380\x03\x02\x02\x02', '\u0380\u0381\x05~@\x02\u0381\x97\x03\x02\x02\x02\u0382', '\u0383\x07\\\x02\x02\u0383\u0384\x05\x8CG\x02\u0384\x99', '\x03\x02\x02\x02\u0385\u0388\x07\x1A\x02\x02\u0386\u0389', '\x05~@\x02\u0387\u0389\x05\x82B\x02\u0388\u0386\x03\x02', '\x02\x02\u0388\u0387\x03\x02\x02\x02\u0389\u038A\x03\x02', '\x02\x02\u038A\u038D\x05\x82B\x02\u038B\u038E\x05~@\x02', '\u038C\u038E\x05\x82B\x02\u038D\u038B\x03\x02\x02\x02', '\u038D\u038C\x03\x02\x02\x02\u038E\u038F\x03\x02\x02\x02', '\u038F\u0390\x05~@\x02\u0390\x9B\x03\x02\x02\x02\u0391', '\u0392\x07+\x02\x02\u0392\u0393\x05\x82B\x02\u0393\u0394', '\x05~@\x02\u0394\x9D\x03\x02\x02\x02\u0395\u0396\t\x10', '\x02\x02\u0396\x9F\x03\x02\x02\x02\u0397\u0398\x07.', '\x02\x02\u0398\u0399\x05\xA8U\x02\u0399\u039A\x05~@\x02', '\u039A\xA1\x03\x02\x02\x02\u039B\u039D\x07\x17\x02\x02', '\u039C\u039E\x05p9\x02\u039D\u039C\x03\x02\x02\x02\u039D', '\u039E\x03\x02\x02\x02\u039E\u03A5\x03\x02\x02\x02\u039F', '\u03A1\x07\x11\x02\x02\u03A0\u03A2\x05p9\x02\u03A1\u03A0', '\x03\x02\x02\x02\u03A1\u03A2\x03\x02\x02\x02\u03A2\u03A4', '\x03\x02\x02\x02\u03A3\u039F\x03\x02\x02\x02\u03A4\u03A7', '\x03\x02\x02\x02\u03A5\u03A3\x03\x02\x02\x02\u03A5\u03A6', '\x03\x02\x02\x02\u03A6\u03A8\x03\x02\x02\x02\u03A7\u03A5', '\x03\x02\x02\x02\u03A8\u03B6\x07\x18\x02\x02\u03A9\u03B2', '\x07"\x02\x02\u03AA\u03AF\x05p9\x02\u03AB\u03AC\x07\x11', '\x02\x02\u03AC\u03AE\x05p9\x02\u03AD\u03AB\x03\x02\x02', '\x02\u03AE\u03B1\x03\x02\x02\x02\u03AF\u03AD\x03\x02\x02', '\x02\u03AF\u03B0\x03\x02\x02\x02\u03B0\u03B3\x03\x02\x02', '\x02\u03B1\u03AF\x03\x02\x02\x02\u03B2\u03AA\x03\x02\x02', '\x02\u03B2\u03B3\x03\x02\x02\x02\u03B3\u03B4\x03\x02\x02', '\x02\u03B4\u03B6\x07#\x02\x02\u03B5\u039B\x03\x02\x02', '\x02\u03B5\u03A9\x03\x02\x02\x02\u03B6\xA3\x03\x02\x02', '\x02\u03B7\u03B8\x05n8\x02\u03B8\xA5\x03\x02\x02\x02', '\u03B9\u03BB\t\x11\x02\x02\u03BA\u03BC\x07f\x02\x02\u03BB', '\u03BA\x03\x02\x02\x02\u03BB\u03BC\x03\x02\x02\x02\u03BC', '\xA7\x03\x02\x02\x02\u03BD\u03BE\t\x12\x02\x02\u03BE', '\xA9\x03\x02\x02\x02j\xAD\xAF\xBD\xC1\xC6\xCD', '\xD3\xD9\xDD\xE9\xF1\xFB\xFE\u0104\u010C\u010F\u0119\u011F', '\u0125\u012E\u013C\u013F\u014B\u0152\u0155\u0159\u015E\u0162\u016D\u016F', '\u0176\u0180\u0186\u0191\u0194\u019A\u019D\u01A5\u01A8\u01AE\u01B1\u01B9', '\u01BC\u01C2\u01C6\u01D1\u01D6\u01DB\u01E3\u01F2\u01F4\u01F9\u0203\u0214', '\u0220\u022A\u0230\u0234\u0237\u023E\u0252\u0264\u0268\u026D\u0271\u0275', '\u027A\u027F\u0283\u029B\u02D6\u02D8\u02E2\u02E9\u02EB\u02F2\u02FA\u02FE', '\u0306\u030A\u030C\u0317\u032D\u0331\u0337\u033B\u0341\u0345\u034B\u0356', '\u035D\u036B\u0374\u037A\u037E\u0388\u038D\u039D\u03A1\u03A5\u03AF\u03B2', '\u03B5\u03BB'].join("");
+var serializedATN = ['\x03\u608B\uA72A\u8133\uB9ED\u417C\u3BE7\u7786\u5964', '\x03\x82\u0418\x04\x02\t\x02\x04\x03\t\x03\x04\x04', '\t\x04\x04\x05\t\x05\x04\x06\t\x06\x04\x07\t\x07', '\x04\b\t\b\x04\t\t\t\x04\n\t\n\x04\x0B\t\x0B\x04\f\t\f', '\x04\r\t\r\x04\x0E\t\x0E\x04\x0F\t\x0F\x04\x10\t\x10', '\x04\x11\t\x11\x04\x12\t\x12\x04\x13\t\x13\x04\x14', '\t\x14\x04\x15\t\x15\x04\x16\t\x16\x04\x17\t\x17', '\x04\x18\t\x18\x04\x19\t\x19\x04\x1A\t\x1A\x04\x1B', '\t\x1B\x04\x1C\t\x1C\x04\x1D\t\x1D\x04\x1E\t\x1E', '\x04\x1F\t\x1F\x04 \t \x04!\t!\x04"\t"\x04#\t#\x04', '$\t$\x04%\t%\x04&\t&\x04\'\t\'\x04(\t(\x04)\t)\x04*\t*\x04', '+\t+\x04,\t,\x04-\t-\x04.\t.\x04/\t/\x040\t0\x041\t1\x04', '2\t2\x043\t3\x044\t4\x045\t5\x046\t6\x047\t7\x048\t8\x04', '9\t9\x04:\t:\x04;\t;\x04<\t<\x04=\t=\x04>\t>\x04?\t?\x04', '@\t@\x04A\tA\x04B\tB\x04C\tC\x04D\tD\x04E\tE\x04F\tF\x04', 'G\tG\x04H\tH\x04I\tI\x04J\tJ\x04K\tK\x04L\tL\x04M\tM\x04', 'N\tN\x04O\tO\x04P\tP\x04Q\tQ\x04R\tR\x04S\tS\x04T\tT\x04', 'U\tU\x04V\tV\x04W\tW\x04X\tX\x04Y\tY\x03\x02\x03\x02', '\x03\x02\x07\x02\xB6\n\x02\f\x02\x0E\x02\xB9\x0B', '\x02\x03\x02\x03\x02\x03\x03\x03\x03\x03\x03\x03', '\x03\x03\x03\x03\x04\x03\x04\x03\x05\x03\x05\x05', '\x05\xC6\n\x05\x03\x06\x03\x06\x05\x06\xCA\n\x06', '\x03\x07\x03\x07\x03\b\x05\b\xCF\n\b\x03\b\x03\b\x03', '\t\x03\t\x03\t\x05\t\xD6\n\t\x03\n\x03\n\x03\n\x03\n', '\x05\n\xDC\n\n\x03\n\x03\n\x03\n\x03\n\x05\n\xE2\n\n', '\x03\n\x03\n\x05\n\xE6\n\n\x03\n\x03\n\x03\n\x03\n\x03', '\n\x03\n\x03\n\x03\n\x07\n\xF0\n\n\f\n\x0E\n\xF3\x0B', '\n\x03\n\x03\n\x03\n\x03\n\x03\n\x05\n\xFA\n\n\x03\x0B', '\x05\x0B\xFD\n\x0B\x03\x0B\x03\x0B\x03\x0B\x03', '\x0B\x03\x0B\x03\x0B\x07\x0B\u0105\n\x0B\f\x0B\x0E', '\x0B\u0108\x0B\x0B\x05\x0B\u010A\n\x0B\x03\x0B\x03', '\x0B\x07\x0B\u010E\n\x0B\f\x0B\x0E\x0B\u0111\x0B\x0B', '\x03\x0B\x03\x0B\x03\f\x03\f\x03\f\x05\f\u0118\n\f\x03', '\f\x05\f\u011B\n\f\x03\r\x03\r\x03\r\x03\r\x03\r\x03\r', '\x03\r\x05\r\u0124\n\r\x03\x0E\x03\x0E\x03\x0E\x03', '\x0E\x03\x0E\x03\x0E\x07\x0E\u012C\n\x0E\f\x0E\x0E', '\x0E\u012F\x0B\x0E\x03\x0E\x03\x0E\x03\x0E\x05\x0E', '\u0134\n\x0E\x03\x0E\x03\x0E\x03\x0F\x03\x0F\x03', '\x0F\x03\x0F\x03\x0F\x05\x0F\u013D\n\x0F\x03\x0F', '\x03\x0F\x03\x10\x03\x10\x03\x10\x03\x10\x03\x10', '\x03\x10\x03\x10\x03\x10\x07\x10\u0149\n\x10\f\x10', '\x0E\x10\u014C\x0B\x10\x05\x10\u014E\n\x10\x03\x10', '\x03\x10\x03\x11\x03\x11\x03\x11\x05\x11\u0155\n', '\x11\x03\x11\x03\x11\x07\x11\u0159\n\x11\f\x11\x0E', '\x11\u015C\x0B\x11\x03\x11\x03\x11\x03\x12\x03\x12', '\x03\x12\x05\x12\u0163\n\x12\x03\x12\x05\x12\u0166', '\n\x12\x03\x13\x03\x13\x03\x13\x03\x13\x05\x13', '\u016C\n\x13\x03\x13\x03\x13\x05\x13\u0170\n\x13\x03', '\x14\x03\x14\x05\x14\u0174\n\x14\x03\x14\x03\x14', '\x03\x14\x05\x14\u0179\n\x14\x03\x15\x03\x15\x03', '\x15\x03\x16\x03\x16\x03\x16\x03\x16\x03\x16\x03', '\x16\x03\x16\x03\x16\x07\x16\u0186\n\x16\f\x16\x0E', '\x16\u0189\x0B\x16\x03\x17\x03\x17\x03\x17\x03\x17', '\x05\x17\u018F\n\x17\x03\x17\x03\x17\x03\x18\x03', '\x18\x03\x19\x03\x19\x03\x19\x03\x19\x05\x19\u0199', '\n\x19\x03\x19\x03\x19\x07\x19\u019D\n\x19\f\x19\x0E', '\x19\u01A0\x0B\x19\x03\x19\x03\x19\x03\x1A\x03\x1A', '\x03\x1A\x03\x1A\x07\x1A\u01A8\n\x1A\f\x1A\x0E\x1A', '\u01AB\x0B\x1A\x05\x1A\u01AD\n\x1A\x03\x1A\x03\x1A', '\x03\x1B\x03\x1B\x05\x1B\u01B3\n\x1B\x03\x1B\x05', '\x1B\u01B6\n\x1B\x03\x1C\x03\x1C\x03\x1C\x03\x1C', '\x07\x1C\u01BC\n\x1C\f\x1C\x0E\x1C\u01BF\x0B\x1C\x05', '\x1C\u01C1\n\x1C\x03\x1C\x03\x1C\x03\x1D\x03\x1D', '\x05\x1D\u01C7\n\x1D\x03\x1D\x05\x1D\u01CA\n\x1D\x03', '\x1E\x03\x1E\x03\x1E\x03\x1E\x07\x1E\u01D0\n\x1E', '\f\x1E\x0E\x1E\u01D3\x0B\x1E\x05\x1E\u01D5\n\x1E\x03', '\x1E\x03\x1E\x03\x1F\x03\x1F\x05\x1F\u01DB\n\x1F', '\x03 \x03 \x05 \u01DF\n \x03 \x03 \x03!\x03!\x03!\x03', '!\x03!\x03!\x03!\x05!\u01EA\n!\x03!\x03!\x03!\x05!\u01EF', '\n!\x03!\x07!\u01F2\n!\f!\x0E!\u01F5\x0B!\x03"\x03"\x03', '"\x07"\u01FA\n"\f"\x0E"\u01FD\x0B"\x03#\x03#\x03#', '\x03#\x03#\x03#\x03#\x03$\x03$\x03$\x03$\x03$\x07', '$\u020B\n$\f$\x0E$\u020E\x0B$\x03$\x03$\x05$\u0212\n$\x03', '%\x03%\x03&\x03&\x03\'\x03\'\x07\'\u021A\n\'\f\'\x0E\'', '\u021D\x0B\'\x03\'\x03\'\x03(\x03(\x03(\x03(\x03(\x03', '(\x03(\x03(\x03(\x03(\x03(\x03(\x03(\x05(\u022E\n(\x03', ')\x03)\x03)\x03*\x03*\x03*\x03*\x03*\x03*\x03*\x05', '*\u023A\n*\x03+\x03+\x03+\x05+\u023F\n+\x03+\x03+\x06', '+\u0243\n+\r+\x0E+\u0244\x03,\x03,\x05,\u0249\n,\x03,\x05', ',\u024C\n,\x03,\x03,\x03-\x03-\x03-\x03-\x03-\x03-\x03', '.\x03.\x05.\u0258\n.\x03/\x03/\x03/\x03/\x05/\u025E\n', '/\x03/\x03/\x05/\u0262\n/\x03/\x05/\u0265\n/\x03/\x03', '/\x03/\x030\x030\x050\u026C\n0\x030\x030\x031\x031\x03', '1\x031\x031\x031\x031\x031\x032\x032\x032\x033\x03', '3\x033\x034\x034\x054\u0280\n4\x034\x034\x035\x035\x03', '5\x036\x036\x036\x036\x037\x037\x037\x037\x037\x03', '7\x037\x057\u0292\n7\x037\x037\x057\u0296\n7\x037\x03', '7\x038\x058\u029B\n8\x038\x038\x058\u029F\n8\x078\u02A1', '\n8\f8\x0E8\u02A4\x0B8\x039\x039\x059\u02A8\n9\x039\x07', '9\u02AB\n9\f9\x0E9\u02AE\x0B9\x039\x059\u02B1\n9\x039\x03', '9\x03:\x03:\x03;\x03;\x03;\x03;\x03;\x03;\x03;\x03', ';\x03;\x03;\x03;\x03;\x03;\x03;\x03;\x03;\x03;\x03', ';\x05;\u02C9\n;\x03;\x03;\x03;\x03;\x03;\x03;\x03;\x03', ';\x03;\x03;\x03;\x03;\x03;\x03;\x03;\x03;\x03;\x03', ';\x03;\x03;\x03;\x03;\x03;\x03;\x03;\x03;\x03;\x03', ';\x03;\x03;\x03;\x03;\x03;\x03;\x03;\x03;\x03;\x03', ';\x03;\x03;\x03;\x03;\x03;\x03;\x03;\x03;\x03;\x05', ';\u02FA\n;\x03;\x03;\x03;\x03;\x05;\u0300\n;\x03;\x03', ';\x05;\u0304\n;\x03;\x03;\x03;\x03;\x03;\x03;\x03;\x03', ';\x03;\x03;\x03;\x03;\x03;\x03;\x07;\u0314\n;\f;\x0E', ';\u0317\x0B;\x03<\x03<\x03<\x03<\x03<\x03<\x03<\x05', '<\u0320\n<\x03<\x03<\x03<\x03<\x03<\x03<\x05<\u0328\n', '<\x05<\u032A\n<\x03=\x03=\x03=\x07=\u032F\n=\f=\x0E=\u0332', '\x0B=\x03>\x03>\x03>\x07>\u0337\n>\f>\x0E>\u033A\x0B>', '\x03>\x05>\u033D\n>\x03?\x03?\x03?\x03?\x03@\x03@\x05', '@\u0345\n@\x03@\x03@\x05@\u0349\n@\x05@\u034B\n@\x03A\x03', 'A\x03A\x03A\x03A\x03B\x03B\x07B\u0354\nB\fB\x0EB\u0357', '\x0BB\x03B\x03B\x03C\x03C\x03C\x03C\x03C\x03C\x03', 'C\x03C\x03C\x03C\x03C\x03C\x03C\x03C\x03C\x03C\x03', 'C\x03C\x05C\u036D\nC\x03D\x03D\x05D\u0371\nD\x03E\x03', 'E\x03E\x03E\x05E\u0377\nE\x03E\x03E\x05E\u037B\nE\x03', 'E\x03E\x07E\u037F\nE\fE\x0EE\u0382\x0BE\x03E\x05E\u0385', '\nE\x03F\x03F\x03F\x03F\x05F\u038B\nF\x03G\x03G\x03', 'G\x03G\x03H\x03H\x03H\x03H\x03H\x05H\u0396\nH\x03I\x03', 'I\x03I\x07I\u039B\nI\fI\x0EI\u039E\x0BI\x03J\x03J\x03', 'J\x03K\x03K\x03K\x03L\x03L\x03L\x07L\u03A9\nL\fL\x0E', 'L\u03AC\x0BL\x03M\x03M\x03M\x03M\x03M\x03M\x05M\u03B4', '\nM\x03N\x03N\x03N\x03N\x05N\u03BA\nN\x03N\x03N\x05', 'N\u03BE\nN\x03N\x03N\x03O\x03O\x03O\x03P\x03P\x03P\x05', 'P\u03C8\nP\x03P\x03P\x03P\x05P\u03CD\nP\x03P\x03P\x03', 'Q\x03Q\x03Q\x03Q\x03R\x03R\x03R\x03R\x05R\u03D9\nR\x03', 'S\x03S\x03S\x03S\x03T\x03T\x05T\u03E1\nT\x03T\x03T\x05', 'T\u03E5\nT\x07T\u03E7\nT\fT\x0ET\u03EA\x0BT\x03T\x03T\x03', 'T\x03T\x03T\x07T\u03F1\nT\fT\x0ET\u03F4\x0BT\x05T\u03F6', '\nT\x03T\x05T\u03F9\nT\x03U\x03U\x05U\u03FD\nU\x03V\x03', 'V\x05V\u0401\nV\x03W\x03W\x03X\x03X\x03X\x03X\x03X\x07', 'X\u040A\nX\fX\x0EX\u040D\x0BX\x03X\x03X\x05X\u0411\nX\x03', 'Y\x06Y\u0414\nY\rY\x0EY\u0415\x03Y\x02\x04@tZ\x02\x04', '\x06\b\n\f\x0E\x10\x12\x14\x16\x18\x1A\x1C\x1E ', '"$&(*,.02468:<>@BDFHJLNPRTVXZ\\^`bdfhjlnprtvxz|~\x80\x82\x84', '\x86\x88\x8A\x8C\x8E\x90\x92\x94\x96\x98\x9A\x9C', '\x9E\xA0\xA2\xA4\xA6\xA8\xAA\xAC\xAE\xB0\x02\x11', '\x03\x02\x05\x0B\x03\x02\x14\x16\x03\x02(*\x06', '\x02mmsswwyy\x05\x02$$58`d\x03\x029:\x03\x02=>\x03\x02', '?@\x04\x02\x0E\x0ECD\x03\x02EF\x03\x02\x07\n\x03', '\x02IJ\x04\x02\x0B\x0BNW\x03\x02fg\x05\x02\x0F\x0F', '**}}\x02\u048C\x02\xB7\x03\x02\x02\x02\x04\xBC\x03', '\x02\x02\x02\x06\xC1\x03\x02\x02\x02\b\xC5\x03', '\x02\x02\x02\n\xC7\x03\x02\x02\x02\f\xCB\x03\x02', '\x02\x02\x0E\xCE\x03\x02\x02\x02\x10\xD2\x03\x02', '\x02\x02\x12\xF9\x03\x02\x02\x02\x14\xFC\x03\x02', '\x02\x02\x16\u0114\x03\x02\x02\x02\x18\u0123\x03\x02', '\x02\x02\x1A\u0125\x03\x02\x02\x02\x1C\u0137\x03\x02', '\x02\x02\x1E\u0140\x03\x02\x02\x02 \u0151\x03\x02', '\x02\x02"\u015F\x03\x02\x02\x02$\u0167\x03\x02\x02', '\x02&\u0178\x03\x02\x02\x02(\u017A\x03\x02\x02\x02', '*\u0187\x03\x02\x02\x02,\u018A\x03\x02\x02\x02.\u0192', '\x03\x02\x02\x020\u0194\x03\x02\x02\x022\u01A3\x03', '\x02\x02\x024\u01B0\x03\x02\x02\x026\u01B7\x03\x02', '\x02\x028\u01C4\x03\x02\x02\x02:\u01CB\x03\x02\x02', '\x02<\u01D8\x03\x02\x02\x02>\u01DC\x03\x02\x02\x02', '@\u01E9\x03\x02\x02\x02B\u01F6\x03\x02\x02\x02D\u01FE', '\x03\x02\x02\x02F\u0205\x03\x02\x02\x02H\u0213\x03', '\x02\x02\x02J\u0215\x03\x02\x02\x02L\u0217\x03\x02', '\x02\x02N\u022D\x03\x02\x02\x02P\u022F\x03\x02\x02', '\x02R\u0232\x03\x02\x02\x02T\u023B\x03\x02\x02\x02', 'V\u0246\x03\x02\x02\x02X\u024F\x03\x02\x02\x02Z\u0257', '\x03\x02\x02\x02\\\u0259\x03\x02\x02\x02^\u0269\x03', '\x02\x02\x02`\u026F\x03\x02\x02\x02b\u0277\x03\x02', '\x02\x02d\u027A\x03\x02\x02\x02f\u027D\x03\x02\x02', '\x02h\u0283\x03\x02\x02\x02j\u0286\x03\x02\x02\x02', 'l\u0291\x03\x02\x02\x02n\u029A\x03\x02\x02\x02p\u02A5', '\x03\x02\x02\x02r\u02B4\x03\x02\x02\x02t\u02C8\x03', '\x02\x02\x02v\u0329\x03\x02\x02\x02x\u032B\x03\x02', '\x02\x02z\u0333\x03\x02\x02\x02|\u033E\x03\x02\x02', '\x02~\u034A\x03\x02\x02\x02\x80\u034C\x03\x02\x02', '\x02\x82\u0351\x03\x02\x02\x02\x84\u036C\x03\x02\x02', '\x02\x86\u0370\x03\x02\x02\x02\x88\u0376\x03\x02\x02', '\x02\x8A\u0386\x03\x02\x02\x02\x8C\u038C\x03\x02\x02', '\x02\x8E\u0395\x03\x02\x02\x02\x90\u0397\x03\x02\x02', '\x02\x92\u039F\x03\x02\x02\x02\x94\u03A2\x03\x02\x02', '\x02\x96\u03A5\x03\x02\x02\x02\x98\u03B3\x03\x02\x02', '\x02\x9A\u03B5\x03\x02\x02\x02\x9C\u03C1\x03\x02\x02', '\x02\x9E\u03C4\x03\x02\x02\x02\xA0\u03D0\x03\x02\x02', '\x02\xA2\u03D8\x03\x02\x02\x02\xA4\u03DA\x03\x02\x02', '\x02\xA6\u03F8\x03\x02\x02\x02\xA8\u03FC\x03\x02\x02', '\x02\xAA\u03FE\x03\x02\x02\x02\xAC\u0402\x03\x02\x02', '\x02\xAE\u0404\x03\x02\x02\x02\xB0\u0413\x03\x02\x02', '\x02\xB2\xB6\x05\x04\x03\x02\xB3\xB6\x05\x12\n', '\x02\xB4\xB6\x05\x14\x0B\x02\xB5\xB2\x03\x02\x02', '\x02\xB5\xB3\x03\x02\x02\x02\xB5\xB4\x03\x02\x02', '\x02\xB6\xB9\x03\x02\x02\x02\xB7\xB5\x03\x02\x02', '\x02\xB7\xB8\x03\x02\x02\x02\xB8\xBA\x03\x02\x02', '\x02\xB9\xB7\x03\x02\x02\x02\xBA\xBB\x07\x02\x02', '\x03\xBB\x03\x03\x02\x02\x02\xBC\xBD\x07\x03\x02', '\x02\xBD\xBE\x05\x06\x04\x02\xBE\xBF\x05\b\x05', '\x02\xBF\xC0\x07\x04\x02\x02\xC0\x05\x03\x02\x02', '\x02\xC1\xC2\x05\xACW\x02\xC2\x07\x03\x02\x02', '\x02\xC3\xC6\x05\n\x06\x02\xC4\xC6\x05t;\x02\xC5', '\xC3\x03\x02\x02\x02\xC5\xC4\x03\x02\x02\x02\xC6', '\t\x03\x02\x02\x02\xC7\xC9\x05\x0E\b\x02\xC8\xCA', '\x05\x0E\b\x02\xC9\xC8\x03\x02\x02\x02\xC9\xCA', '\x03\x02\x02\x02\xCA\x0B\x03\x02\x02\x02\xCB\xCC', '\t\x02\x02\x02\xCC\r\x03\x02\x02\x02\xCD\xCF\x05', '\f\x07\x02\xCE\xCD\x03\x02\x02\x02\xCE\xCF\x03', '\x02\x02\x02\xCF\xD0\x03\x02\x02\x02\xD0\xD1\x07', '\x7F\x02\x02\xD1\x0F\x03\x02\x02\x02\xD2\xD5\x05', '\xACW\x02\xD3\xD4\x07\f\x02\x02\xD4\xD6\x05\xAC', 'W\x02\xD5\xD3\x03\x02\x02\x02\xD5\xD6\x03\x02', '\x02\x02\xD6\x11\x03\x02\x02\x02\xD7\xD8\x07\r', '\x02\x02\xD8\xDB\x07~\x02\x02\xD9\xDA\x07\f\x02', '\x02\xDA\xDC\x05\xACW\x02\xDB\xD9\x03\x02\x02', '\x02\xDB\xDC\x03\x02\x02\x02\xDC\xDD\x03\x02\x02', '\x02\xDD\xFA\x07\x04\x02\x02\xDE\xE1\x07\r\x02', '\x02\xDF\xE2\x07\x0E\x02\x02\xE0\xE2\x05\xACW', '\x02\xE1\xDF\x03\x02\x02\x02\xE1\xE0\x03\x02\x02', '\x02\xE2\xE5\x03\x02\x02\x02\xE3\xE4\x07\f\x02', '\x02\xE4\xE6\x05\xACW\x02\xE5\xE3\x03\x02\x02', '\x02\xE5\xE6\x03\x02\x02\x02\xE6\xE7\x03\x02\x02', '\x02\xE7\xE8\x07\x0F\x02\x02\xE8\xE9\x07~\x02', '\x02\xE9\xFA\x07\x04\x02\x02\xEA\xEB\x07\r\x02', '\x02\xEB\xEC\x07\x10\x02\x02\xEC\xF1\x05\x10\t', '\x02\xED\xEE\x07\x11\x02\x02\xEE\xF0\x05\x10\t', '\x02\xEF\xED\x03\x02\x02\x02\xF0\xF3\x03\x02\x02', '\x02\xF1\xEF\x03\x02\x02\x02\xF1\xF2\x03\x02\x02', '\x02\xF2\xF4\x03\x02\x02\x02\xF3\xF1\x03\x02\x02', '\x02\xF4\xF5\x07\x12\x02\x02\xF5\xF6\x07\x0F\x02', '\x02\xF6\xF7\x07~\x02\x02\xF7\xF8\x07\x04\x02', '\x02\xF8\xFA\x03\x02\x02\x02\xF9\xD7\x03\x02\x02', '\x02\xF9\xDE\x03\x02\x02\x02\xF9\xEA\x03\x02\x02', '\x02\xFA\x13\x03\x02\x02\x02\xFB\xFD\x07\x13\x02', '\x02\xFC\xFB\x03\x02\x02\x02\xFC\xFD\x03\x02\x02', '\x02\xFD\xFE\x03\x02\x02\x02\xFE\xFF\t\x03\x02', '\x02\xFF\u0109\x05\xACW\x02\u0100\u0101\x07\x17\x02', '\x02\u0101\u0106\x05\x16\f\x02\u0102\u0103\x07\x11\x02', '\x02\u0103\u0105\x05\x16\f\x02\u0104\u0102\x03\x02\x02', '\x02\u0105\u0108\x03\x02\x02\x02\u0106\u0104\x03\x02\x02', '\x02\u0106\u0107\x03\x02\x02\x02\u0107\u010A\x03\x02\x02', '\x02\u0108\u0106\x03\x02\x02\x02\u0109\u0100\x03\x02\x02', '\x02\u0109\u010A\x03\x02\x02\x02\u010A\u010B\x03\x02\x02', '\x02\u010B\u010F\x07\x10\x02\x02\u010C\u010E\x05\x18\r', '\x02\u010D\u010C\x03\x02\x02\x02\u010E\u0111\x03\x02\x02', '\x02\u010F\u010D\x03\x02\x02\x02\u010F\u0110\x03\x02\x02', '\x02\u0110\u0112\x03\x02\x02\x02\u0111\u010F\x03\x02\x02', '\x02\u0112\u0113\x07\x12\x02\x02\u0113\x15\x03\x02\x02', '\x02\u0114\u011A\x05B"\x02\u0115\u0117\x07\x18\x02\x02', '\u0116\u0118\x05x=\x02\u0117\u0116\x03\x02\x02\x02\u0117', '\u0118\x03\x02\x02\x02\u0118\u0119\x03\x02\x02\x02\u0119', '\u011B\x07\x19\x02\x02\u011A\u0115\x03\x02\x02\x02\u011A', '\u011B\x03\x02\x02\x02\u011B\x17\x03\x02\x02\x02\u011C', '\u0124\x05\x1A\x0E\x02\u011D\u0124\x05\x1C\x0F\x02\u011E', '\u0124\x05\x1E\x10\x02\u011F\u0124\x05 \x11\x02\u0120', '\u0124\x05$\x13\x02\u0121\u0124\x05,\x17\x02\u0122\u0124', '\x050\x19\x02\u0123\u011C\x03\x02\x02\x02\u0123\u011D', '\x03\x02\x02\x02\u0123\u011E\x03\x02\x02\x02\u0123\u011F', '\x03\x02\x02\x02\u0123\u0120\x03\x02\x02\x02\u0123\u0121', '\x03\x02\x02\x02\u0123\u0122\x03\x02\x02\x02\u0124\x19', '\x03\x02\x02\x02\u0125\u012D\x05@!\x02\u0126\u012C\x07', 'u\x02\x02\u0127\u012C\x07r\x02\x02\u0128\u012C\x07t\x02', '\x02\u0129\u012C\x07m\x02\x02\u012A\u012C\x05\xAEX\x02', '\u012B\u0126\x03\x02\x02\x02\u012B\u0127\x03\x02\x02\x02', '\u012B\u0128\x03\x02\x02\x02\u012B\u0129\x03\x02\x02\x02', '\u012B\u012A\x03\x02\x02\x02\u012C\u012F\x03\x02\x02\x02', '\u012D\u012B\x03\x02\x02\x02\u012D\u012E\x03\x02\x02\x02', '\u012E\u0130\x03\x02\x02\x02\u012F\u012D\x03\x02\x02\x02', '\u0130\u0133\x05\xACW\x02\u0131\u0132\x07\x0B\x02\x02', '\u0132\u0134\x05t;\x02\u0133\u0131\x03\x02\x02\x02\u0133', '\u0134\x03\x02\x02\x02\u0134\u0135\x03\x02\x02\x02\u0135', '\u0136\x07\x04\x02\x02\u0136\x1B\x03\x02\x02\x02\u0137', '\u0138\x07\x1A\x02\x02\u0138\u0139\x05\xACW\x02\u0139', '\u013C\x07\x1B\x02\x02\u013A\u013D\x07\x0E\x02\x02\u013B', '\u013D\x05@!\x02\u013C\u013A\x03\x02\x02\x02\u013C\u013B', '\x03\x02\x02\x02\u013D\u013E\x03\x02\x02\x02\u013E\u013F', '\x07\x04\x02\x02\u013F\x1D\x03\x02\x02\x02\u0140\u0141', '\x07\x1C\x02\x02\u0141\u0142\x05\xACW\x02\u0142\u014D', '\x07\x10\x02\x02\u0143\u0144\x05> \x02\u0144\u014A\x07', '\x04\x02\x02\u0145\u0146\x05> \x02\u0146\u0147\x07\x04', '\x02\x02\u0147\u0149\x03\x02\x02\x02\u0148\u0145\x03\x02', '\x02\x02\u0149\u014C\x03\x02\x02\x02\u014A\u0148\x03\x02', '\x02\x02\u014A\u014B\x03\x02\x02\x02\u014B\u014E\x03\x02', '\x02\x02\u014C\u014A\x03\x02\x02\x02\u014D\u0143\x03\x02', '\x02\x02\u014D\u014E\x03\x02\x02\x02\u014E\u014F\x03\x02', '\x02\x02\u014F\u0150\x07\x12\x02\x02\u0150\x1F\x03\x02', '\x02\x02\u0151\u0152\x07\x1D\x02\x02\u0152\u0154\x05\xAC', 'W\x02\u0153\u0155\x052\x1A\x02\u0154\u0153\x03\x02\x02', '\x02\u0154\u0155\x03\x02\x02\x02\u0155\u015A\x03\x02\x02', '\x02\u0156\u0159\x07v\x02\x02\u0157\u0159\x05\xAEX\x02', '\u0158\u0156\x03\x02\x02\x02\u0158\u0157\x03\x02\x02\x02', '\u0159\u015C\x03\x02\x02\x02\u015A\u0158\x03\x02\x02\x02', '\u015A\u015B\x03\x02\x02\x02\u015B\u015D\x03\x02\x02\x02', '\u015C\u015A\x03\x02\x02\x02\u015D\u015E\x05L\'\x02\u015E', '!\x03\x02\x02\x02\u015F\u0165\x05\xACW\x02\u0160\u0162', '\x07\x18\x02\x02\u0161\u0163\x05x=\x02\u0162\u0161\x03', '\x02\x02\x02\u0162\u0163\x03\x02\x02\x02\u0163\u0164\x03', '\x02\x02\x02\u0164\u0166\x07\x19\x02\x02\u0165\u0160\x03', '\x02\x02\x02\u0165\u0166\x03\x02\x02\x02\u0166#\x03', '\x02\x02\x02\u0167\u0168\x05&\x14\x02\u0168\u0169\x05', '2\x1A\x02\u0169\u016B\x05*\x16\x02\u016A\u016C\x05(\x15', '\x02\u016B\u016A\x03\x02\x02\x02\u016B\u016C\x03\x02\x02', '\x02\u016C\u016F\x03\x02\x02\x02\u016D\u0170\x07\x04\x02', '\x02\u016E\u0170\x05L\'\x02\u016F\u016D\x03\x02\x02\x02', '\u016F\u016E\x03\x02\x02\x02\u0170%\x03\x02\x02\x02', '\u0171\u0173\x07\x1E\x02\x02\u0172\u0174\x05\xACW\x02', '\u0173\u0172\x03\x02\x02\x02\u0173\u0174\x03\x02\x02\x02', '\u0174\u0179\x03\x02\x02\x02\u0175\u0179\x07z\x02\x02', '\u0176\u0179\x07{\x02\x02\u0177\u0179\x07|\x02\x02\u0178', '\u0171\x03\x02\x02\x02\u0178\u0175\x03\x02\x02\x02\u0178', '\u0176\x03\x02\x02\x02\u0178\u0177\x03\x02\x02\x02\u0179', '\'\x03\x02\x02\x02\u017A\u017B\x07\x1F\x02\x02\u017B', '\u017C\x052\x1A\x02\u017C)\x03\x02\x02\x02\u017D\u0186', '\x05"\x12\x02\u017E\u0186\x05J&\x02\u017F\u0186\x07p\x02', '\x02\u0180\u0186\x07u\x02\x02\u0181\u0186\x07r\x02\x02', '\u0182\u0186\x07t\x02\x02\u0183\u0186\x07v\x02\x02\u0184', '\u0186\x05\xAEX\x02\u0185\u017D\x03\x02\x02\x02\u0185', '\u017E\x03\x02\x02\x02\u0185\u017F\x03\x02\x02\x02\u0185', '\u0180\x03\x02\x02\x02\u0185\u0181\x03\x02\x02\x02\u0185', '\u0182\x03\x02\x02\x02\u0185\u0183\x03\x02\x02\x02\u0185', '\u0184\x03\x02\x02\x02\u0186\u0189\x03\x02\x02\x02\u0187', '\u0185\x03\x02\x02\x02\u0187\u0188\x03\x02\x02\x02\u0188', '+\x03\x02\x02\x02\u0189\u0187\x03\x02\x02\x02\u018A', '\u018B\x07 \x02\x02\u018B\u018C\x05\xACW\x02\u018C\u018E', '\x056\x1C\x02\u018D\u018F\x07k\x02\x02\u018E\u018D\x03', '\x02\x02\x02\u018E\u018F\x03\x02\x02\x02\u018F\u0190\x03', '\x02\x02\x02\u0190\u0191\x07\x04\x02\x02\u0191-\x03', '\x02\x02\x02\u0192\u0193\x05\xACW\x02\u0193/\x03\x02', '\x02\x02\u0194\u0195\x07!\x02\x02\u0195\u0196\x05\xAC', 'W\x02\u0196\u0198\x07\x10\x02\x02\u0197\u0199\x05.\x18', '\x02\u0198\u0197\x03\x02\x02\x02\u0198\u0199\x03\x02\x02', '\x02\u0199\u019E\x03\x02\x02\x02\u019A\u019B\x07\x11\x02', '\x02\u019B\u019D\x05.\x18\x02\u019C\u019A\x03\x02\x02', '\x02\u019D\u01A0\x03\x02\x02\x02\u019E\u019C\x03\x02\x02', '\x02\u019E\u019F\x03\x02\x02\x02\u019F\u01A1\x03\x02\x02', '\x02\u01A0\u019E\x03\x02\x02\x02\u01A1\u01A2\x07\x12\x02', '\x02\u01A21\x03\x02\x02\x02\u01A3\u01AC\x07\x18\x02', '\x02\u01A4\u01A9\x054\x1B\x02\u01A5\u01A6\x07\x11\x02', '\x02\u01A6\u01A8\x054\x1B\x02\u01A7\u01A5\x03\x02\x02', '\x02\u01A8\u01AB\x03\x02\x02\x02\u01A9\u01A7\x03\x02\x02', '\x02\u01A9\u01AA\x03\x02\x02\x02\u01AA\u01AD\x03\x02\x02', '\x02\u01AB\u01A9\x03\x02\x02\x02\u01AC\u01A4\x03\x02\x02', '\x02\u01AC\u01AD\x03\x02\x02\x02\u01AD\u01AE\x03\x02\x02', '\x02\u01AE\u01AF\x07\x19\x02\x02\u01AF3\x03\x02\x02', '\x02\u01B0\u01B2\x05@!\x02\u01B1\u01B3\x05H%\x02\u01B2\u01B1', '\x03\x02\x02\x02\u01B2\u01B3\x03\x02\x02\x02\u01B3\u01B5', '\x03\x02\x02\x02\u01B4\u01B6\x05\xACW\x02\u01B5\u01B4', '\x03\x02\x02\x02\u01B5\u01B6\x03\x02\x02\x02\u01B65', '\x03\x02\x02\x02\u01B7\u01C0\x07\x18\x02\x02\u01B8\u01BD', '\x058\x1D\x02\u01B9\u01BA\x07\x11\x02\x02\u01BA\u01BC', '\x058\x1D\x02\u01BB\u01B9\x03\x02\x02\x02\u01BC\u01BF', '\x03\x02\x02\x02\u01BD\u01BB\x03\x02\x02\x02\u01BD\u01BE', '\x03\x02\x02\x02\u01BE\u01C1\x03\x02\x02\x02\u01BF\u01BD', '\x03\x02\x02\x02\u01C0\u01B8\x03\x02\x02\x02\u01C0\u01C1', '\x03\x02\x02\x02\u01C1\u01C2\x03\x02\x02\x02\u01C2\u01C3', '\x07\x19\x02\x02\u01C37\x03\x02\x02\x02\u01C4\u01C6', '\x05@!\x02\u01C5\u01C7\x07q\x02\x02\u01C6\u01C5\x03\x02', '\x02\x02\u01C6\u01C7\x03\x02\x02\x02\u01C7\u01C9\x03\x02', '\x02\x02\u01C8\u01CA\x05\xACW\x02\u01C9\u01C8\x03\x02', '\x02\x02\u01C9\u01CA\x03\x02\x02\x02\u01CA9\x03\x02', '\x02\x02\u01CB\u01D4\x07\x18\x02\x02\u01CC\u01D1\x05<', '\x1F\x02\u01CD\u01CE\x07\x11\x02\x02\u01CE\u01D0\x05<', '\x1F\x02\u01CF\u01CD\x03\x02\x02\x02\u01D0\u01D3\x03\x02', '\x02\x02\u01D1\u01CF\x03\x02\x02\x02\u01D1\u01D2\x03\x02', '\x02\x02\u01D2\u01D5\x03\x02\x02\x02\u01D3\u01D1\x03\x02', '\x02\x02\u01D4\u01CC\x03\x02\x02\x02\u01D4\u01D5\x03\x02', '\x02\x02\u01D5\u01D6\x03\x02\x02\x02\u01D6\u01D7\x07\x19', '\x02\x02\u01D7;\x03\x02\x02\x02\u01D8\u01DA\x05@!\x02', '\u01D9\u01DB\x05H%\x02\u01DA\u01D9\x03\x02\x02\x02\u01DA', '\u01DB\x03\x02\x02\x02\u01DB=\x03\x02\x02\x02\u01DC', '\u01DE\x05@!\x02\u01DD\u01DF\x05H%\x02\u01DE\u01DD\x03\x02', '\x02\x02\u01DE\u01DF\x03\x02\x02\x02\u01DF\u01E0\x03\x02', '\x02\x02\u01E0\u01E1\x05\xACW\x02\u01E1?\x03\x02\x02', '\x02\u01E2\u01E3\b!\x01\x02\u01E3\u01EA\x05r:\x02\u01E4\u01EA', '\x05B"\x02\u01E5\u01EA\x05D#\x02\u01E6\u01EA\x05F$\x02', '\u01E7\u01E8\x07$\x02\x02\u01E8\u01EA\x07s\x02\x02\u01E9', '\u01E2\x03\x02\x02\x02\u01E9\u01E4\x03\x02\x02\x02\u01E9', '\u01E5\x03\x02\x02\x02\u01E9\u01E6\x03\x02\x02\x02\u01E9', '\u01E7\x03\x02\x02\x02\u01EA\u01F3\x03\x02\x02\x02\u01EB', '\u01EC\f\x05\x02\x02\u01EC\u01EE\x07"\x02\x02\u01ED\u01EF', '\x05t;\x02\u01EE\u01ED\x03\x02\x02\x02\u01EE\u01EF\x03', '\x02\x02\x02\u01EF\u01F0\x03\x02\x02\x02\u01F0\u01F2\x07', '#\x02\x02\u01F1\u01EB\x03\x02\x02\x02\u01F2\u01F5\x03', '\x02\x02\x02\u01F3\u01F1\x03\x02\x02\x02\u01F3\u01F4\x03', '\x02\x02\x02\u01F4A\x03\x02\x02\x02\u01F5\u01F3\x03', '\x02\x02\x02\u01F6\u01FB\x05\xACW\x02\u01F7\u01F8\x07', '%\x02\x02\u01F8\u01FA\x05\xACW\x02\u01F9\u01F7\x03\x02', '\x02\x02\u01FA\u01FD\x03\x02\x02\x02\u01FB\u01F9\x03\x02', '\x02\x02\u01FB\u01FC\x03\x02\x02\x02\u01FCC\x03\x02', '\x02\x02\u01FD\u01FB\x03\x02\x02\x02\u01FE\u01FF\x07&', '\x02\x02\u01FF\u0200\x07\x18\x02\x02\u0200\u0201\x05r', ':\x02\u0201\u0202\x07\'\x02\x02\u0202\u0203\x05@!\x02\u0203', '\u0204\x07\x19\x02\x02\u0204E\x03\x02\x02\x02\u0205', '\u0206\x07\x1E\x02\x02\u0206\u020C\x05:\x1E\x02\u0207', '\u020B\x07r\x02\x02\u0208\u020B\x07p\x02\x02\u0209\u020B', '\x05J&\x02\u020A\u0207\x03\x02\x02\x02\u020A\u0208\x03', '\x02\x02\x02\u020A\u0209\x03\x02\x02\x02\u020B\u020E\x03', '\x02\x02\x02\u020C\u020A\x03\x02\x02\x02\u020C\u020D\x03', '\x02\x02\x02\u020D\u0211\x03\x02\x02\x02\u020E\u020C\x03', '\x02\x02\x02\u020F\u0210\x07\x1F\x02\x02\u0210\u0212\x05', ':\x1E\x02\u0211\u020F\x03\x02\x02\x02\u0211\u0212\x03', '\x02\x02\x02\u0212G\x03\x02\x02\x02\u0213\u0214\t\x04', '\x02\x02\u0214I\x03\x02\x02\x02\u0215\u0216\t\x05\x02', '\x02\u0216K\x03\x02\x02\x02\u0217\u021B\x07\x10\x02', '\x02\u0218\u021A\x05N(\x02\u0219\u0218\x03\x02\x02\x02', '\u021A\u021D\x03\x02\x02\x02\u021B\u0219\x03\x02\x02\x02', '\u021B\u021C\x03\x02\x02\x02\u021C\u021E\x03\x02\x02\x02', '\u021D\u021B\x03\x02\x02\x02\u021E\u021F\x07\x12\x02\x02', '\u021FM\x03\x02\x02\x02\u0220\u022E\x05R*\x02\u0221\u022E', '\x05T+\x02\u0222\u022E\x05X-\x02\u0223\u022E\x05\\/\x02', '\u0224\u022E\x05L\'\x02\u0225\u022E\x05^0\x02\u0226\u022E\x05', '`1\x02\u0227\u022E\x05b2\x02\u0228\u022E\x05d3\x02\u0229\u022E', '\x05f4\x02\u022A\u022E\x05h5\x02\u022B\u022E\x05j6\x02\u022C', '\u022E\x05Z.\x02\u022D\u0220\x03\x02\x02\x02\u022D\u0221', '\x03\x02\x02\x02\u022D\u0222\x03\x02\x02\x02\u022D\u0223', '\x03\x02\x02\x02\u022D\u0224\x03\x02\x02\x02\u022D\u0225', '\x03\x02\x02\x02\u022D\u0226\x03\x02\x02\x02\u022D\u0227', '\x03\x02\x02\x02\u022D\u0228\x03\x02\x02\x02\u022D\u0229', '\x03\x02\x02\x02\u022D\u022A\x03\x02\x02\x02\u022D\u022B', '\x03\x02\x02\x02\u022D\u022C\x03\x02\x02\x02\u022EO', '\x03\x02\x02\x02\u022F\u0230\x05t;\x02\u0230\u0231\x07', '\x04\x02\x02\u0231Q\x03\x02\x02\x02\u0232\u0233\x07', '+\x02\x02\u0233\u0234\x07\x18\x02\x02\u0234\u0235\x05', 't;\x02\u0235\u0236\x07\x19\x02\x02\u0236\u0239\x05N(\x02', '\u0237\u0238\x07,\x02\x02\u0238\u023A\x05N(\x02\u0239\u0237', '\x03\x02\x02\x02\u0239\u023A\x03\x02\x02\x02\u023AS', '\x03\x02\x02\x02\u023B\u023C\x07-\x02\x02\u023C\u023E', '\x05t;\x02\u023D\u023F\x05(\x15\x02\u023E\u023D\x03\x02', '\x02\x02\u023E\u023F\x03\x02\x02\x02\u023F\u0240\x03\x02', '\x02\x02\u0240\u0242\x05L\'\x02\u0241\u0243\x05V,\x02\u0242', '\u0241\x03\x02\x02\x02\u0243\u0244\x03\x02\x02\x02\u0244', '\u0242\x03\x02\x02\x02\u0244\u0245\x03\x02\x02\x02\u0245', 'U\x03\x02\x02\x02\u0246\u024B\x07.\x02\x02\u0247\u0249', '\x05\xACW\x02\u0248\u0247\x03\x02\x02\x02\u0248\u0249', '\x03\x02\x02\x02\u0249\u024A\x03\x02\x02\x02\u024A\u024C', '\x052\x1A\x02\u024B\u0248\x03\x02\x02\x02\u024B\u024C', '\x03\x02\x02\x02\u024C\u024D\x03\x02\x02\x02\u024D\u024E', '\x05L\'\x02\u024EW\x03\x02\x02\x02\u024F\u0250\x07/\x02', '\x02\u0250\u0251\x07\x18\x02\x02\u0251\u0252\x05t;\x02', '\u0252\u0253\x07\x19\x02\x02\u0253\u0254\x05N(\x02\u0254', 'Y\x03\x02\x02\x02\u0255\u0258\x05l7\x02\u0256\u0258\x05', 'P)\x02\u0257\u0255\x03\x02\x02\x02\u0257\u0256\x03\x02', '\x02\x02\u0258[\x03\x02\x02\x02\u0259\u025A\x07\x1B', '\x02\x02\u025A\u025D\x07\x18\x02\x02\u025B\u025E\x05Z', '.\x02\u025C\u025E\x07\x04\x02\x02\u025D\u025B\x03\x02', '\x02\x02\u025D\u025C\x03\x02\x02\x02\u025E\u0261\x03\x02', '\x02\x02\u025F\u0262\x05P)\x02\u0260\u0262\x07\x04\x02', '\x02\u0261\u025F\x03\x02\x02\x02\u0261\u0260\x03\x02\x02', '\x02\u0262\u0264\x03\x02\x02\x02\u0263\u0265\x05t;\x02', '\u0264\u0263\x03\x02\x02\x02\u0264\u0265\x03\x02\x02\x02', '\u0265\u0266\x03\x02\x02\x02\u0266\u0267\x07\x19\x02\x02', '\u0267\u0268\x05N(\x02\u0268]\x03\x02\x02\x02\u0269\u026B', '\x070\x02\x02\u026A\u026C\x07~\x02\x02\u026B\u026A\x03', '\x02\x02\x02\u026B\u026C\x03\x02\x02\x02\u026C\u026D\x03', '\x02\x02\x02\u026D\u026E\x05\x82B\x02\u026E_\x03\x02', '\x02\x02\u026F\u0270\x071\x02\x02\u0270\u0271\x05N(\x02', '\u0271\u0272\x07/\x02\x02\u0272\u0273\x07\x18\x02\x02', '\u0273\u0274\x05t;\x02\u0274\u0275\x07\x19\x02\x02\u0275', '\u0276\x07\x04\x02\x02\u0276a\x03\x02\x02\x02\u0277', '\u0278\x07n\x02\x02\u0278\u0279\x07\x04\x02\x02\u0279', 'c\x03\x02\x02\x02\u027A\u027B\x07l\x02\x02\u027B\u027C', '\x07\x04\x02\x02\u027Ce\x03\x02\x02\x02\u027D\u027F', '\x072\x02\x02\u027E\u0280\x05t;\x02\u027F\u027E\x03\x02', '\x02\x02\u027F\u0280\x03\x02\x02\x02\u0280\u0281\x03\x02', '\x02\x02\u0281\u0282\x07\x04\x02\x02\u0282g\x03\x02', '\x02\x02\u0283\u0284\x073\x02\x02\u0284\u0285\x07\x04', '\x02\x02\u0285i\x03\x02\x02\x02\u0286\u0287\x074\x02', '\x02\u0287\u0288\x05\x80A\x02\u0288\u0289\x07\x04\x02', '\x02\u0289k\x03\x02\x02\x02\u028A\u028B\x075\x02\x02', '\u028B\u0292\x05p9\x02\u028C\u0292\x05> \x02\u028D\u028E\x07', '\x18\x02\x02\u028E\u028F\x05n8\x02\u028F\u0290\x07\x19', '\x02\x02\u0290\u0292\x03\x02\x02\x02\u0291\u028A\x03\x02', '\x02\x02\u0291\u028C\x03\x02\x02\x02\u0291\u028D\x03\x02', '\x02\x02\u0292\u0295\x03\x02\x02\x02\u0293\u0294\x07\x0B', '\x02\x02\u0294\u0296\x05t;\x02\u0295\u0293\x03\x02\x02', '\x02\u0295\u0296\x03\x02\x02\x02\u0296\u0297\x03\x02\x02', '\x02\u0297\u0298\x07\x04\x02\x02\u0298m\x03\x02\x02', '\x02\u0299\u029B\x05> \x02\u029A\u0299\x03\x02\x02\x02', '\u029A\u029B\x03\x02\x02\x02\u029B\u02A2\x03\x02\x02\x02', '\u029C\u029E\x07\x11\x02\x02\u029D\u029F\x05> \x02\u029E', '\u029D\x03\x02\x02\x02\u029E\u029F\x03\x02\x02\x02\u029F', '\u02A1\x03\x02\x02\x02\u02A0\u029C\x03\x02\x02\x02\u02A1', '\u02A4\x03\x02\x02\x02\u02A2\u02A0\x03\x02\x02\x02\u02A2', '\u02A3\x03\x02\x02\x02\u02A3o\x03\x02\x02\x02\u02A4', '\u02A2\x03\x02\x02\x02\u02A5\u02AC\x07\x18\x02\x02\u02A6', '\u02A8\x05\xACW\x02\u02A7\u02A6\x03\x02\x02\x02\u02A7', '\u02A8\x03\x02\x02\x02\u02A8\u02A9\x03\x02\x02\x02\u02A9', '\u02AB\x07\x11\x02\x02\u02AA\u02A7\x03\x02\x02\x02\u02AB', '\u02AE\x03\x02\x02\x02\u02AC\u02AA\x03\x02\x02\x02\u02AC', '\u02AD\x03\x02\x02\x02\u02AD\u02B0\x03\x02\x02\x02\u02AE', '\u02AC\x03\x02\x02\x02\u02AF\u02B1\x05\xACW\x02\u02B0', '\u02AF\x03\x02\x02\x02\u02B0\u02B1\x03\x02\x02\x02\u02B1', '\u02B2\x03\x02\x02\x02\u02B2\u02B3\x07\x19\x02\x02\u02B3', 'q\x03\x02\x02\x02\u02B4\u02B5\t\x06\x02\x02\u02B5s\x03', '\x02\x02\x02\u02B6\u02B7\b;\x01\x02\u02B7\u02B8\x07;\x02', '\x02\u02B8\u02C9\x05@!\x02\u02B9\u02BA\x07\x18\x02\x02', '\u02BA\u02BB\x05t;\x02\u02BB\u02BC\x07\x19\x02\x02\u02BC', '\u02C9\x03\x02\x02\x02\u02BD\u02BE\t\x07\x02\x02\u02BE', '\u02C9\x05t;\x15\u02BF\u02C0\t\b\x02\x02\u02C0\u02C9\x05t', ';\x14\u02C1\u02C2\t\t\x02\x02\u02C2\u02C9\x05t;\x13\u02C3', '\u02C4\x07A\x02\x02\u02C4\u02C9\x05t;\x12\u02C5\u02C6\x07', '\x06\x02\x02\u02C6\u02C9\x05t;\x11\u02C7\u02C9\x05v<\x02', '\u02C8\u02B6\x03\x02\x02\x02\u02C8\u02B9\x03\x02\x02\x02', '\u02C8\u02BD\x03\x02\x02\x02\u02C8\u02BF\x03\x02\x02\x02', '\u02C8\u02C1\x03\x02\x02\x02\u02C8\u02C3\x03\x02\x02\x02', '\u02C8\u02C5\x03\x02\x02\x02\u02C8\u02C7\x03\x02\x02\x02', '\u02C9\u0315\x03\x02\x02\x02\u02CA\u02CB\f\x10\x02\x02', '\u02CB\u02CC\x07B\x02\x02\u02CC\u0314\x05t;\x11\u02CD\u02CE', '\f\x0F\x02\x02\u02CE\u02CF\t\n\x02\x02\u02CF\u0314\x05t', ';\x10\u02D0\u02D1\f\x0E\x02\x02\u02D1\u02D2\t\b\x02\x02', '\u02D2\u0314\x05t;\x0F\u02D3\u02D4\f\r\x02\x02\u02D4\u02D5\t', '\x0B\x02\x02\u02D5\u0314\x05t;\x0E\u02D6\u02D7\f\f\x02\x02', '\u02D7\u02D8\x07G\x02\x02\u02D8\u0314\x05t;\r\u02D9\u02DA\f', '\x0B\x02\x02\u02DA\u02DB\x07\x05\x02\x02\u02DB\u0314\x05', 't;\f\u02DC\u02DD\f\n\x02\x02\u02DD\u02DE\x07H\x02\x02\u02DE', '\u0314\x05t;\x0B\u02DF\u02E0\f\t\x02\x02\u02E0\u02E1\t\f\x02', '\x02\u02E1\u0314\x05t;\n\u02E2\u02E3\f\b\x02\x02\u02E3\u02E4', '\t\r\x02\x02\u02E4\u0314\x05t;\t\u02E5\u02E6\f\x07\x02\x02', '\u02E6\u02E7\x07K\x02\x02\u02E7\u0314\x05t;\b\u02E8\u02E9\f', '\x06\x02\x02\u02E9\u02EA\x07L\x02\x02\u02EA\u0314\x05', 't;\x07\u02EB\u02EC\f\x05\x02\x02\u02EC\u02ED\x07M\x02\x02', '\u02ED\u02EE\x05t;\x02\u02EE\u02EF\x07<\x02\x02\u02EF\u02F0', '\x05t;\x06\u02F0\u0314\x03\x02\x02\x02\u02F1\u02F2\f\x04', '\x02\x02\u02F2\u02F3\t\x0E\x02\x02\u02F3\u0314\x05t;\x05', '\u02F4\u02F5\f\x1D\x02\x02\u02F5\u0314\t\x07\x02\x02\u02F6', '\u02F7\f\x1B\x02\x02\u02F7\u02F9\x07"\x02\x02\u02F8\u02FA', '\x05t;\x02\u02F9\u02F8\x03\x02\x02\x02\u02F9\u02FA\x03', '\x02\x02\x02\u02FA\u02FB\x03\x02\x02\x02\u02FB\u0314\x07', '#\x02\x02\u02FC\u02FD\f\x1A\x02\x02\u02FD\u02FF\x07"\x02', '\x02\u02FE\u0300\x05t;\x02\u02FF\u02FE\x03\x02\x02\x02', '\u02FF\u0300\x03\x02\x02\x02\u0300\u0301\x03\x02\x02\x02', '\u0301\u0303\x07<\x02\x02\u0302\u0304\x05t;\x02\u0303\u0302', '\x03\x02\x02\x02\u0303\u0304\x03\x02\x02\x02\u0304\u0305', '\x03\x02\x02\x02\u0305\u0314\x07#\x02\x02\u0306\u0307', '\f\x19\x02\x02\u0307\u0308\x07%\x02\x02\u0308\u0314\x05', '\xACW\x02\u0309\u030A\f\x18\x02\x02\u030A\u030B\x07\x10', '\x02\x02\u030B\u030C\x05z>\x02\u030C\u030D\x07\x12\x02', '\x02\u030D\u0314\x03\x02\x02\x02\u030E\u030F\f\x17\x02', '\x02\u030F\u0310\x07\x18\x02\x02\u0310\u0311\x05~@\x02', '\u0311\u0312\x07\x19\x02\x02\u0312\u0314\x03\x02\x02\x02', '\u0313\u02CA\x03\x02\x02\x02\u0313\u02CD\x03\x02\x02\x02', '\u0313\u02D0\x03\x02\x02\x02\u0313\u02D3\x03\x02\x02\x02', '\u0313\u02D6\x03\x02\x02\x02\u0313\u02D9\x03\x02\x02\x02', '\u0313\u02DC\x03\x02\x02\x02\u0313\u02DF\x03\x02\x02\x02', '\u0313\u02E2\x03\x02\x02\x02\u0313\u02E5\x03\x02\x02\x02', '\u0313\u02E8\x03\x02\x02\x02\u0313\u02EB\x03\x02\x02\x02', '\u0313\u02F1\x03\x02\x02\x02\u0313\u02F4\x03\x02\x02\x02', '\u0313\u02F6\x03\x02\x02\x02\u0313\u02FC\x03\x02\x02\x02', '\u0313\u0306\x03\x02\x02\x02\u0313\u0309\x03\x02\x02\x02', '\u0313\u030E\x03\x02\x02\x02\u0314\u0317\x03\x02\x02\x02', '\u0315\u0313\x03\x02\x02\x02\u0315\u0316\x03\x02\x02\x02', '\u0316u\x03\x02\x02\x02\u0317\u0315\x03\x02\x02\x02', '\u0318\u032A\x07e\x02\x02\u0319\u032A\x05\xAAV\x02\u031A', '\u032A\x07i\x02\x02\u031B\u032A\x05\xB0Y\x02\u031C\u031F', '\x05\xACW\x02\u031D\u031E\x07"\x02\x02\u031E\u0320\x07', '#\x02\x02\u031F\u031D\x03\x02\x02\x02\u031F\u0320\x03', '\x02\x02\x02\u0320\u032A\x03\x02\x02\x02\u0321\u032A\x07', 'x\x02\x02\u0322\u032A\x07s\x02\x02\u0323\u032A\x05\xA6', 'T\x02\u0324\u0327\x05\xA8U\x02\u0325\u0326\x07"\x02\x02', '\u0326\u0328\x07#\x02\x02\u0327\u0325\x03\x02\x02\x02', '\u0327\u0328\x03\x02\x02\x02\u0328\u032A\x03\x02\x02\x02', '\u0329\u0318\x03\x02\x02\x02\u0329\u0319\x03\x02\x02\x02', '\u0329\u031A\x03\x02\x02\x02\u0329\u031B\x03\x02\x02\x02', '\u0329\u031C\x03\x02\x02\x02\u0329\u0321\x03\x02\x02\x02', '\u0329\u0322\x03\x02\x02\x02\u0329\u0323\x03\x02\x02\x02', '\u0329\u0324\x03\x02\x02\x02\u032Aw\x03\x02\x02\x02', '\u032B\u0330\x05t;\x02\u032C\u032D\x07\x11\x02\x02\u032D', '\u032F\x05t;\x02\u032E\u032C\x03\x02\x02\x02\u032F\u0332', '\x03\x02\x02\x02\u0330\u032E\x03\x02\x02\x02\u0330\u0331', '\x03\x02\x02\x02\u0331y\x03\x02\x02\x02\u0332\u0330', '\x03\x02\x02\x02\u0333\u0338\x05|?\x02\u0334\u0335\x07', '\x11\x02\x02\u0335\u0337\x05|?\x02\u0336\u0334\x03\x02', '\x02\x02\u0337\u033A\x03\x02\x02\x02\u0338\u0336\x03\x02', '\x02\x02\u0338\u0339\x03\x02\x02\x02\u0339\u033C\x03\x02', '\x02\x02\u033A\u0338\x03\x02\x02\x02\u033B\u033D\x07\x11', '\x02\x02\u033C\u033B\x03\x02\x02\x02\u033C\u033D\x03\x02', '\x02\x02\u033D{\x03\x02\x02\x02\u033E\u033F\x05\xAC', 'W\x02\u033F\u0340\x07<\x02\x02\u0340\u0341\x05t;\x02\u0341', '}\x03\x02\x02\x02\u0342\u0344\x07\x10\x02\x02\u0343', '\u0345\x05z>\x02\u0344\u0343\x03\x02\x02\x02\u0344\u0345', '\x03\x02\x02\x02\u0345\u0346\x03\x02\x02\x02\u0346\u034B', '\x07\x12\x02\x02\u0347\u0349\x05x=\x02\u0348\u0347\x03', '\x02\x02\x02\u0348\u0349\x03\x02\x02\x02\u0349\u034B\x03', '\x02\x02\x02\u034A\u0342\x03\x02\x02\x02\u034A\u0348\x03', '\x02\x02\x02\u034B\x7F\x03\x02\x02\x02\u034C\u034D\x05', 't;\x02\u034D\u034E\x07\x18\x02\x02\u034E\u034F\x05~@\x02', '\u034F\u0350\x07\x19\x02\x02\u0350\x81\x03\x02\x02\x02', '\u0351\u0355\x07\x10\x02\x02\u0352\u0354\x05\x84C\x02', '\u0353\u0352\x03\x02\x02\x02\u0354\u0357\x03\x02\x02\x02', '\u0355\u0353\x03\x02\x02\x02\u0355\u0356\x03\x02\x02\x02', '\u0356\u0358\x03\x02\x02\x02\u0357\u0355\x03\x02\x02\x02', '\u0358\u0359\x07\x12\x02\x02\u0359\x83\x03\x02\x02\x02', '\u035A\u036D\x05\xACW\x02\u035B\u036D\x05\x82B\x02\u035C', '\u036D\x05\x86D\x02\u035D\u036D\x05\x8AF\x02\u035E\u036D', '\x05\x8CG\x02\u035F\u036D\x05\x92J\x02\u0360\u036D\x05', '\x94K\x02\u0361\u036D\x05\x96L\x02\u0362\u036D\x05\x9A', 'N\x02\u0363\u036D\x05\x9EP\x02\u0364\u036D\x05\xA0Q\x02', '\u0365\u036D\x07l\x02\x02\u0366\u036D\x07n\x02\x02\u0367', '\u036D\x07o\x02\x02\u0368\u036D\x05\xA4S\x02\u0369\u036D', '\x05\xAAV\x02\u036A\u036D\x05\xB0Y\x02\u036B\u036D\x07', 'i\x02\x02\u036C\u035A\x03\x02\x02\x02\u036C\u035B\x03', '\x02\x02\x02\u036C\u035C\x03\x02\x02\x02\u036C\u035D\x03', '\x02\x02\x02\u036C\u035E\x03\x02\x02\x02\u036C\u035F\x03', '\x02\x02\x02\u036C\u0360\x03\x02\x02\x02\u036C\u0361\x03', '\x02\x02\x02\u036C\u0362\x03\x02\x02\x02\u036C\u0363\x03', '\x02\x02\x02\u036C\u0364\x03\x02\x02\x02\u036C\u0365\x03', '\x02\x02\x02\u036C\u0366\x03\x02\x02\x02\u036C\u0367\x03', '\x02\x02\x02\u036C\u0368\x03\x02\x02\x02\u036C\u0369\x03', '\x02\x02\x02\u036C\u036A\x03\x02\x02\x02\u036C\u036B\x03', '\x02\x02\x02\u036D\x85\x03\x02\x02\x02\u036E\u0371\x05', '\x88E\x02\u036F\u0371\x05\xA2R\x02\u0370\u036E\x03\x02', '\x02\x02\u0370\u036F\x03\x02\x02\x02\u0371\x87\x03\x02', '\x02\x02\u0372\u0377\x072\x02\x02\u0373\u0377\x07$\x02', '\x02\u0374\u0377\x078\x02\x02\u0375\u0377\x05\xACW\x02', '\u0376\u0372\x03\x02\x02\x02\u0376\u0373\x03\x02\x02\x02', '\u0376\u0374\x03\x02\x02\x02\u0376\u0375\x03\x02\x02\x02', '\u0377\u0384\x03\x02\x02\x02\u0378\u037A\x07\x18\x02\x02', '\u0379\u037B\x05\x86D\x02\u037A\u0379\x03\x02\x02\x02', '\u037A\u037B\x03\x02\x02\x02\u037B\u0380\x03\x02\x02\x02', '\u037C\u037D\x07\x11\x02\x02\u037D\u037F\x05\x86D\x02', '\u037E\u037C\x03\x02\x02\x02\u037F\u0382\x03\x02\x02\x02', '\u0380\u037E\x03\x02\x02\x02\u0380\u0381\x03\x02\x02\x02', '\u0381\u0383\x03\x02\x02\x02\u0382\u0380\x03\x02\x02\x02', '\u0383\u0385\x07\x19\x02\x02\u0384\u0378\x03\x02\x02\x02', '\u0384\u0385\x03\x02\x02\x02\u0385\x89\x03\x02\x02\x02', '\u0386\u0387\x07X\x02\x02\u0387\u038A\x05\x8EH\x02\u0388', '\u0389\x07Y\x02\x02\u0389\u038B\x05\x86D\x02\u038A\u0388', '\x03\x02\x02\x02\u038A\u038B\x03\x02\x02\x02\u038B\x8B', '\x03\x02\x02\x02\u038C\u038D\x05\x8EH\x02\u038D\u038E', '\x07Y\x02\x02\u038E\u038F\x05\x86D\x02\u038F\x8D\x03', '\x02\x02\x02\u0390\u0396\x05\xACW\x02\u0391\u0392\x07', '\x18\x02\x02\u0392\u0393\x05\x90I\x02\u0393\u0394\x07', '\x19\x02\x02\u0394\u0396\x03\x02\x02\x02\u0395\u0390\x03', '\x02\x02\x02\u0395\u0391\x03\x02\x02\x02\u0396\x8F\x03', '\x02\x02\x02\u0397\u039C\x05\xACW\x02\u0398\u0399\x07', '\x11\x02\x02\u0399\u039B\x05\xACW\x02\u039A\u0398\x03', '\x02\x02\x02\u039B\u039E\x03\x02\x02\x02\u039C\u039A\x03', '\x02\x02\x02\u039C\u039D\x03\x02\x02\x02\u039D\x91\x03', '\x02\x02\x02\u039E\u039C\x03\x02\x02\x02\u039F\u03A0\x07', 'Z\x02\x02\u03A0\u03A1\x05\xACW\x02\u03A1\x93\x03\x02', '\x02\x02\u03A2\u03A3\x05\xACW\x02\u03A3\u03A4\x07<\x02', '\x02\u03A4\x95\x03\x02\x02\x02\u03A5\u03A6\x07[\x02', '\x02\u03A6\u03AA\x05\x86D\x02\u03A7\u03A9\x05\x98M\x02', '\u03A8\u03A7\x03\x02\x02\x02\u03A9\u03AC\x03\x02\x02\x02', '\u03AA\u03A8\x03\x02\x02\x02\u03AA\u03AB\x03\x02\x02\x02', '\u03AB\x97\x03\x02\x02\x02\u03AC\u03AA\x03\x02\x02\x02', '\u03AD\u03AE\x07\\\x02\x02\u03AE\u03AF\x05\xA2R\x02\u03AF', '\u03B0\x05\x82B\x02\u03B0\u03B4\x03\x02\x02\x02\u03B1', '\u03B2\x07]\x02\x02\u03B2\u03B4\x05\x82B\x02\u03B3\u03AD', '\x03\x02\x02\x02\u03B3\u03B1\x03\x02\x02\x02\u03B4\x99', '\x03\x02\x02\x02\u03B5\u03B6\x07\x1E\x02\x02\u03B6\u03B7', '\x05\xACW\x02\u03B7\u03B9\x07\x18\x02\x02\u03B8\u03BA', '\x05\x90I\x02\u03B9\u03B8\x03\x02\x02\x02\u03B9\u03BA', '\x03\x02\x02\x02\u03BA\u03BB\x03\x02\x02\x02\u03BB\u03BD', '\x07\x19\x02\x02\u03BC\u03BE\x05\x9CO\x02\u03BD\u03BC', '\x03\x02\x02\x02\u03BD\u03BE\x03\x02\x02\x02\u03BE\u03BF', '\x03\x02\x02\x02\u03BF\u03C0\x05\x82B\x02\u03C0\x9B', '\x03\x02\x02\x02\u03C1\u03C2\x07^\x02\x02\u03C2\u03C3', '\x05\x90I\x02\u03C3\x9D\x03\x02\x02\x02\u03C4\u03C7', '\x07\x1B\x02\x02\u03C5\u03C8\x05\x82B\x02\u03C6\u03C8', '\x05\x86D\x02\u03C7\u03C5\x03\x02\x02\x02\u03C7\u03C6', '\x03\x02\x02\x02\u03C8\u03C9\x03\x02\x02\x02\u03C9\u03CC', '\x05\x86D\x02\u03CA\u03CD\x05\x82B\x02\u03CB\u03CD\x05', '\x86D\x02\u03CC\u03CA\x03\x02\x02\x02\u03CC\u03CB\x03', '\x02\x02\x02\u03CD\u03CE\x03\x02\x02\x02\u03CE\u03CF\x05', '\x82B\x02\u03CF\x9F\x03\x02\x02\x02\u03D0\u03D1\x07', '+\x02\x02\u03D1\u03D2\x05\x86D\x02\u03D2\u03D3\x05\x82', 'B\x02\u03D3\xA1\x03\x02\x02\x02\u03D4\u03D9\x05\xB0', 'Y\x02\u03D5\u03D9\x07f\x02\x02\u03D6\u03D9\x07g\x02\x02', '\u03D7\u03D9\x07i\x02\x02\u03D8\u03D4\x03\x02\x02\x02', '\u03D8\u03D5\x03\x02\x02\x02\u03D8\u03D6\x03\x02\x02\x02', '\u03D8\u03D7\x03\x02\x02\x02\u03D9\xA3\x03\x02\x02\x02', '\u03DA\u03DB\x070\x02\x02\u03DB\u03DC\x05\xACW\x02\u03DC', '\u03DD\x05\x82B\x02\u03DD\xA5\x03\x02\x02\x02\u03DE', '\u03E0\x07\x18\x02\x02\u03DF\u03E1\x05t;\x02\u03E0\u03DF', '\x03\x02\x02\x02\u03E0\u03E1\x03\x02\x02\x02\u03E1\u03E8', '\x03\x02\x02\x02\u03E2\u03E4\x07\x11\x02\x02\u03E3\u03E5', '\x05t;\x02\u03E4\u03E3\x03\x02\x02\x02\u03E4\u03E5\x03', '\x02\x02\x02\u03E5\u03E7\x03\x02\x02\x02\u03E6\u03E2\x03', '\x02\x02\x02\u03E7\u03EA\x03\x02\x02\x02\u03E8\u03E6\x03', '\x02\x02\x02\u03E8\u03E9\x03\x02\x02\x02\u03E9\u03EB\x03', '\x02\x02\x02\u03EA\u03E8\x03\x02\x02\x02\u03EB\u03F9\x07', '\x19\x02\x02\u03EC\u03F5\x07"\x02\x02\u03ED\u03F2\x05', 't;\x02\u03EE\u03EF\x07\x11\x02\x02\u03EF\u03F1\x05t;\x02', '\u03F0\u03EE\x03\x02\x02\x02\u03F1\u03F4\x03\x02\x02\x02', '\u03F2\u03F0\x03\x02\x02\x02\u03F2\u03F3\x03\x02\x02\x02', '\u03F3\u03F6\x03\x02\x02\x02\u03F4\u03F2\x03\x02\x02\x02', '\u03F5\u03ED\x03\x02\x02\x02\u03F5\u03F6\x03\x02\x02\x02', '\u03F6\u03F7\x03\x02\x02\x02\u03F7\u03F9\x07#\x02\x02', '\u03F8\u03DE\x03\x02\x02\x02\u03F8\u03EC\x03\x02\x02\x02', '\u03F9\xA7\x03\x02\x02\x02\u03FA\u03FD\x05r:\x02\u03FB', '\u03FD\x05B"\x02\u03FC\u03FA\x03\x02\x02\x02\u03FC\u03FB', '\x03\x02\x02\x02\u03FD\xA9\x03\x02\x02\x02\u03FE\u0400', '\t\x0F\x02\x02\u03FF\u0401\x07h\x02\x02\u0400\u03FF\x03', '\x02\x02\x02\u0400\u0401\x03\x02\x02\x02\u0401\xAB\x03', '\x02\x02\x02\u0402\u0403\t\x10\x02\x02\u0403\xAD\x03', '\x02\x02\x02\u0404\u0410\x07_\x02\x02\u0405\u0406\x07', '\x18\x02\x02\u0406\u040B\x05B"\x02\u0407\u0408\x07\x11', '\x02\x02\u0408\u040A\x05B"\x02\u0409\u0407\x03\x02\x02', '\x02\u040A\u040D\x03\x02\x02\x02\u040B\u0409\x03\x02\x02', '\x02\u040B\u040C\x03\x02\x02\x02\u040C\u040E\x03\x02\x02', '\x02\u040D\u040B\x03\x02\x02\x02\u040E\u040F\x07\x19\x02', '\x02\u040F\u0411\x03\x02\x02\x02\u0410\u0405\x03\x02\x02', '\x02\u0410\u0411\x03\x02\x02\x02\u0411\xAF\x03\x02\x02', '\x02\u0412\u0414\x07~\x02\x02\u0413\u0412\x03\x02\x02', '\x02\u0414\u0415\x03\x02\x02\x02\u0415\u0413\x03\x02\x02', '\x02\u0415\u0416\x03\x02\x02\x02\u0416\xB1\x03\x02\x02', '\x02{\xB5\xB7\xC5\xC9\xCE\xD5\xDB\xE1\xE5\xF1', '\xF9\xFC\u0106\u0109\u010F\u0117\u011A\u0123\u012B\u012D\u0133\u013C', '\u014A\u014D\u0154\u0158\u015A\u0162\u0165\u016B\u016F\u0173\u0178\u0185', '\u0187\u018E\u0198\u019E\u01A9\u01AC\u01B2\u01B5\u01BD\u01C0\u01C6\u01C9', '\u01D1\u01D4\u01DA\u01DE\u01E9\u01EE\u01F3\u01FB\u020A\u020C\u0211\u021B', '\u022D\u0239\u023E\u0244\u0248\u024B\u0257\u025D\u0261\u0264\u026B\u027F', '\u0291\u0295\u029A\u029E\u02A2\u02A7\u02AC\u02B0\u02C8\u02F9\u02FF\u0303', '\u0313\u0315\u031F\u0327\u0329\u0330\u0338\u033C\u0344\u0348\u034A\u0355', '\u036C\u0370\u0376\u037A\u0380\u0384\u038A\u0395\u039C\u03AA\u03B3\u03B9', '\u03BD\u03C7\u03CC\u03D8\u03E0\u03E4\u03E8\u03F2\u03F5\u03F8\u03FC\u0400', '\u040B\u0410\u0415'].join("");
 var atn = new antlr4.atn.ATNDeserializer().deserialize(serializedATN);
 var decisionsToDFA = atn.decisionToState.map(function (ds, index) {
   return new antlr4.dfa.DFA(ds, index);
 });
 var sharedContextCache = new antlr4.PredictionContextCache();
-var literalNames = [null, "'pragma'", "';'", "'^'", "'~'", "'>='", "'>'", "'<'", "'<='", "'='", "'as'", "'import'", "'*'", "'from'", "'{'", "','", "'}'", "'contract'", "'interface'", "'library'", "'is'", "'('", "')'", "'using'", "'for'", "'struct'", "'constructor'", "'modifier'", "'function'", "'returns'", "'event'", "'enum'", "'['", "']'", "'address'", "'.'", "'mapping'", "'=>'", "'memory'", "'storage'", "'calldata'", "'if'", "'else'", "'while'", "'assembly'", "'do'", "'return'", "'throw'", "'emit'", "'var'", "'bool'", "'string'", "'byte'", "'++'", "'--'", "'new'", "'+'", "'-'", "'after'", "'delete'", "'!'", "'**'", "'/'", "'%'", "'<<'", "'>>'", "'&'", "'|'", "'=='", "'!='", "'&&'", "'||'", "'?'", "':'", "'|='", "'^='", "'&='", "'<<='", "'>>='", "'+='", "'-='", "'*='", "'/='", "'%='", "'let'", "':='", "'=:'", "'switch'", "'case'", "'default'", "'->'", null, null, null, null, null, null, null, null, null, null, null, null, "'anonymous'", "'break'", "'constant'", "'continue'", "'external'", "'indexed'", "'internal'", "'payable'", "'private'", "'public'", "'pure'", "'type'", "'view'"];
-var symbolicNames = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, "Int", "Uint", "Byte", "Fixed", "Ufixed", "VersionLiteral", "BooleanLiteral", "DecimalNumber", "HexNumber", "NumberUnit", "HexLiteral", "ReservedKeyword", "AnonymousKeyword", "BreakKeyword", "ConstantKeyword", "ContinueKeyword", "ExternalKeyword", "IndexedKeyword", "InternalKeyword", "PayableKeyword", "PrivateKeyword", "PublicKeyword", "PureKeyword", "TypeKeyword", "ViewKeyword", "Identifier", "StringLiteral", "WS", "COMMENT", "LINE_COMMENT"];
-var ruleNames = ["sourceUnit", "pragmaDirective", "pragmaName", "pragmaValue", "version", "versionOperator", "versionConstraint", "importDeclaration", "importDirective", "contractDefinition", "inheritanceSpecifier", "contractPart", "stateVariableDeclaration", "usingForDeclaration", "structDefinition", "constructorDefinition", "modifierDefinition", "modifierInvocation", "functionDefinition", "returnParameters", "modifierList", "eventDefinition", "enumValue", "enumDefinition", "parameterList", "parameter", "eventParameterList", "eventParameter", "functionTypeParameterList", "functionTypeParameter", "variableDeclaration", "typeName", "userDefinedTypeName", "mapping", "functionTypeName", "storageLocation", "stateMutability", "block", "statement", "expressionStatement", "ifStatement", "whileStatement", "simpleStatement", "forStatement", "inlineAssemblyStatement", "doWhileStatement", "continueStatement", "breakStatement", "returnStatement", "throwStatement", "emitStatement", "variableDeclarationStatement", "variableDeclarationList", "identifierList", "elementaryTypeName", "expression", "primaryExpression", "expressionList", "nameValueList", "nameValue", "functionCallArguments", "functionCall", "assemblyBlock", "assemblyItem", "assemblyExpression", "assemblyCall", "assemblyLocalDefinition", "assemblyAssignment", "assemblyIdentifierOrList", "assemblyIdentifierList", "assemblyStackAssignment", "labelDefinition", "assemblySwitch", "assemblyCase", "assemblyFunctionDefinition", "assemblyFunctionReturns", "assemblyFor", "assemblyIf", "assemblyLiteral", "subAssembly", "tupleExpression", "elementaryTypeNameExpression", "numberLiteral", "identifier"];
+var literalNames = [null, "'pragma'", "';'", "'^'", "'~'", "'>='", "'>'", "'<'", "'<='", "'='", "'as'", "'import'", "'*'", "'from'", "'{'", "','", "'}'", "'abstract'", "'contract'", "'interface'", "'library'", "'is'", "'('", "')'", "'using'", "'for'", "'struct'", "'modifier'", "'function'", "'returns'", "'event'", "'enum'", "'['", "']'", "'address'", "'.'", "'mapping'", "'=>'", "'memory'", "'storage'", "'calldata'", "'if'", "'else'", "'try'", "'catch'", "'while'", "'assembly'", "'do'", "'return'", "'throw'", "'emit'", "'var'", "'bool'", "'string'", "'byte'", "'++'", "'--'", "'new'", "':'", "'+'", "'-'", "'after'", "'delete'", "'!'", "'**'", "'/'", "'%'", "'<<'", "'>>'", "'&'", "'|'", "'=='", "'!='", "'&&'", "'||'", "'?'", "'|='", "'^='", "'&='", "'<<='", "'>>='", "'+='", "'-='", "'*='", "'/='", "'%='", "'let'", "':='", "'=:'", "'switch'", "'case'", "'default'", "'->'", "'override'", null, null, null, null, null, null, null, null, null, null, null, "'anonymous'", "'break'", "'constant'", "'continue'", "'leave'", "'external'", "'indexed'", "'internal'", "'payable'", "'private'", "'public'", "'virtual'", "'pure'", "'type'", "'view'", "'constructor'", "'fallback'", "'receive'"];
+var symbolicNames = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, "Int", "Uint", "Byte", "Fixed", "Ufixed", "BooleanLiteral", "DecimalNumber", "HexNumber", "NumberUnit", "HexLiteral", "ReservedKeyword", "AnonymousKeyword", "BreakKeyword", "ConstantKeyword", "ContinueKeyword", "LeaveKeyword", "ExternalKeyword", "IndexedKeyword", "InternalKeyword", "PayableKeyword", "PrivateKeyword", "PublicKeyword", "VirtualKeyword", "PureKeyword", "TypeKeyword", "ViewKeyword", "ConstructorKeyword", "FallbackKeyword", "ReceiveKeyword", "Identifier", "StringLiteralFragment", "VersionLiteral", "WS", "COMMENT", "LINE_COMMENT"];
+var ruleNames = ["sourceUnit", "pragmaDirective", "pragmaName", "pragmaValue", "version", "versionOperator", "versionConstraint", "importDeclaration", "importDirective", "contractDefinition", "inheritanceSpecifier", "contractPart", "stateVariableDeclaration", "usingForDeclaration", "structDefinition", "modifierDefinition", "modifierInvocation", "functionDefinition", "functionDescriptor", "returnParameters", "modifierList", "eventDefinition", "enumValue", "enumDefinition", "parameterList", "parameter", "eventParameterList", "eventParameter", "functionTypeParameterList", "functionTypeParameter", "variableDeclaration", "typeName", "userDefinedTypeName", "mapping", "functionTypeName", "storageLocation", "stateMutability", "block", "statement", "expressionStatement", "ifStatement", "tryStatement", "catchClause", "whileStatement", "simpleStatement", "forStatement", "inlineAssemblyStatement", "doWhileStatement", "continueStatement", "breakStatement", "returnStatement", "throwStatement", "emitStatement", "variableDeclarationStatement", "variableDeclarationList", "identifierList", "elementaryTypeName", "expression", "primaryExpression", "expressionList", "nameValueList", "nameValue", "functionCallArguments", "functionCall", "assemblyBlock", "assemblyItem", "assemblyExpression", "assemblyCall", "assemblyLocalDefinition", "assemblyAssignment", "assemblyIdentifierOrList", "assemblyIdentifierList", "assemblyStackAssignment", "labelDefinition", "assemblySwitch", "assemblyCase", "assemblyFunctionDefinition", "assemblyFunctionReturns", "assemblyFor", "assemblyIf", "assemblyLiteral", "subAssembly", "tupleExpression", "typeNameExpression", "numberLiteral", "identifier", "overrideSpecifier", "stringLiteral"];
 
 function SolidityParser(input) {
   antlr4.Parser.call(this, input);
@@ -51900,36 +51687,44 @@ SolidityParser.T__86 = 87;
 SolidityParser.T__87 = 88;
 SolidityParser.T__88 = 89;
 SolidityParser.T__89 = 90;
-SolidityParser.Int = 91;
-SolidityParser.Uint = 92;
-SolidityParser.Byte = 93;
-SolidityParser.Fixed = 94;
-SolidityParser.Ufixed = 95;
-SolidityParser.VersionLiteral = 96;
-SolidityParser.BooleanLiteral = 97;
-SolidityParser.DecimalNumber = 98;
-SolidityParser.HexNumber = 99;
-SolidityParser.NumberUnit = 100;
-SolidityParser.HexLiteral = 101;
-SolidityParser.ReservedKeyword = 102;
-SolidityParser.AnonymousKeyword = 103;
-SolidityParser.BreakKeyword = 104;
-SolidityParser.ConstantKeyword = 105;
-SolidityParser.ContinueKeyword = 106;
-SolidityParser.ExternalKeyword = 107;
-SolidityParser.IndexedKeyword = 108;
-SolidityParser.InternalKeyword = 109;
-SolidityParser.PayableKeyword = 110;
-SolidityParser.PrivateKeyword = 111;
-SolidityParser.PublicKeyword = 112;
-SolidityParser.PureKeyword = 113;
-SolidityParser.TypeKeyword = 114;
-SolidityParser.ViewKeyword = 115;
-SolidityParser.Identifier = 116;
-SolidityParser.StringLiteral = 117;
-SolidityParser.WS = 118;
-SolidityParser.COMMENT = 119;
-SolidityParser.LINE_COMMENT = 120;
+SolidityParser.T__90 = 91;
+SolidityParser.T__91 = 92;
+SolidityParser.T__92 = 93;
+SolidityParser.Int = 94;
+SolidityParser.Uint = 95;
+SolidityParser.Byte = 96;
+SolidityParser.Fixed = 97;
+SolidityParser.Ufixed = 98;
+SolidityParser.BooleanLiteral = 99;
+SolidityParser.DecimalNumber = 100;
+SolidityParser.HexNumber = 101;
+SolidityParser.NumberUnit = 102;
+SolidityParser.HexLiteral = 103;
+SolidityParser.ReservedKeyword = 104;
+SolidityParser.AnonymousKeyword = 105;
+SolidityParser.BreakKeyword = 106;
+SolidityParser.ConstantKeyword = 107;
+SolidityParser.ContinueKeyword = 108;
+SolidityParser.LeaveKeyword = 109;
+SolidityParser.ExternalKeyword = 110;
+SolidityParser.IndexedKeyword = 111;
+SolidityParser.InternalKeyword = 112;
+SolidityParser.PayableKeyword = 113;
+SolidityParser.PrivateKeyword = 114;
+SolidityParser.PublicKeyword = 115;
+SolidityParser.VirtualKeyword = 116;
+SolidityParser.PureKeyword = 117;
+SolidityParser.TypeKeyword = 118;
+SolidityParser.ViewKeyword = 119;
+SolidityParser.ConstructorKeyword = 120;
+SolidityParser.FallbackKeyword = 121;
+SolidityParser.ReceiveKeyword = 122;
+SolidityParser.Identifier = 123;
+SolidityParser.StringLiteralFragment = 124;
+SolidityParser.VersionLiteral = 125;
+SolidityParser.WS = 126;
+SolidityParser.COMMENT = 127;
+SolidityParser.LINE_COMMENT = 128;
 SolidityParser.RULE_sourceUnit = 0;
 SolidityParser.RULE_pragmaDirective = 1;
 SolidityParser.RULE_pragmaName = 2;
@@ -51945,10 +51740,10 @@ SolidityParser.RULE_contractPart = 11;
 SolidityParser.RULE_stateVariableDeclaration = 12;
 SolidityParser.RULE_usingForDeclaration = 13;
 SolidityParser.RULE_structDefinition = 14;
-SolidityParser.RULE_constructorDefinition = 15;
-SolidityParser.RULE_modifierDefinition = 16;
-SolidityParser.RULE_modifierInvocation = 17;
-SolidityParser.RULE_functionDefinition = 18;
+SolidityParser.RULE_modifierDefinition = 15;
+SolidityParser.RULE_modifierInvocation = 16;
+SolidityParser.RULE_functionDefinition = 17;
+SolidityParser.RULE_functionDescriptor = 18;
 SolidityParser.RULE_returnParameters = 19;
 SolidityParser.RULE_modifierList = 20;
 SolidityParser.RULE_eventDefinition = 21;
@@ -51971,49 +51766,53 @@ SolidityParser.RULE_block = 37;
 SolidityParser.RULE_statement = 38;
 SolidityParser.RULE_expressionStatement = 39;
 SolidityParser.RULE_ifStatement = 40;
-SolidityParser.RULE_whileStatement = 41;
-SolidityParser.RULE_simpleStatement = 42;
-SolidityParser.RULE_forStatement = 43;
-SolidityParser.RULE_inlineAssemblyStatement = 44;
-SolidityParser.RULE_doWhileStatement = 45;
-SolidityParser.RULE_continueStatement = 46;
-SolidityParser.RULE_breakStatement = 47;
-SolidityParser.RULE_returnStatement = 48;
-SolidityParser.RULE_throwStatement = 49;
-SolidityParser.RULE_emitStatement = 50;
-SolidityParser.RULE_variableDeclarationStatement = 51;
-SolidityParser.RULE_variableDeclarationList = 52;
-SolidityParser.RULE_identifierList = 53;
-SolidityParser.RULE_elementaryTypeName = 54;
-SolidityParser.RULE_expression = 55;
-SolidityParser.RULE_primaryExpression = 56;
-SolidityParser.RULE_expressionList = 57;
-SolidityParser.RULE_nameValueList = 58;
-SolidityParser.RULE_nameValue = 59;
-SolidityParser.RULE_functionCallArguments = 60;
-SolidityParser.RULE_functionCall = 61;
-SolidityParser.RULE_assemblyBlock = 62;
-SolidityParser.RULE_assemblyItem = 63;
-SolidityParser.RULE_assemblyExpression = 64;
-SolidityParser.RULE_assemblyCall = 65;
-SolidityParser.RULE_assemblyLocalDefinition = 66;
-SolidityParser.RULE_assemblyAssignment = 67;
-SolidityParser.RULE_assemblyIdentifierOrList = 68;
-SolidityParser.RULE_assemblyIdentifierList = 69;
-SolidityParser.RULE_assemblyStackAssignment = 70;
-SolidityParser.RULE_labelDefinition = 71;
-SolidityParser.RULE_assemblySwitch = 72;
-SolidityParser.RULE_assemblyCase = 73;
-SolidityParser.RULE_assemblyFunctionDefinition = 74;
-SolidityParser.RULE_assemblyFunctionReturns = 75;
-SolidityParser.RULE_assemblyFor = 76;
-SolidityParser.RULE_assemblyIf = 77;
-SolidityParser.RULE_assemblyLiteral = 78;
-SolidityParser.RULE_subAssembly = 79;
-SolidityParser.RULE_tupleExpression = 80;
-SolidityParser.RULE_elementaryTypeNameExpression = 81;
-SolidityParser.RULE_numberLiteral = 82;
-SolidityParser.RULE_identifier = 83;
+SolidityParser.RULE_tryStatement = 41;
+SolidityParser.RULE_catchClause = 42;
+SolidityParser.RULE_whileStatement = 43;
+SolidityParser.RULE_simpleStatement = 44;
+SolidityParser.RULE_forStatement = 45;
+SolidityParser.RULE_inlineAssemblyStatement = 46;
+SolidityParser.RULE_doWhileStatement = 47;
+SolidityParser.RULE_continueStatement = 48;
+SolidityParser.RULE_breakStatement = 49;
+SolidityParser.RULE_returnStatement = 50;
+SolidityParser.RULE_throwStatement = 51;
+SolidityParser.RULE_emitStatement = 52;
+SolidityParser.RULE_variableDeclarationStatement = 53;
+SolidityParser.RULE_variableDeclarationList = 54;
+SolidityParser.RULE_identifierList = 55;
+SolidityParser.RULE_elementaryTypeName = 56;
+SolidityParser.RULE_expression = 57;
+SolidityParser.RULE_primaryExpression = 58;
+SolidityParser.RULE_expressionList = 59;
+SolidityParser.RULE_nameValueList = 60;
+SolidityParser.RULE_nameValue = 61;
+SolidityParser.RULE_functionCallArguments = 62;
+SolidityParser.RULE_functionCall = 63;
+SolidityParser.RULE_assemblyBlock = 64;
+SolidityParser.RULE_assemblyItem = 65;
+SolidityParser.RULE_assemblyExpression = 66;
+SolidityParser.RULE_assemblyCall = 67;
+SolidityParser.RULE_assemblyLocalDefinition = 68;
+SolidityParser.RULE_assemblyAssignment = 69;
+SolidityParser.RULE_assemblyIdentifierOrList = 70;
+SolidityParser.RULE_assemblyIdentifierList = 71;
+SolidityParser.RULE_assemblyStackAssignment = 72;
+SolidityParser.RULE_labelDefinition = 73;
+SolidityParser.RULE_assemblySwitch = 74;
+SolidityParser.RULE_assemblyCase = 75;
+SolidityParser.RULE_assemblyFunctionDefinition = 76;
+SolidityParser.RULE_assemblyFunctionReturns = 77;
+SolidityParser.RULE_assemblyFor = 78;
+SolidityParser.RULE_assemblyIf = 79;
+SolidityParser.RULE_assemblyLiteral = 80;
+SolidityParser.RULE_subAssembly = 81;
+SolidityParser.RULE_tupleExpression = 82;
+SolidityParser.RULE_typeNameExpression = 83;
+SolidityParser.RULE_numberLiteral = 84;
+SolidityParser.RULE_identifier = 85;
+SolidityParser.RULE_overrideSpecifier = 86;
+SolidityParser.RULE_stringLiteral = 87;
 
 function SourceUnitContext(parser, parent, invokingState) {
   if (parent === undefined) {
@@ -52094,32 +51893,33 @@ SolidityParser.prototype.sourceUnit = function () {
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 173;
+    this.state = 181;
 
     this._errHandler.sync(this);
 
     _la = this._input.LA(1);
 
-    while ((_la & ~0x1f) == 0 && (1 << _la & (1 << SolidityParser.T__0 | 1 << SolidityParser.T__10 | 1 << SolidityParser.T__16 | 1 << SolidityParser.T__17 | 1 << SolidityParser.T__18)) !== 0) {
-      this.state = 171;
+    while ((_la & ~0x1f) == 0 && (1 << _la & (1 << SolidityParser.T__0 | 1 << SolidityParser.T__10 | 1 << SolidityParser.T__16 | 1 << SolidityParser.T__17 | 1 << SolidityParser.T__18 | 1 << SolidityParser.T__19)) !== 0) {
+      this.state = 179;
 
       this._errHandler.sync(this);
 
       switch (this._input.LA(1)) {
         case SolidityParser.T__0:
-          this.state = 168;
+          this.state = 176;
           this.pragmaDirective();
           break;
 
         case SolidityParser.T__10:
-          this.state = 169;
+          this.state = 177;
           this.importDirective();
           break;
 
         case SolidityParser.T__16:
         case SolidityParser.T__17:
         case SolidityParser.T__18:
-          this.state = 170;
+        case SolidityParser.T__19:
+          this.state = 178;
           this.contractDefinition();
           break;
 
@@ -52127,14 +51927,14 @@ SolidityParser.prototype.sourceUnit = function () {
           throw new antlr4.error.NoViableAltException(this);
       }
 
-      this.state = 175;
+      this.state = 183;
 
       this._errHandler.sync(this);
 
       _la = this._input.LA(1);
     }
 
-    this.state = 176;
+    this.state = 184;
     this.match(SolidityParser.EOF);
   } catch (re) {
     if (re instanceof antlr4.error.RecognitionException) {
@@ -52199,13 +51999,13 @@ SolidityParser.prototype.pragmaDirective = function () {
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 178;
+    this.state = 186;
     this.match(SolidityParser.T__0);
-    this.state = 179;
+    this.state = 187;
     this.pragmaName();
-    this.state = 180;
+    this.state = 188;
     this.pragmaValue();
-    this.state = 181;
+    this.state = 189;
     this.match(SolidityParser.T__1);
   } catch (re) {
     if (re instanceof antlr4.error.RecognitionException) {
@@ -52266,7 +52066,7 @@ SolidityParser.prototype.pragmaName = function () {
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 183;
+    this.state = 191;
     this.identifier();
   } catch (re) {
     if (re instanceof antlr4.error.RecognitionException) {
@@ -52330,7 +52130,7 @@ SolidityParser.prototype.pragmaValue = function () {
   this.enterRule(localctx, 6, SolidityParser.RULE_pragmaValue);
 
   try {
-    this.state = 187;
+    this.state = 195;
 
     this._errHandler.sync(this);
 
@@ -52339,13 +52139,13 @@ SolidityParser.prototype.pragmaValue = function () {
     switch (la_) {
       case 1:
         this.enterOuterAlt(localctx, 1);
-        this.state = 185;
+        this.state = 193;
         this.version();
         break;
 
       case 2:
         this.enterOuterAlt(localctx, 2);
-        this.state = 186;
+        this.state = 194;
         this.expression(0);
         break;
     }
@@ -52417,16 +52217,16 @@ SolidityParser.prototype.version = function () {
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 189;
+    this.state = 197;
     this.versionConstraint();
-    this.state = 191;
+    this.state = 199;
 
     this._errHandler.sync(this);
 
     _la = this._input.LA(1);
 
     if ((_la & ~0x1f) == 0 && (1 << _la & (1 << SolidityParser.T__2 | 1 << SolidityParser.T__3 | 1 << SolidityParser.T__4 | 1 << SolidityParser.T__5 | 1 << SolidityParser.T__6 | 1 << SolidityParser.T__7 | 1 << SolidityParser.T__8)) !== 0 || _la === SolidityParser.VersionLiteral) {
-      this.state = 190;
+      this.state = 198;
       this.versionConstraint();
     }
   } catch (re) {
@@ -52485,7 +52285,7 @@ SolidityParser.prototype.versionOperator = function () {
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 193;
+    this.state = 201;
     _la = this._input.LA(1);
 
     if (!((_la & ~0x1f) == 0 && (1 << _la & (1 << SolidityParser.T__2 | 1 << SolidityParser.T__3 | 1 << SolidityParser.T__4 | 1 << SolidityParser.T__5 | 1 << SolidityParser.T__6 | 1 << SolidityParser.T__7 | 1 << SolidityParser.T__8)) !== 0)) {
@@ -52559,18 +52359,18 @@ SolidityParser.prototype.versionConstraint = function () {
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 196;
+    this.state = 204;
 
     this._errHandler.sync(this);
 
     _la = this._input.LA(1);
 
     if ((_la & ~0x1f) == 0 && (1 << _la & (1 << SolidityParser.T__2 | 1 << SolidityParser.T__3 | 1 << SolidityParser.T__4 | 1 << SolidityParser.T__5 | 1 << SolidityParser.T__6 | 1 << SolidityParser.T__7 | 1 << SolidityParser.T__8)) !== 0) {
-      this.state = 195;
+      this.state = 203;
       this.versionOperator();
     }
 
-    this.state = 198;
+    this.state = 206;
     this.match(SolidityParser.VersionLiteral);
   } catch (re) {
     if (re instanceof antlr4.error.RecognitionException) {
@@ -52640,18 +52440,18 @@ SolidityParser.prototype.importDeclaration = function () {
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 200;
+    this.state = 208;
     this.identifier();
-    this.state = 203;
+    this.state = 211;
 
     this._errHandler.sync(this);
 
     _la = this._input.LA(1);
 
     if (_la === SolidityParser.T__9) {
-      this.state = 201;
+      this.state = 209;
       this.match(SolidityParser.T__9);
-      this.state = 202;
+      this.state = 210;
       this.identifier();
     }
   } catch (re) {
@@ -52689,8 +52489,8 @@ function ImportDirectiveContext(parser, parent, invokingState) {
 ImportDirectiveContext.prototype = Object.create(antlr4.ParserRuleContext.prototype);
 ImportDirectiveContext.prototype.constructor = ImportDirectiveContext;
 
-ImportDirectiveContext.prototype.StringLiteral = function () {
-  return this.getToken(SolidityParser.StringLiteral, 0);
+ImportDirectiveContext.prototype.StringLiteralFragment = function () {
+  return this.getToken(SolidityParser.StringLiteralFragment, 0);
 };
 
 ImportDirectiveContext.prototype.identifier = function (i) {
@@ -52737,7 +52537,7 @@ SolidityParser.prototype.importDirective = function () {
   var _la = 0; // Token type
 
   try {
-    this.state = 239;
+    this.state = 247;
 
     this._errHandler.sync(this);
 
@@ -52746,45 +52546,45 @@ SolidityParser.prototype.importDirective = function () {
     switch (la_) {
       case 1:
         this.enterOuterAlt(localctx, 1);
-        this.state = 205;
+        this.state = 213;
         this.match(SolidityParser.T__10);
-        this.state = 206;
-        this.match(SolidityParser.StringLiteral);
-        this.state = 209;
+        this.state = 214;
+        this.match(SolidityParser.StringLiteralFragment);
+        this.state = 217;
 
         this._errHandler.sync(this);
 
         _la = this._input.LA(1);
 
         if (_la === SolidityParser.T__9) {
-          this.state = 207;
+          this.state = 215;
           this.match(SolidityParser.T__9);
-          this.state = 208;
+          this.state = 216;
           this.identifier();
         }
 
-        this.state = 211;
+        this.state = 219;
         this.match(SolidityParser.T__1);
         break;
 
       case 2:
         this.enterOuterAlt(localctx, 2);
-        this.state = 212;
+        this.state = 220;
         this.match(SolidityParser.T__10);
-        this.state = 215;
+        this.state = 223;
 
         this._errHandler.sync(this);
 
         switch (this._input.LA(1)) {
           case SolidityParser.T__11:
-            this.state = 213;
+            this.state = 221;
             this.match(SolidityParser.T__11);
             break;
 
           case SolidityParser.T__12:
           case SolidityParser.T__39:
           case SolidityParser.Identifier:
-            this.state = 214;
+            this.state = 222;
             this.identifier();
             break;
 
@@ -52792,60 +52592,60 @@ SolidityParser.prototype.importDirective = function () {
             throw new antlr4.error.NoViableAltException(this);
         }
 
-        this.state = 219;
+        this.state = 227;
 
         this._errHandler.sync(this);
 
         _la = this._input.LA(1);
 
         if (_la === SolidityParser.T__9) {
-          this.state = 217;
+          this.state = 225;
           this.match(SolidityParser.T__9);
-          this.state = 218;
+          this.state = 226;
           this.identifier();
         }
 
-        this.state = 221;
+        this.state = 229;
         this.match(SolidityParser.T__12);
-        this.state = 222;
-        this.match(SolidityParser.StringLiteral);
-        this.state = 223;
+        this.state = 230;
+        this.match(SolidityParser.StringLiteralFragment);
+        this.state = 231;
         this.match(SolidityParser.T__1);
         break;
 
       case 3:
         this.enterOuterAlt(localctx, 3);
-        this.state = 224;
+        this.state = 232;
         this.match(SolidityParser.T__10);
-        this.state = 225;
+        this.state = 233;
         this.match(SolidityParser.T__13);
-        this.state = 226;
+        this.state = 234;
         this.importDeclaration();
-        this.state = 231;
+        this.state = 239;
 
         this._errHandler.sync(this);
 
         _la = this._input.LA(1);
 
         while (_la === SolidityParser.T__14) {
-          this.state = 227;
+          this.state = 235;
           this.match(SolidityParser.T__14);
-          this.state = 228;
+          this.state = 236;
           this.importDeclaration();
-          this.state = 233;
+          this.state = 241;
 
           this._errHandler.sync(this);
 
           _la = this._input.LA(1);
         }
 
-        this.state = 234;
+        this.state = 242;
         this.match(SolidityParser.T__15);
-        this.state = 235;
+        this.state = 243;
         this.match(SolidityParser.T__12);
-        this.state = 236;
-        this.match(SolidityParser.StringLiteral);
-        this.state = 237;
+        this.state = 244;
+        this.match(SolidityParser.StringLiteralFragment);
+        this.state = 245;
         this.match(SolidityParser.T__1);
         break;
     }
@@ -52933,10 +52733,21 @@ SolidityParser.prototype.contractDefinition = function () {
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 241;
+    this.state = 250;
+
+    this._errHandler.sync(this);
+
     _la = this._input.LA(1);
 
-    if (!((_la & ~0x1f) == 0 && (1 << _la & (1 << SolidityParser.T__16 | 1 << SolidityParser.T__17 | 1 << SolidityParser.T__18)) !== 0)) {
+    if (_la === SolidityParser.T__16) {
+      this.state = 249;
+      this.match(SolidityParser.T__16);
+    }
+
+    this.state = 252;
+    _la = this._input.LA(1);
+
+    if (!((_la & ~0x1f) == 0 && (1 << _la & (1 << SolidityParser.T__17 | 1 << SolidityParser.T__18 | 1 << SolidityParser.T__19)) !== 0)) {
       this._errHandler.recoverInline(this);
     } else {
       this._errHandler.reportMatch(this);
@@ -52944,31 +52755,31 @@ SolidityParser.prototype.contractDefinition = function () {
       this.consume();
     }
 
-    this.state = 242;
+    this.state = 253;
     this.identifier();
-    this.state = 252;
+    this.state = 263;
 
     this._errHandler.sync(this);
 
     _la = this._input.LA(1);
 
-    if (_la === SolidityParser.T__19) {
-      this.state = 243;
-      this.match(SolidityParser.T__19);
-      this.state = 244;
+    if (_la === SolidityParser.T__20) {
+      this.state = 254;
+      this.match(SolidityParser.T__20);
+      this.state = 255;
       this.inheritanceSpecifier();
-      this.state = 249;
+      this.state = 260;
 
       this._errHandler.sync(this);
 
       _la = this._input.LA(1);
 
       while (_la === SolidityParser.T__14) {
-        this.state = 245;
+        this.state = 256;
         this.match(SolidityParser.T__14);
-        this.state = 246;
+        this.state = 257;
         this.inheritanceSpecifier();
-        this.state = 251;
+        this.state = 262;
 
         this._errHandler.sync(this);
 
@@ -52976,25 +52787,25 @@ SolidityParser.prototype.contractDefinition = function () {
       }
     }
 
-    this.state = 254;
+    this.state = 265;
     this.match(SolidityParser.T__13);
-    this.state = 258;
+    this.state = 269;
 
     this._errHandler.sync(this);
 
     _la = this._input.LA(1);
 
-    while ((_la & ~0x1f) == 0 && (1 << _la & (1 << SolidityParser.T__12 | 1 << SolidityParser.T__22 | 1 << SolidityParser.T__24 | 1 << SolidityParser.T__25 | 1 << SolidityParser.T__26 | 1 << SolidityParser.T__27 | 1 << SolidityParser.T__29 | 1 << SolidityParser.T__30)) !== 0 || (_la - 34 & ~0x1f) == 0 && (1 << _la - 34 & (1 << SolidityParser.T__33 - 34 | 1 << SolidityParser.T__35 - 34 | 1 << SolidityParser.T__39 - 34 | 1 << SolidityParser.T__48 - 34 | 1 << SolidityParser.T__49 - 34 | 1 << SolidityParser.T__50 - 34 | 1 << SolidityParser.T__51 - 34)) !== 0 || (_la - 91 & ~0x1f) == 0 && (1 << _la - 91 & (1 << SolidityParser.Int - 91 | 1 << SolidityParser.Uint - 91 | 1 << SolidityParser.Byte - 91 | 1 << SolidityParser.Fixed - 91 | 1 << SolidityParser.Ufixed - 91 | 1 << SolidityParser.Identifier - 91)) !== 0) {
-      this.state = 255;
+    while ((_la & ~0x1f) == 0 && (1 << _la & (1 << SolidityParser.T__12 | 1 << SolidityParser.T__23 | 1 << SolidityParser.T__25 | 1 << SolidityParser.T__26 | 1 << SolidityParser.T__27 | 1 << SolidityParser.T__29 | 1 << SolidityParser.T__30)) !== 0 || (_la - 34 & ~0x1f) == 0 && (1 << _la - 34 & (1 << SolidityParser.T__33 - 34 | 1 << SolidityParser.T__35 - 34 | 1 << SolidityParser.T__39 - 34 | 1 << SolidityParser.T__50 - 34 | 1 << SolidityParser.T__51 - 34 | 1 << SolidityParser.T__52 - 34 | 1 << SolidityParser.T__53 - 34)) !== 0 || (_la - 94 & ~0x1f) == 0 && (1 << _la - 94 & (1 << SolidityParser.Int - 94 | 1 << SolidityParser.Uint - 94 | 1 << SolidityParser.Byte - 94 | 1 << SolidityParser.Fixed - 94 | 1 << SolidityParser.Ufixed - 94 | 1 << SolidityParser.ConstructorKeyword - 94 | 1 << SolidityParser.FallbackKeyword - 94 | 1 << SolidityParser.ReceiveKeyword - 94 | 1 << SolidityParser.Identifier - 94)) !== 0) {
+      this.state = 266;
       this.contractPart();
-      this.state = 260;
+      this.state = 271;
 
       this._errHandler.sync(this);
 
       _la = this._input.LA(1);
     }
 
-    this.state = 261;
+    this.state = 272;
     this.match(SolidityParser.T__15);
   } catch (re) {
     if (re instanceof antlr4.error.RecognitionException) {
@@ -53060,30 +52871,30 @@ SolidityParser.prototype.inheritanceSpecifier = function () {
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 263;
+    this.state = 274;
     this.userDefinedTypeName();
-    this.state = 269;
+    this.state = 280;
 
     this._errHandler.sync(this);
 
     _la = this._input.LA(1);
 
-    if (_la === SolidityParser.T__20) {
-      this.state = 264;
-      this.match(SolidityParser.T__20);
-      this.state = 266;
+    if (_la === SolidityParser.T__21) {
+      this.state = 275;
+      this.match(SolidityParser.T__21);
+      this.state = 277;
 
       this._errHandler.sync(this);
 
       _la = this._input.LA(1);
 
-      if ((_la & ~0x1f) == 0 && (1 << _la & (1 << SolidityParser.T__3 | 1 << SolidityParser.T__12 | 1 << SolidityParser.T__20)) !== 0 || (_la - 32 & ~0x1f) == 0 && (1 << _la - 32 & (1 << SolidityParser.T__31 - 32 | 1 << SolidityParser.T__33 - 32 | 1 << SolidityParser.T__39 - 32 | 1 << SolidityParser.T__48 - 32 | 1 << SolidityParser.T__49 - 32 | 1 << SolidityParser.T__50 - 32 | 1 << SolidityParser.T__51 - 32 | 1 << SolidityParser.T__52 - 32 | 1 << SolidityParser.T__53 - 32 | 1 << SolidityParser.T__54 - 32 | 1 << SolidityParser.T__55 - 32 | 1 << SolidityParser.T__56 - 32 | 1 << SolidityParser.T__57 - 32 | 1 << SolidityParser.T__58 - 32 | 1 << SolidityParser.T__59 - 32)) !== 0 || (_la - 91 & ~0x1f) == 0 && (1 << _la - 91 & (1 << SolidityParser.Int - 91 | 1 << SolidityParser.Uint - 91 | 1 << SolidityParser.Byte - 91 | 1 << SolidityParser.Fixed - 91 | 1 << SolidityParser.Ufixed - 91 | 1 << SolidityParser.BooleanLiteral - 91 | 1 << SolidityParser.DecimalNumber - 91 | 1 << SolidityParser.HexNumber - 91 | 1 << SolidityParser.HexLiteral - 91 | 1 << SolidityParser.TypeKeyword - 91 | 1 << SolidityParser.Identifier - 91 | 1 << SolidityParser.StringLiteral - 91)) !== 0) {
-        this.state = 265;
+      if ((_la & ~0x1f) == 0 && (1 << _la & (1 << SolidityParser.T__3 | 1 << SolidityParser.T__12 | 1 << SolidityParser.T__21)) !== 0 || (_la - 32 & ~0x1f) == 0 && (1 << _la - 32 & (1 << SolidityParser.T__31 - 32 | 1 << SolidityParser.T__33 - 32 | 1 << SolidityParser.T__39 - 32 | 1 << SolidityParser.T__50 - 32 | 1 << SolidityParser.T__51 - 32 | 1 << SolidityParser.T__52 - 32 | 1 << SolidityParser.T__53 - 32 | 1 << SolidityParser.T__54 - 32 | 1 << SolidityParser.T__55 - 32 | 1 << SolidityParser.T__56 - 32 | 1 << SolidityParser.T__58 - 32 | 1 << SolidityParser.T__59 - 32 | 1 << SolidityParser.T__60 - 32 | 1 << SolidityParser.T__61 - 32 | 1 << SolidityParser.T__62 - 32)) !== 0 || (_la - 94 & ~0x1f) == 0 && (1 << _la - 94 & (1 << SolidityParser.Int - 94 | 1 << SolidityParser.Uint - 94 | 1 << SolidityParser.Byte - 94 | 1 << SolidityParser.Fixed - 94 | 1 << SolidityParser.Ufixed - 94 | 1 << SolidityParser.BooleanLiteral - 94 | 1 << SolidityParser.DecimalNumber - 94 | 1 << SolidityParser.HexNumber - 94 | 1 << SolidityParser.HexLiteral - 94 | 1 << SolidityParser.PayableKeyword - 94 | 1 << SolidityParser.TypeKeyword - 94 | 1 << SolidityParser.Identifier - 94 | 1 << SolidityParser.StringLiteralFragment - 94)) !== 0) {
+        this.state = 276;
         this.expressionList();
       }
 
-      this.state = 268;
-      this.match(SolidityParser.T__21);
+      this.state = 279;
+      this.match(SolidityParser.T__22);
     }
   } catch (re) {
     if (re instanceof antlr4.error.RecognitionException) {
@@ -53132,10 +52943,6 @@ ContractPartContext.prototype.structDefinition = function () {
   return this.getTypedRuleContext(StructDefinitionContext, 0);
 };
 
-ContractPartContext.prototype.constructorDefinition = function () {
-  return this.getTypedRuleContext(ConstructorDefinitionContext, 0);
-};
-
 ContractPartContext.prototype.modifierDefinition = function () {
   return this.getTypedRuleContext(ModifierDefinitionContext, 0);
 };
@@ -53171,58 +52978,52 @@ SolidityParser.prototype.contractPart = function () {
   this.enterRule(localctx, 22, SolidityParser.RULE_contractPart);
 
   try {
-    this.state = 279;
+    this.state = 289;
 
     this._errHandler.sync(this);
 
-    var la_ = this._interp.adaptivePredict(this._input, 16, this._ctx);
+    var la_ = this._interp.adaptivePredict(this._input, 17, this._ctx);
 
     switch (la_) {
       case 1:
         this.enterOuterAlt(localctx, 1);
-        this.state = 271;
+        this.state = 282;
         this.stateVariableDeclaration();
         break;
 
       case 2:
         this.enterOuterAlt(localctx, 2);
-        this.state = 272;
+        this.state = 283;
         this.usingForDeclaration();
         break;
 
       case 3:
         this.enterOuterAlt(localctx, 3);
-        this.state = 273;
+        this.state = 284;
         this.structDefinition();
         break;
 
       case 4:
         this.enterOuterAlt(localctx, 4);
-        this.state = 274;
-        this.constructorDefinition();
+        this.state = 285;
+        this.modifierDefinition();
         break;
 
       case 5:
         this.enterOuterAlt(localctx, 5);
-        this.state = 275;
-        this.modifierDefinition();
+        this.state = 286;
+        this.functionDefinition();
         break;
 
       case 6:
         this.enterOuterAlt(localctx, 6);
-        this.state = 276;
-        this.functionDefinition();
+        this.state = 287;
+        this.eventDefinition();
         break;
 
       case 7:
         this.enterOuterAlt(localctx, 7);
-        this.state = 277;
-        this.eventDefinition();
-        break;
-
-      case 8:
-        this.enterOuterAlt(localctx, 8);
-        this.state = 278;
+        this.state = 288;
         this.enumDefinition();
         break;
     }
@@ -53267,10 +53068,6 @@ StateVariableDeclarationContext.prototype.typeName = function () {
 
 StateVariableDeclarationContext.prototype.identifier = function () {
   return this.getTypedRuleContext(IdentifierContext, 0);
-};
-
-StateVariableDeclarationContext.prototype.expression = function () {
-  return this.getTypedRuleContext(ExpressionContext, 0);
 };
 
 StateVariableDeclarationContext.prototype.PublicKeyword = function (i) {
@@ -53321,6 +53118,22 @@ StateVariableDeclarationContext.prototype.ConstantKeyword = function (i) {
   }
 };
 
+StateVariableDeclarationContext.prototype.overrideSpecifier = function (i) {
+  if (i === undefined) {
+    i = null;
+  }
+
+  if (i === null) {
+    return this.getTypedRuleContexts(OverrideSpecifierContext);
+  } else {
+    return this.getTypedRuleContext(OverrideSpecifierContext, i);
+  }
+};
+
+StateVariableDeclarationContext.prototype.expression = function () {
+  return this.getTypedRuleContext(ExpressionContext, 0);
+};
+
 StateVariableDeclarationContext.prototype.enterRule = function (listener) {
   if (listener instanceof SolidityListener) {
     listener.enterStateVariableDeclaration(this);
@@ -53342,49 +53155,72 @@ SolidityParser.prototype.stateVariableDeclaration = function () {
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 281;
+    this.state = 291;
     this.typeName(0);
-    this.state = 285;
+    this.state = 299;
 
     this._errHandler.sync(this);
 
     _la = this._input.LA(1);
 
-    while ((_la - 105 & ~0x1f) == 0 && (1 << _la - 105 & (1 << SolidityParser.ConstantKeyword - 105 | 1 << SolidityParser.InternalKeyword - 105 | 1 << SolidityParser.PrivateKeyword - 105 | 1 << SolidityParser.PublicKeyword - 105)) !== 0) {
-      this.state = 282;
-      _la = this._input.LA(1);
+    while ((_la - 93 & ~0x1f) == 0 && (1 << _la - 93 & (1 << SolidityParser.T__92 - 93 | 1 << SolidityParser.ConstantKeyword - 93 | 1 << SolidityParser.InternalKeyword - 93 | 1 << SolidityParser.PrivateKeyword - 93 | 1 << SolidityParser.PublicKeyword - 93)) !== 0) {
+      this.state = 297;
 
-      if (!((_la - 105 & ~0x1f) == 0 && (1 << _la - 105 & (1 << SolidityParser.ConstantKeyword - 105 | 1 << SolidityParser.InternalKeyword - 105 | 1 << SolidityParser.PrivateKeyword - 105 | 1 << SolidityParser.PublicKeyword - 105)) !== 0)) {
-        this._errHandler.recoverInline(this);
-      } else {
-        this._errHandler.reportMatch(this);
+      this._errHandler.sync(this);
 
-        this.consume();
+      switch (this._input.LA(1)) {
+        case SolidityParser.PublicKeyword:
+          this.state = 292;
+          this.match(SolidityParser.PublicKeyword);
+          break;
+
+        case SolidityParser.InternalKeyword:
+          this.state = 293;
+          this.match(SolidityParser.InternalKeyword);
+          break;
+
+        case SolidityParser.PrivateKeyword:
+          this.state = 294;
+          this.match(SolidityParser.PrivateKeyword);
+          break;
+
+        case SolidityParser.ConstantKeyword:
+          this.state = 295;
+          this.match(SolidityParser.ConstantKeyword);
+          break;
+
+        case SolidityParser.T__92:
+          this.state = 296;
+          this.overrideSpecifier();
+          break;
+
+        default:
+          throw new antlr4.error.NoViableAltException(this);
       }
 
-      this.state = 287;
+      this.state = 301;
 
       this._errHandler.sync(this);
 
       _la = this._input.LA(1);
     }
 
-    this.state = 288;
+    this.state = 302;
     this.identifier();
-    this.state = 291;
+    this.state = 305;
 
     this._errHandler.sync(this);
 
     _la = this._input.LA(1);
 
     if (_la === SolidityParser.T__8) {
-      this.state = 289;
+      this.state = 303;
       this.match(SolidityParser.T__8);
-      this.state = 290;
+      this.state = 304;
       this.expression(0);
     }
 
-    this.state = 293;
+    this.state = 307;
     this.match(SolidityParser.T__1);
   } catch (re) {
     if (re instanceof antlr4.error.RecognitionException) {
@@ -53449,19 +53285,19 @@ SolidityParser.prototype.usingForDeclaration = function () {
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 295;
-    this.match(SolidityParser.T__22);
-    this.state = 296;
-    this.identifier();
-    this.state = 297;
+    this.state = 309;
     this.match(SolidityParser.T__23);
-    this.state = 300;
+    this.state = 310;
+    this.identifier();
+    this.state = 311;
+    this.match(SolidityParser.T__24);
+    this.state = 314;
 
     this._errHandler.sync(this);
 
     switch (this._input.LA(1)) {
       case SolidityParser.T__11:
-        this.state = 298;
+        this.state = 312;
         this.match(SolidityParser.T__11);
         break;
 
@@ -53470,17 +53306,17 @@ SolidityParser.prototype.usingForDeclaration = function () {
       case SolidityParser.T__33:
       case SolidityParser.T__35:
       case SolidityParser.T__39:
-      case SolidityParser.T__48:
-      case SolidityParser.T__49:
       case SolidityParser.T__50:
       case SolidityParser.T__51:
+      case SolidityParser.T__52:
+      case SolidityParser.T__53:
       case SolidityParser.Int:
       case SolidityParser.Uint:
       case SolidityParser.Byte:
       case SolidityParser.Fixed:
       case SolidityParser.Ufixed:
       case SolidityParser.Identifier:
-        this.state = 299;
+        this.state = 313;
         this.typeName(0);
         break;
 
@@ -53488,7 +53324,7 @@ SolidityParser.prototype.usingForDeclaration = function () {
         throw new antlr4.error.NoViableAltException(this);
     }
 
-    this.state = 302;
+    this.state = 316;
     this.match(SolidityParser.T__1);
   } catch (re) {
     if (re instanceof antlr4.error.RecognitionException) {
@@ -53562,35 +53398,35 @@ SolidityParser.prototype.structDefinition = function () {
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 304;
-    this.match(SolidityParser.T__24);
-    this.state = 305;
+    this.state = 318;
+    this.match(SolidityParser.T__25);
+    this.state = 319;
     this.identifier();
-    this.state = 306;
+    this.state = 320;
     this.match(SolidityParser.T__13);
-    this.state = 317;
+    this.state = 331;
 
     this._errHandler.sync(this);
 
     _la = this._input.LA(1);
 
-    if (_la === SolidityParser.T__12 || _la === SolidityParser.T__27 || (_la - 34 & ~0x1f) == 0 && (1 << _la - 34 & (1 << SolidityParser.T__33 - 34 | 1 << SolidityParser.T__35 - 34 | 1 << SolidityParser.T__39 - 34 | 1 << SolidityParser.T__48 - 34 | 1 << SolidityParser.T__49 - 34 | 1 << SolidityParser.T__50 - 34 | 1 << SolidityParser.T__51 - 34)) !== 0 || (_la - 91 & ~0x1f) == 0 && (1 << _la - 91 & (1 << SolidityParser.Int - 91 | 1 << SolidityParser.Uint - 91 | 1 << SolidityParser.Byte - 91 | 1 << SolidityParser.Fixed - 91 | 1 << SolidityParser.Ufixed - 91 | 1 << SolidityParser.Identifier - 91)) !== 0) {
-      this.state = 307;
+    if (_la === SolidityParser.T__12 || _la === SolidityParser.T__27 || (_la - 34 & ~0x1f) == 0 && (1 << _la - 34 & (1 << SolidityParser.T__33 - 34 | 1 << SolidityParser.T__35 - 34 | 1 << SolidityParser.T__39 - 34 | 1 << SolidityParser.T__50 - 34 | 1 << SolidityParser.T__51 - 34 | 1 << SolidityParser.T__52 - 34 | 1 << SolidityParser.T__53 - 34)) !== 0 || (_la - 94 & ~0x1f) == 0 && (1 << _la - 94 & (1 << SolidityParser.Int - 94 | 1 << SolidityParser.Uint - 94 | 1 << SolidityParser.Byte - 94 | 1 << SolidityParser.Fixed - 94 | 1 << SolidityParser.Ufixed - 94 | 1 << SolidityParser.Identifier - 94)) !== 0) {
+      this.state = 321;
       this.variableDeclaration();
-      this.state = 308;
+      this.state = 322;
       this.match(SolidityParser.T__1);
-      this.state = 314;
+      this.state = 328;
 
       this._errHandler.sync(this);
 
       _la = this._input.LA(1);
 
-      while (_la === SolidityParser.T__12 || _la === SolidityParser.T__27 || (_la - 34 & ~0x1f) == 0 && (1 << _la - 34 & (1 << SolidityParser.T__33 - 34 | 1 << SolidityParser.T__35 - 34 | 1 << SolidityParser.T__39 - 34 | 1 << SolidityParser.T__48 - 34 | 1 << SolidityParser.T__49 - 34 | 1 << SolidityParser.T__50 - 34 | 1 << SolidityParser.T__51 - 34)) !== 0 || (_la - 91 & ~0x1f) == 0 && (1 << _la - 91 & (1 << SolidityParser.Int - 91 | 1 << SolidityParser.Uint - 91 | 1 << SolidityParser.Byte - 91 | 1 << SolidityParser.Fixed - 91 | 1 << SolidityParser.Ufixed - 91 | 1 << SolidityParser.Identifier - 91)) !== 0) {
-        this.state = 309;
+      while (_la === SolidityParser.T__12 || _la === SolidityParser.T__27 || (_la - 34 & ~0x1f) == 0 && (1 << _la - 34 & (1 << SolidityParser.T__33 - 34 | 1 << SolidityParser.T__35 - 34 | 1 << SolidityParser.T__39 - 34 | 1 << SolidityParser.T__50 - 34 | 1 << SolidityParser.T__51 - 34 | 1 << SolidityParser.T__52 - 34 | 1 << SolidityParser.T__53 - 34)) !== 0 || (_la - 94 & ~0x1f) == 0 && (1 << _la - 94 & (1 << SolidityParser.Int - 94 | 1 << SolidityParser.Uint - 94 | 1 << SolidityParser.Byte - 94 | 1 << SolidityParser.Fixed - 94 | 1 << SolidityParser.Ufixed - 94 | 1 << SolidityParser.Identifier - 94)) !== 0) {
+        this.state = 323;
         this.variableDeclaration();
-        this.state = 310;
+        this.state = 324;
         this.match(SolidityParser.T__1);
-        this.state = 316;
+        this.state = 330;
 
         this._errHandler.sync(this);
 
@@ -53598,83 +53434,8 @@ SolidityParser.prototype.structDefinition = function () {
       }
     }
 
-    this.state = 319;
+    this.state = 333;
     this.match(SolidityParser.T__15);
-  } catch (re) {
-    if (re instanceof antlr4.error.RecognitionException) {
-      localctx.exception = re;
-
-      this._errHandler.reportError(this, re);
-
-      this._errHandler.recover(this, re);
-    } else {
-      throw re;
-    }
-  } finally {
-    this.exitRule();
-  }
-
-  return localctx;
-};
-
-function ConstructorDefinitionContext(parser, parent, invokingState) {
-  if (parent === undefined) {
-    parent = null;
-  }
-
-  if (invokingState === undefined || invokingState === null) {
-    invokingState = -1;
-  }
-
-  antlr4.ParserRuleContext.call(this, parent, invokingState);
-  this.parser = parser;
-  this.ruleIndex = SolidityParser.RULE_constructorDefinition;
-  return this;
-}
-
-ConstructorDefinitionContext.prototype = Object.create(antlr4.ParserRuleContext.prototype);
-ConstructorDefinitionContext.prototype.constructor = ConstructorDefinitionContext;
-
-ConstructorDefinitionContext.prototype.parameterList = function () {
-  return this.getTypedRuleContext(ParameterListContext, 0);
-};
-
-ConstructorDefinitionContext.prototype.modifierList = function () {
-  return this.getTypedRuleContext(ModifierListContext, 0);
-};
-
-ConstructorDefinitionContext.prototype.block = function () {
-  return this.getTypedRuleContext(BlockContext, 0);
-};
-
-ConstructorDefinitionContext.prototype.enterRule = function (listener) {
-  if (listener instanceof SolidityListener) {
-    listener.enterConstructorDefinition(this);
-  }
-};
-
-ConstructorDefinitionContext.prototype.exitRule = function (listener) {
-  if (listener instanceof SolidityListener) {
-    listener.exitConstructorDefinition(this);
-  }
-};
-
-SolidityParser.ConstructorDefinitionContext = ConstructorDefinitionContext;
-
-SolidityParser.prototype.constructorDefinition = function () {
-  var localctx = new ConstructorDefinitionContext(this, this._ctx, this.state);
-  this.enterRule(localctx, 30, SolidityParser.RULE_constructorDefinition);
-
-  try {
-    this.enterOuterAlt(localctx, 1);
-    this.state = 321;
-    this.match(SolidityParser.T__25);
-    this.state = 322;
-    this.parameterList();
-    this.state = 323;
-    this.modifierList();
-    this.state = 324;
-    this.block();
   } catch (re) {
     if (re instanceof antlr4.error.RecognitionException) {
       localctx.exception = re;
@@ -53722,6 +53483,30 @@ ModifierDefinitionContext.prototype.parameterList = function () {
   return this.getTypedRuleContext(ParameterListContext, 0);
 };
 
+ModifierDefinitionContext.prototype.VirtualKeyword = function (i) {
+  if (i === undefined) {
+    i = null;
+  }
+
+  if (i === null) {
+    return this.getTokens(SolidityParser.VirtualKeyword);
+  } else {
+    return this.getToken(SolidityParser.VirtualKeyword, i);
+  }
+};
+
+ModifierDefinitionContext.prototype.overrideSpecifier = function (i) {
+  if (i === undefined) {
+    i = null;
+  }
+
+  if (i === null) {
+    return this.getTypedRuleContexts(OverrideSpecifierContext);
+  } else {
+    return this.getTypedRuleContext(OverrideSpecifierContext, i);
+  }
+};
+
 ModifierDefinitionContext.prototype.enterRule = function (listener) {
   if (listener instanceof SolidityListener) {
     listener.enterModifierDefinition(this);
@@ -53738,27 +53523,60 @@ SolidityParser.ModifierDefinitionContext = ModifierDefinitionContext;
 
 SolidityParser.prototype.modifierDefinition = function () {
   var localctx = new ModifierDefinitionContext(this, this._ctx, this.state);
-  this.enterRule(localctx, 32, SolidityParser.RULE_modifierDefinition);
+  this.enterRule(localctx, 30, SolidityParser.RULE_modifierDefinition);
   var _la = 0; // Token type
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 326;
+    this.state = 335;
     this.match(SolidityParser.T__26);
-    this.state = 327;
+    this.state = 336;
     this.identifier();
-    this.state = 329;
+    this.state = 338;
 
     this._errHandler.sync(this);
 
     _la = this._input.LA(1);
 
-    if (_la === SolidityParser.T__20) {
-      this.state = 328;
+    if (_la === SolidityParser.T__21) {
+      this.state = 337;
       this.parameterList();
     }
 
-    this.state = 331;
+    this.state = 344;
+
+    this._errHandler.sync(this);
+
+    _la = this._input.LA(1);
+
+    while (_la === SolidityParser.T__92 || _la === SolidityParser.VirtualKeyword) {
+      this.state = 342;
+
+      this._errHandler.sync(this);
+
+      switch (this._input.LA(1)) {
+        case SolidityParser.VirtualKeyword:
+          this.state = 340;
+          this.match(SolidityParser.VirtualKeyword);
+          break;
+
+        case SolidityParser.T__92:
+          this.state = 341;
+          this.overrideSpecifier();
+          break;
+
+        default:
+          throw new antlr4.error.NoViableAltException(this);
+      }
+
+      this.state = 346;
+
+      this._errHandler.sync(this);
+
+      _la = this._input.LA(1);
+    }
+
+    this.state = 347;
     this.block();
   } catch (re) {
     if (re instanceof antlr4.error.RecognitionException) {
@@ -53819,35 +53637,35 @@ SolidityParser.ModifierInvocationContext = ModifierInvocationContext;
 
 SolidityParser.prototype.modifierInvocation = function () {
   var localctx = new ModifierInvocationContext(this, this._ctx, this.state);
-  this.enterRule(localctx, 34, SolidityParser.RULE_modifierInvocation);
+  this.enterRule(localctx, 32, SolidityParser.RULE_modifierInvocation);
   var _la = 0; // Token type
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 333;
+    this.state = 349;
     this.identifier();
-    this.state = 339;
+    this.state = 355;
 
     this._errHandler.sync(this);
 
     _la = this._input.LA(1);
 
-    if (_la === SolidityParser.T__20) {
-      this.state = 334;
-      this.match(SolidityParser.T__20);
-      this.state = 336;
+    if (_la === SolidityParser.T__21) {
+      this.state = 350;
+      this.match(SolidityParser.T__21);
+      this.state = 352;
 
       this._errHandler.sync(this);
 
       _la = this._input.LA(1);
 
-      if ((_la & ~0x1f) == 0 && (1 << _la & (1 << SolidityParser.T__3 | 1 << SolidityParser.T__12 | 1 << SolidityParser.T__20)) !== 0 || (_la - 32 & ~0x1f) == 0 && (1 << _la - 32 & (1 << SolidityParser.T__31 - 32 | 1 << SolidityParser.T__33 - 32 | 1 << SolidityParser.T__39 - 32 | 1 << SolidityParser.T__48 - 32 | 1 << SolidityParser.T__49 - 32 | 1 << SolidityParser.T__50 - 32 | 1 << SolidityParser.T__51 - 32 | 1 << SolidityParser.T__52 - 32 | 1 << SolidityParser.T__53 - 32 | 1 << SolidityParser.T__54 - 32 | 1 << SolidityParser.T__55 - 32 | 1 << SolidityParser.T__56 - 32 | 1 << SolidityParser.T__57 - 32 | 1 << SolidityParser.T__58 - 32 | 1 << SolidityParser.T__59 - 32)) !== 0 || (_la - 91 & ~0x1f) == 0 && (1 << _la - 91 & (1 << SolidityParser.Int - 91 | 1 << SolidityParser.Uint - 91 | 1 << SolidityParser.Byte - 91 | 1 << SolidityParser.Fixed - 91 | 1 << SolidityParser.Ufixed - 91 | 1 << SolidityParser.BooleanLiteral - 91 | 1 << SolidityParser.DecimalNumber - 91 | 1 << SolidityParser.HexNumber - 91 | 1 << SolidityParser.HexLiteral - 91 | 1 << SolidityParser.TypeKeyword - 91 | 1 << SolidityParser.Identifier - 91 | 1 << SolidityParser.StringLiteral - 91)) !== 0) {
-        this.state = 335;
+      if ((_la & ~0x1f) == 0 && (1 << _la & (1 << SolidityParser.T__3 | 1 << SolidityParser.T__12 | 1 << SolidityParser.T__21)) !== 0 || (_la - 32 & ~0x1f) == 0 && (1 << _la - 32 & (1 << SolidityParser.T__31 - 32 | 1 << SolidityParser.T__33 - 32 | 1 << SolidityParser.T__39 - 32 | 1 << SolidityParser.T__50 - 32 | 1 << SolidityParser.T__51 - 32 | 1 << SolidityParser.T__52 - 32 | 1 << SolidityParser.T__53 - 32 | 1 << SolidityParser.T__54 - 32 | 1 << SolidityParser.T__55 - 32 | 1 << SolidityParser.T__56 - 32 | 1 << SolidityParser.T__58 - 32 | 1 << SolidityParser.T__59 - 32 | 1 << SolidityParser.T__60 - 32 | 1 << SolidityParser.T__61 - 32 | 1 << SolidityParser.T__62 - 32)) !== 0 || (_la - 94 & ~0x1f) == 0 && (1 << _la - 94 & (1 << SolidityParser.Int - 94 | 1 << SolidityParser.Uint - 94 | 1 << SolidityParser.Byte - 94 | 1 << SolidityParser.Fixed - 94 | 1 << SolidityParser.Ufixed - 94 | 1 << SolidityParser.BooleanLiteral - 94 | 1 << SolidityParser.DecimalNumber - 94 | 1 << SolidityParser.HexNumber - 94 | 1 << SolidityParser.HexLiteral - 94 | 1 << SolidityParser.PayableKeyword - 94 | 1 << SolidityParser.TypeKeyword - 94 | 1 << SolidityParser.Identifier - 94 | 1 << SolidityParser.StringLiteralFragment - 94)) !== 0) {
+        this.state = 351;
         this.expressionList();
       }
 
-      this.state = 338;
-      this.match(SolidityParser.T__21);
+      this.state = 354;
+      this.match(SolidityParser.T__22);
     }
   } catch (re) {
     if (re instanceof antlr4.error.RecognitionException) {
@@ -53884,6 +53702,10 @@ function FunctionDefinitionContext(parser, parent, invokingState) {
 FunctionDefinitionContext.prototype = Object.create(antlr4.ParserRuleContext.prototype);
 FunctionDefinitionContext.prototype.constructor = FunctionDefinitionContext;
 
+FunctionDefinitionContext.prototype.functionDescriptor = function () {
+  return this.getTypedRuleContext(FunctionDescriptorContext, 0);
+};
+
 FunctionDefinitionContext.prototype.parameterList = function () {
   return this.getTypedRuleContext(ParameterListContext, 0);
 };
@@ -53894,10 +53716,6 @@ FunctionDefinitionContext.prototype.modifierList = function () {
 
 FunctionDefinitionContext.prototype.block = function () {
   return this.getTypedRuleContext(BlockContext, 0);
-};
-
-FunctionDefinitionContext.prototype.identifier = function () {
-  return this.getTypedRuleContext(IdentifierContext, 0);
 };
 
 FunctionDefinitionContext.prototype.returnParameters = function () {
@@ -53920,52 +53738,155 @@ SolidityParser.FunctionDefinitionContext = FunctionDefinitionContext;
 
 SolidityParser.prototype.functionDefinition = function () {
   var localctx = new FunctionDefinitionContext(this, this._ctx, this.state);
-  this.enterRule(localctx, 36, SolidityParser.RULE_functionDefinition);
+  this.enterRule(localctx, 34, SolidityParser.RULE_functionDefinition);
   var _la = 0; // Token type
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 341;
-    this.match(SolidityParser.T__27);
-    this.state = 343;
-
-    this._errHandler.sync(this);
-
-    _la = this._input.LA(1);
-
-    if (_la === SolidityParser.T__12 || _la === SolidityParser.T__39 || _la === SolidityParser.Identifier) {
-      this.state = 342;
-      this.identifier();
-    }
-
-    this.state = 345;
+    this.state = 357;
+    this.functionDescriptor();
+    this.state = 358;
     this.parameterList();
-    this.state = 346;
+    this.state = 359;
     this.modifierList();
-    this.state = 348;
+    this.state = 361;
 
     this._errHandler.sync(this);
 
     _la = this._input.LA(1);
 
     if (_la === SolidityParser.T__28) {
-      this.state = 347;
+      this.state = 360;
       this.returnParameters();
     }
 
-    this.state = 352;
+    this.state = 365;
 
     this._errHandler.sync(this);
 
     switch (this._input.LA(1)) {
       case SolidityParser.T__1:
-        this.state = 350;
+        this.state = 363;
         this.match(SolidityParser.T__1);
         break;
 
       case SolidityParser.T__13:
-        this.state = 351;
+        this.state = 364;
         this.block();
+        break;
+
+      default:
+        throw new antlr4.error.NoViableAltException(this);
+    }
+  } catch (re) {
+    if (re instanceof antlr4.error.RecognitionException) {
+      localctx.exception = re;
+
+      this._errHandler.reportError(this, re);
+
+      this._errHandler.recover(this, re);
+    } else {
+      throw re;
+    }
+  } finally {
+    this.exitRule();
+  }
+
+  return localctx;
+};
+
+function FunctionDescriptorContext(parser, parent, invokingState) {
+  if (parent === undefined) {
+    parent = null;
+  }
+
+  if (invokingState === undefined || invokingState === null) {
+    invokingState = -1;
+  }
+
+  antlr4.ParserRuleContext.call(this, parent, invokingState);
+  this.parser = parser;
+  this.ruleIndex = SolidityParser.RULE_functionDescriptor;
+  return this;
+}
+
+FunctionDescriptorContext.prototype = Object.create(antlr4.ParserRuleContext.prototype);
+FunctionDescriptorContext.prototype.constructor = FunctionDescriptorContext;
+
+FunctionDescriptorContext.prototype.identifier = function () {
+  return this.getTypedRuleContext(IdentifierContext, 0);
+};
+
+FunctionDescriptorContext.prototype.ConstructorKeyword = function () {
+  return this.getToken(SolidityParser.ConstructorKeyword, 0);
+};
+
+FunctionDescriptorContext.prototype.FallbackKeyword = function () {
+  return this.getToken(SolidityParser.FallbackKeyword, 0);
+};
+
+FunctionDescriptorContext.prototype.ReceiveKeyword = function () {
+  return this.getToken(SolidityParser.ReceiveKeyword, 0);
+};
+
+FunctionDescriptorContext.prototype.enterRule = function (listener) {
+  if (listener instanceof SolidityListener) {
+    listener.enterFunctionDescriptor(this);
+  }
+};
+
+FunctionDescriptorContext.prototype.exitRule = function (listener) {
+  if (listener instanceof SolidityListener) {
+    listener.exitFunctionDescriptor(this);
+  }
+};
+
+SolidityParser.FunctionDescriptorContext = FunctionDescriptorContext;
+
+SolidityParser.prototype.functionDescriptor = function () {
+  var localctx = new FunctionDescriptorContext(this, this._ctx, this.state);
+  this.enterRule(localctx, 36, SolidityParser.RULE_functionDescriptor);
+  var _la = 0; // Token type
+
+  try {
+    this.state = 374;
+
+    this._errHandler.sync(this);
+
+    switch (this._input.LA(1)) {
+      case SolidityParser.T__27:
+        this.enterOuterAlt(localctx, 1);
+        this.state = 367;
+        this.match(SolidityParser.T__27);
+        this.state = 369;
+
+        this._errHandler.sync(this);
+
+        _la = this._input.LA(1);
+
+        if (_la === SolidityParser.T__12 || _la === SolidityParser.T__39 || _la === SolidityParser.Identifier) {
+          this.state = 368;
+          this.identifier();
+        }
+
+        break;
+
+      case SolidityParser.ConstructorKeyword:
+        this.enterOuterAlt(localctx, 2);
+        this.state = 371;
+        this.match(SolidityParser.ConstructorKeyword);
+        break;
+
+      case SolidityParser.FallbackKeyword:
+        this.enterOuterAlt(localctx, 3);
+        this.state = 372;
+        this.match(SolidityParser.FallbackKeyword);
+        break;
+
+      case SolidityParser.ReceiveKeyword:
+        this.enterOuterAlt(localctx, 4);
+        this.state = 373;
+        this.match(SolidityParser.ReceiveKeyword);
         break;
 
       default:
@@ -54030,9 +53951,9 @@ SolidityParser.prototype.returnParameters = function () {
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 354;
+    this.state = 376;
     this.match(SolidityParser.T__28);
-    this.state = 355;
+    this.state = 377;
     this.parameterList();
   } catch (re) {
     if (re instanceof antlr4.error.RecognitionException) {
@@ -54141,6 +54062,30 @@ ModifierListContext.prototype.PrivateKeyword = function (i) {
   }
 };
 
+ModifierListContext.prototype.VirtualKeyword = function (i) {
+  if (i === undefined) {
+    i = null;
+  }
+
+  if (i === null) {
+    return this.getTokens(SolidityParser.VirtualKeyword);
+  } else {
+    return this.getToken(SolidityParser.VirtualKeyword, i);
+  }
+};
+
+ModifierListContext.prototype.overrideSpecifier = function (i) {
+  if (i === undefined) {
+    i = null;
+  }
+
+  if (i === null) {
+    return this.getTypedRuleContexts(OverrideSpecifierContext);
+  } else {
+    return this.getTypedRuleContext(OverrideSpecifierContext, i);
+  }
+};
+
 ModifierListContext.prototype.enterRule = function (listener) {
   if (listener instanceof SolidityListener) {
     listener.enterModifierList(this);
@@ -54162,14 +54107,14 @@ SolidityParser.prototype.modifierList = function () {
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 365;
+    this.state = 389;
 
     this._errHandler.sync(this);
 
     _la = this._input.LA(1);
 
-    while (_la === SolidityParser.T__12 || _la === SolidityParser.T__39 || (_la - 105 & ~0x1f) == 0 && (1 << _la - 105 & (1 << SolidityParser.ConstantKeyword - 105 | 1 << SolidityParser.ExternalKeyword - 105 | 1 << SolidityParser.InternalKeyword - 105 | 1 << SolidityParser.PayableKeyword - 105 | 1 << SolidityParser.PrivateKeyword - 105 | 1 << SolidityParser.PublicKeyword - 105 | 1 << SolidityParser.PureKeyword - 105 | 1 << SolidityParser.ViewKeyword - 105 | 1 << SolidityParser.Identifier - 105)) !== 0) {
-      this.state = 363;
+    while (_la === SolidityParser.T__12 || _la === SolidityParser.T__39 || (_la - 93 & ~0x1f) == 0 && (1 << _la - 93 & (1 << SolidityParser.T__92 - 93 | 1 << SolidityParser.ConstantKeyword - 93 | 1 << SolidityParser.ExternalKeyword - 93 | 1 << SolidityParser.InternalKeyword - 93 | 1 << SolidityParser.PayableKeyword - 93 | 1 << SolidityParser.PrivateKeyword - 93 | 1 << SolidityParser.PublicKeyword - 93 | 1 << SolidityParser.VirtualKeyword - 93 | 1 << SolidityParser.PureKeyword - 93 | 1 << SolidityParser.ViewKeyword - 93 | 1 << SolidityParser.Identifier - 93)) !== 0) {
+      this.state = 387;
 
       this._errHandler.sync(this);
 
@@ -54177,7 +54122,7 @@ SolidityParser.prototype.modifierList = function () {
         case SolidityParser.T__12:
         case SolidityParser.T__39:
         case SolidityParser.Identifier:
-          this.state = 357;
+          this.state = 379;
           this.modifierInvocation();
           break;
 
@@ -54185,35 +54130,45 @@ SolidityParser.prototype.modifierList = function () {
         case SolidityParser.PayableKeyword:
         case SolidityParser.PureKeyword:
         case SolidityParser.ViewKeyword:
-          this.state = 358;
+          this.state = 380;
           this.stateMutability();
           break;
 
         case SolidityParser.ExternalKeyword:
-          this.state = 359;
+          this.state = 381;
           this.match(SolidityParser.ExternalKeyword);
           break;
 
         case SolidityParser.PublicKeyword:
-          this.state = 360;
+          this.state = 382;
           this.match(SolidityParser.PublicKeyword);
           break;
 
         case SolidityParser.InternalKeyword:
-          this.state = 361;
+          this.state = 383;
           this.match(SolidityParser.InternalKeyword);
           break;
 
         case SolidityParser.PrivateKeyword:
-          this.state = 362;
+          this.state = 384;
           this.match(SolidityParser.PrivateKeyword);
+          break;
+
+        case SolidityParser.VirtualKeyword:
+          this.state = 385;
+          this.match(SolidityParser.VirtualKeyword);
+          break;
+
+        case SolidityParser.T__92:
+          this.state = 386;
+          this.overrideSpecifier();
           break;
 
         default:
           throw new antlr4.error.NoViableAltException(this);
       }
 
-      this.state = 367;
+      this.state = 391;
 
       this._errHandler.sync(this);
 
@@ -54287,24 +54242,24 @@ SolidityParser.prototype.eventDefinition = function () {
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 368;
+    this.state = 392;
     this.match(SolidityParser.T__29);
-    this.state = 369;
+    this.state = 393;
     this.identifier();
-    this.state = 370;
+    this.state = 394;
     this.eventParameterList();
-    this.state = 372;
+    this.state = 396;
 
     this._errHandler.sync(this);
 
     _la = this._input.LA(1);
 
     if (_la === SolidityParser.AnonymousKeyword) {
-      this.state = 371;
+      this.state = 395;
       this.match(SolidityParser.AnonymousKeyword);
     }
 
-    this.state = 374;
+    this.state = 398;
     this.match(SolidityParser.T__1);
   } catch (re) {
     if (re instanceof antlr4.error.RecognitionException) {
@@ -54365,7 +54320,7 @@ SolidityParser.prototype.enumValue = function () {
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 376;
+    this.state = 400;
     this.identifier();
   } catch (re) {
     if (re instanceof antlr4.error.RecognitionException) {
@@ -54439,42 +54394,42 @@ SolidityParser.prototype.enumDefinition = function () {
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 378;
+    this.state = 402;
     this.match(SolidityParser.T__30);
-    this.state = 379;
+    this.state = 403;
     this.identifier();
-    this.state = 380;
+    this.state = 404;
     this.match(SolidityParser.T__13);
-    this.state = 382;
+    this.state = 406;
 
     this._errHandler.sync(this);
 
     _la = this._input.LA(1);
 
     if (_la === SolidityParser.T__12 || _la === SolidityParser.T__39 || _la === SolidityParser.Identifier) {
-      this.state = 381;
+      this.state = 405;
       this.enumValue();
     }
 
-    this.state = 388;
+    this.state = 412;
 
     this._errHandler.sync(this);
 
     _la = this._input.LA(1);
 
     while (_la === SolidityParser.T__14) {
-      this.state = 384;
+      this.state = 408;
       this.match(SolidityParser.T__14);
-      this.state = 385;
+      this.state = 409;
       this.enumValue();
-      this.state = 390;
+      this.state = 414;
 
       this._errHandler.sync(this);
 
       _la = this._input.LA(1);
     }
 
-    this.state = 391;
+    this.state = 415;
     this.match(SolidityParser.T__15);
   } catch (re) {
     if (re instanceof antlr4.error.RecognitionException) {
@@ -54544,29 +54499,29 @@ SolidityParser.prototype.parameterList = function () {
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 393;
-    this.match(SolidityParser.T__20);
-    this.state = 402;
+    this.state = 417;
+    this.match(SolidityParser.T__21);
+    this.state = 426;
 
     this._errHandler.sync(this);
 
     _la = this._input.LA(1);
 
-    if (_la === SolidityParser.T__12 || _la === SolidityParser.T__27 || (_la - 34 & ~0x1f) == 0 && (1 << _la - 34 & (1 << SolidityParser.T__33 - 34 | 1 << SolidityParser.T__35 - 34 | 1 << SolidityParser.T__39 - 34 | 1 << SolidityParser.T__48 - 34 | 1 << SolidityParser.T__49 - 34 | 1 << SolidityParser.T__50 - 34 | 1 << SolidityParser.T__51 - 34)) !== 0 || (_la - 91 & ~0x1f) == 0 && (1 << _la - 91 & (1 << SolidityParser.Int - 91 | 1 << SolidityParser.Uint - 91 | 1 << SolidityParser.Byte - 91 | 1 << SolidityParser.Fixed - 91 | 1 << SolidityParser.Ufixed - 91 | 1 << SolidityParser.Identifier - 91)) !== 0) {
-      this.state = 394;
+    if (_la === SolidityParser.T__12 || _la === SolidityParser.T__27 || (_la - 34 & ~0x1f) == 0 && (1 << _la - 34 & (1 << SolidityParser.T__33 - 34 | 1 << SolidityParser.T__35 - 34 | 1 << SolidityParser.T__39 - 34 | 1 << SolidityParser.T__50 - 34 | 1 << SolidityParser.T__51 - 34 | 1 << SolidityParser.T__52 - 34 | 1 << SolidityParser.T__53 - 34)) !== 0 || (_la - 94 & ~0x1f) == 0 && (1 << _la - 94 & (1 << SolidityParser.Int - 94 | 1 << SolidityParser.Uint - 94 | 1 << SolidityParser.Byte - 94 | 1 << SolidityParser.Fixed - 94 | 1 << SolidityParser.Ufixed - 94 | 1 << SolidityParser.Identifier - 94)) !== 0) {
+      this.state = 418;
       this.parameter();
-      this.state = 399;
+      this.state = 423;
 
       this._errHandler.sync(this);
 
       _la = this._input.LA(1);
 
       while (_la === SolidityParser.T__14) {
-        this.state = 395;
+        this.state = 419;
         this.match(SolidityParser.T__14);
-        this.state = 396;
+        this.state = 420;
         this.parameter();
-        this.state = 401;
+        this.state = 425;
 
         this._errHandler.sync(this);
 
@@ -54574,8 +54529,8 @@ SolidityParser.prototype.parameterList = function () {
       }
     }
 
-    this.state = 404;
-    this.match(SolidityParser.T__21);
+    this.state = 428;
+    this.match(SolidityParser.T__22);
   } catch (re) {
     if (re instanceof antlr4.error.RecognitionException) {
       localctx.exception = re;
@@ -54644,27 +54599,27 @@ SolidityParser.prototype.parameter = function () {
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 406;
+    this.state = 430;
     this.typeName(0);
-    this.state = 408;
+    this.state = 432;
 
     this._errHandler.sync(this);
 
-    var la_ = this._interp.adaptivePredict(this._input, 35, this._ctx);
+    var la_ = this._interp.adaptivePredict(this._input, 40, this._ctx);
 
     if (la_ === 1) {
-      this.state = 407;
+      this.state = 431;
       this.storageLocation();
     }
 
-    this.state = 411;
+    this.state = 435;
 
     this._errHandler.sync(this);
 
     _la = this._input.LA(1);
 
     if (_la === SolidityParser.T__12 || _la === SolidityParser.T__39 || _la === SolidityParser.Identifier) {
-      this.state = 410;
+      this.state = 434;
       this.identifier();
     }
   } catch (re) {
@@ -54735,29 +54690,29 @@ SolidityParser.prototype.eventParameterList = function () {
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 413;
-    this.match(SolidityParser.T__20);
-    this.state = 422;
+    this.state = 437;
+    this.match(SolidityParser.T__21);
+    this.state = 446;
 
     this._errHandler.sync(this);
 
     _la = this._input.LA(1);
 
-    if (_la === SolidityParser.T__12 || _la === SolidityParser.T__27 || (_la - 34 & ~0x1f) == 0 && (1 << _la - 34 & (1 << SolidityParser.T__33 - 34 | 1 << SolidityParser.T__35 - 34 | 1 << SolidityParser.T__39 - 34 | 1 << SolidityParser.T__48 - 34 | 1 << SolidityParser.T__49 - 34 | 1 << SolidityParser.T__50 - 34 | 1 << SolidityParser.T__51 - 34)) !== 0 || (_la - 91 & ~0x1f) == 0 && (1 << _la - 91 & (1 << SolidityParser.Int - 91 | 1 << SolidityParser.Uint - 91 | 1 << SolidityParser.Byte - 91 | 1 << SolidityParser.Fixed - 91 | 1 << SolidityParser.Ufixed - 91 | 1 << SolidityParser.Identifier - 91)) !== 0) {
-      this.state = 414;
+    if (_la === SolidityParser.T__12 || _la === SolidityParser.T__27 || (_la - 34 & ~0x1f) == 0 && (1 << _la - 34 & (1 << SolidityParser.T__33 - 34 | 1 << SolidityParser.T__35 - 34 | 1 << SolidityParser.T__39 - 34 | 1 << SolidityParser.T__50 - 34 | 1 << SolidityParser.T__51 - 34 | 1 << SolidityParser.T__52 - 34 | 1 << SolidityParser.T__53 - 34)) !== 0 || (_la - 94 & ~0x1f) == 0 && (1 << _la - 94 & (1 << SolidityParser.Int - 94 | 1 << SolidityParser.Uint - 94 | 1 << SolidityParser.Byte - 94 | 1 << SolidityParser.Fixed - 94 | 1 << SolidityParser.Ufixed - 94 | 1 << SolidityParser.Identifier - 94)) !== 0) {
+      this.state = 438;
       this.eventParameter();
-      this.state = 419;
+      this.state = 443;
 
       this._errHandler.sync(this);
 
       _la = this._input.LA(1);
 
       while (_la === SolidityParser.T__14) {
-        this.state = 415;
+        this.state = 439;
         this.match(SolidityParser.T__14);
-        this.state = 416;
+        this.state = 440;
         this.eventParameter();
-        this.state = 421;
+        this.state = 445;
 
         this._errHandler.sync(this);
 
@@ -54765,8 +54720,8 @@ SolidityParser.prototype.eventParameterList = function () {
       }
     }
 
-    this.state = 424;
-    this.match(SolidityParser.T__21);
+    this.state = 448;
+    this.match(SolidityParser.T__22);
   } catch (re) {
     if (re instanceof antlr4.error.RecognitionException) {
       localctx.exception = re;
@@ -54835,27 +54790,27 @@ SolidityParser.prototype.eventParameter = function () {
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 426;
+    this.state = 450;
     this.typeName(0);
-    this.state = 428;
+    this.state = 452;
 
     this._errHandler.sync(this);
 
     _la = this._input.LA(1);
 
     if (_la === SolidityParser.IndexedKeyword) {
-      this.state = 427;
+      this.state = 451;
       this.match(SolidityParser.IndexedKeyword);
     }
 
-    this.state = 431;
+    this.state = 455;
 
     this._errHandler.sync(this);
 
     _la = this._input.LA(1);
 
     if (_la === SolidityParser.T__12 || _la === SolidityParser.T__39 || _la === SolidityParser.Identifier) {
-      this.state = 430;
+      this.state = 454;
       this.identifier();
     }
   } catch (re) {
@@ -54926,29 +54881,29 @@ SolidityParser.prototype.functionTypeParameterList = function () {
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 433;
-    this.match(SolidityParser.T__20);
-    this.state = 442;
+    this.state = 457;
+    this.match(SolidityParser.T__21);
+    this.state = 466;
 
     this._errHandler.sync(this);
 
     _la = this._input.LA(1);
 
-    if (_la === SolidityParser.T__12 || _la === SolidityParser.T__27 || (_la - 34 & ~0x1f) == 0 && (1 << _la - 34 & (1 << SolidityParser.T__33 - 34 | 1 << SolidityParser.T__35 - 34 | 1 << SolidityParser.T__39 - 34 | 1 << SolidityParser.T__48 - 34 | 1 << SolidityParser.T__49 - 34 | 1 << SolidityParser.T__50 - 34 | 1 << SolidityParser.T__51 - 34)) !== 0 || (_la - 91 & ~0x1f) == 0 && (1 << _la - 91 & (1 << SolidityParser.Int - 91 | 1 << SolidityParser.Uint - 91 | 1 << SolidityParser.Byte - 91 | 1 << SolidityParser.Fixed - 91 | 1 << SolidityParser.Ufixed - 91 | 1 << SolidityParser.Identifier - 91)) !== 0) {
-      this.state = 434;
+    if (_la === SolidityParser.T__12 || _la === SolidityParser.T__27 || (_la - 34 & ~0x1f) == 0 && (1 << _la - 34 & (1 << SolidityParser.T__33 - 34 | 1 << SolidityParser.T__35 - 34 | 1 << SolidityParser.T__39 - 34 | 1 << SolidityParser.T__50 - 34 | 1 << SolidityParser.T__51 - 34 | 1 << SolidityParser.T__52 - 34 | 1 << SolidityParser.T__53 - 34)) !== 0 || (_la - 94 & ~0x1f) == 0 && (1 << _la - 94 & (1 << SolidityParser.Int - 94 | 1 << SolidityParser.Uint - 94 | 1 << SolidityParser.Byte - 94 | 1 << SolidityParser.Fixed - 94 | 1 << SolidityParser.Ufixed - 94 | 1 << SolidityParser.Identifier - 94)) !== 0) {
+      this.state = 458;
       this.functionTypeParameter();
-      this.state = 439;
+      this.state = 463;
 
       this._errHandler.sync(this);
 
       _la = this._input.LA(1);
 
       while (_la === SolidityParser.T__14) {
-        this.state = 435;
+        this.state = 459;
         this.match(SolidityParser.T__14);
-        this.state = 436;
+        this.state = 460;
         this.functionTypeParameter();
-        this.state = 441;
+        this.state = 465;
 
         this._errHandler.sync(this);
 
@@ -54956,8 +54911,8 @@ SolidityParser.prototype.functionTypeParameterList = function () {
       }
     }
 
-    this.state = 444;
-    this.match(SolidityParser.T__21);
+    this.state = 468;
+    this.match(SolidityParser.T__22);
   } catch (re) {
     if (re instanceof antlr4.error.RecognitionException) {
       localctx.exception = re;
@@ -55022,16 +54977,16 @@ SolidityParser.prototype.functionTypeParameter = function () {
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 446;
+    this.state = 470;
     this.typeName(0);
-    this.state = 448;
+    this.state = 472;
 
     this._errHandler.sync(this);
 
     _la = this._input.LA(1);
 
     if ((_la - 38 & ~0x1f) == 0 && (1 << _la - 38 & (1 << SolidityParser.T__37 - 38 | 1 << SolidityParser.T__38 - 38 | 1 << SolidityParser.T__39 - 38)) !== 0) {
-      this.state = 447;
+      this.state = 471;
       this.storageLocation();
     }
   } catch (re) {
@@ -55101,20 +55056,20 @@ SolidityParser.prototype.variableDeclaration = function () {
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 450;
+    this.state = 474;
     this.typeName(0);
-    this.state = 452;
+    this.state = 476;
 
     this._errHandler.sync(this);
 
-    var la_ = this._interp.adaptivePredict(this._input, 44, this._ctx);
+    var la_ = this._interp.adaptivePredict(this._input, 49, this._ctx);
 
     if (la_ === 1) {
-      this.state = 451;
+      this.state = 475;
       this.storageLocation();
     }
 
-    this.state = 454;
+    this.state = 478;
     this.identifier();
   } catch (re) {
     if (re instanceof antlr4.error.RecognitionException) {
@@ -55206,47 +55161,47 @@ SolidityParser.prototype.typeName = function (_p) {
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 463;
+    this.state = 487;
 
     this._errHandler.sync(this);
 
-    var la_ = this._interp.adaptivePredict(this._input, 45, this._ctx);
+    var la_ = this._interp.adaptivePredict(this._input, 50, this._ctx);
 
     switch (la_) {
       case 1:
-        this.state = 457;
+        this.state = 481;
         this.elementaryTypeName();
         break;
 
       case 2:
-        this.state = 458;
+        this.state = 482;
         this.userDefinedTypeName();
         break;
 
       case 3:
-        this.state = 459;
+        this.state = 483;
         this.mapping();
         break;
 
       case 4:
-        this.state = 460;
+        this.state = 484;
         this.functionTypeName();
         break;
 
       case 5:
-        this.state = 461;
+        this.state = 485;
         this.match(SolidityParser.T__33);
-        this.state = 462;
+        this.state = 486;
         this.match(SolidityParser.PayableKeyword);
         break;
     }
 
     this._ctx.stop = this._input.LT(-1);
-    this.state = 473;
+    this.state = 497;
 
     this._errHandler.sync(this);
 
-    var _alt = this._interp.adaptivePredict(this._input, 47, this._ctx);
+    var _alt = this._interp.adaptivePredict(this._input, 52, this._ctx);
 
     while (_alt != 2 && _alt != antlr4.atn.ATN.INVALID_ALT_NUMBER) {
       if (_alt === 1) {
@@ -55257,34 +55212,34 @@ SolidityParser.prototype.typeName = function (_p) {
         _prevctx = localctx;
         localctx = new TypeNameContext(this, _parentctx, _parentState);
         this.pushNewRecursionContext(localctx, _startState, SolidityParser.RULE_typeName);
-        this.state = 465;
+        this.state = 489;
 
         if (!this.precpred(this._ctx, 3)) {
           throw new antlr4.error.FailedPredicateException(this, "this.precpred(this._ctx, 3)");
         }
 
-        this.state = 466;
+        this.state = 490;
         this.match(SolidityParser.T__31);
-        this.state = 468;
+        this.state = 492;
 
         this._errHandler.sync(this);
 
         _la = this._input.LA(1);
 
-        if ((_la & ~0x1f) == 0 && (1 << _la & (1 << SolidityParser.T__3 | 1 << SolidityParser.T__12 | 1 << SolidityParser.T__20)) !== 0 || (_la - 32 & ~0x1f) == 0 && (1 << _la - 32 & (1 << SolidityParser.T__31 - 32 | 1 << SolidityParser.T__33 - 32 | 1 << SolidityParser.T__39 - 32 | 1 << SolidityParser.T__48 - 32 | 1 << SolidityParser.T__49 - 32 | 1 << SolidityParser.T__50 - 32 | 1 << SolidityParser.T__51 - 32 | 1 << SolidityParser.T__52 - 32 | 1 << SolidityParser.T__53 - 32 | 1 << SolidityParser.T__54 - 32 | 1 << SolidityParser.T__55 - 32 | 1 << SolidityParser.T__56 - 32 | 1 << SolidityParser.T__57 - 32 | 1 << SolidityParser.T__58 - 32 | 1 << SolidityParser.T__59 - 32)) !== 0 || (_la - 91 & ~0x1f) == 0 && (1 << _la - 91 & (1 << SolidityParser.Int - 91 | 1 << SolidityParser.Uint - 91 | 1 << SolidityParser.Byte - 91 | 1 << SolidityParser.Fixed - 91 | 1 << SolidityParser.Ufixed - 91 | 1 << SolidityParser.BooleanLiteral - 91 | 1 << SolidityParser.DecimalNumber - 91 | 1 << SolidityParser.HexNumber - 91 | 1 << SolidityParser.HexLiteral - 91 | 1 << SolidityParser.TypeKeyword - 91 | 1 << SolidityParser.Identifier - 91 | 1 << SolidityParser.StringLiteral - 91)) !== 0) {
-          this.state = 467;
+        if ((_la & ~0x1f) == 0 && (1 << _la & (1 << SolidityParser.T__3 | 1 << SolidityParser.T__12 | 1 << SolidityParser.T__21)) !== 0 || (_la - 32 & ~0x1f) == 0 && (1 << _la - 32 & (1 << SolidityParser.T__31 - 32 | 1 << SolidityParser.T__33 - 32 | 1 << SolidityParser.T__39 - 32 | 1 << SolidityParser.T__50 - 32 | 1 << SolidityParser.T__51 - 32 | 1 << SolidityParser.T__52 - 32 | 1 << SolidityParser.T__53 - 32 | 1 << SolidityParser.T__54 - 32 | 1 << SolidityParser.T__55 - 32 | 1 << SolidityParser.T__56 - 32 | 1 << SolidityParser.T__58 - 32 | 1 << SolidityParser.T__59 - 32 | 1 << SolidityParser.T__60 - 32 | 1 << SolidityParser.T__61 - 32 | 1 << SolidityParser.T__62 - 32)) !== 0 || (_la - 94 & ~0x1f) == 0 && (1 << _la - 94 & (1 << SolidityParser.Int - 94 | 1 << SolidityParser.Uint - 94 | 1 << SolidityParser.Byte - 94 | 1 << SolidityParser.Fixed - 94 | 1 << SolidityParser.Ufixed - 94 | 1 << SolidityParser.BooleanLiteral - 94 | 1 << SolidityParser.DecimalNumber - 94 | 1 << SolidityParser.HexNumber - 94 | 1 << SolidityParser.HexLiteral - 94 | 1 << SolidityParser.PayableKeyword - 94 | 1 << SolidityParser.TypeKeyword - 94 | 1 << SolidityParser.Identifier - 94 | 1 << SolidityParser.StringLiteralFragment - 94)) !== 0) {
+          this.state = 491;
           this.expression(0);
         }
 
-        this.state = 470;
+        this.state = 494;
         this.match(SolidityParser.T__32);
       }
 
-      this.state = 475;
+      this.state = 499;
 
       this._errHandler.sync(this);
 
-      _alt = this._interp.adaptivePredict(this._input, 47, this._ctx);
+      _alt = this._interp.adaptivePredict(this._input, 52, this._ctx);
     }
   } catch (error) {
     if (error instanceof antlr4.error.RecognitionException) {
@@ -55353,27 +55308,27 @@ SolidityParser.prototype.userDefinedTypeName = function () {
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 476;
+    this.state = 500;
     this.identifier();
-    this.state = 481;
+    this.state = 505;
 
     this._errHandler.sync(this);
 
-    var _alt = this._interp.adaptivePredict(this._input, 48, this._ctx);
+    var _alt = this._interp.adaptivePredict(this._input, 53, this._ctx);
 
     while (_alt != 2 && _alt != antlr4.atn.ATN.INVALID_ALT_NUMBER) {
       if (_alt === 1) {
-        this.state = 477;
+        this.state = 501;
         this.match(SolidityParser.T__34);
-        this.state = 478;
+        this.state = 502;
         this.identifier();
       }
 
-      this.state = 483;
+      this.state = 507;
 
       this._errHandler.sync(this);
 
-      _alt = this._interp.adaptivePredict(this._input, 48, this._ctx);
+      _alt = this._interp.adaptivePredict(this._input, 53, this._ctx);
     }
   } catch (re) {
     if (re instanceof antlr4.error.RecognitionException) {
@@ -55438,18 +55393,18 @@ SolidityParser.prototype.mapping = function () {
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 484;
+    this.state = 508;
     this.match(SolidityParser.T__35);
-    this.state = 485;
-    this.match(SolidityParser.T__20);
-    this.state = 486;
-    this.elementaryTypeName();
-    this.state = 487;
-    this.match(SolidityParser.T__36);
-    this.state = 488;
-    this.typeName(0);
-    this.state = 489;
+    this.state = 509;
     this.match(SolidityParser.T__21);
+    this.state = 510;
+    this.elementaryTypeName();
+    this.state = 511;
+    this.match(SolidityParser.T__36);
+    this.state = 512;
+    this.typeName(0);
+    this.state = 513;
+    this.match(SolidityParser.T__22);
   } catch (re) {
     if (re instanceof antlr4.error.RecognitionException) {
       localctx.exception = re;
@@ -55553,30 +55508,30 @@ SolidityParser.prototype.functionTypeName = function () {
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 491;
+    this.state = 515;
     this.match(SolidityParser.T__27);
-    this.state = 492;
+    this.state = 516;
     this.functionTypeParameterList();
-    this.state = 498;
+    this.state = 522;
 
     this._errHandler.sync(this);
 
-    var _alt = this._interp.adaptivePredict(this._input, 50, this._ctx);
+    var _alt = this._interp.adaptivePredict(this._input, 55, this._ctx);
 
     while (_alt != 2 && _alt != antlr4.atn.ATN.INVALID_ALT_NUMBER) {
       if (_alt === 1) {
-        this.state = 496;
+        this.state = 520;
 
         this._errHandler.sync(this);
 
         switch (this._input.LA(1)) {
           case SolidityParser.InternalKeyword:
-            this.state = 493;
+            this.state = 517;
             this.match(SolidityParser.InternalKeyword);
             break;
 
           case SolidityParser.ExternalKeyword:
-            this.state = 494;
+            this.state = 518;
             this.match(SolidityParser.ExternalKeyword);
             break;
 
@@ -55584,7 +55539,7 @@ SolidityParser.prototype.functionTypeName = function () {
           case SolidityParser.PayableKeyword:
           case SolidityParser.PureKeyword:
           case SolidityParser.ViewKeyword:
-            this.state = 495;
+            this.state = 519;
             this.stateMutability();
             break;
 
@@ -55593,23 +55548,23 @@ SolidityParser.prototype.functionTypeName = function () {
         }
       }
 
-      this.state = 500;
+      this.state = 524;
 
       this._errHandler.sync(this);
 
-      _alt = this._interp.adaptivePredict(this._input, 50, this._ctx);
+      _alt = this._interp.adaptivePredict(this._input, 55, this._ctx);
     }
 
-    this.state = 503;
+    this.state = 527;
 
     this._errHandler.sync(this);
 
-    var la_ = this._interp.adaptivePredict(this._input, 51, this._ctx);
+    var la_ = this._interp.adaptivePredict(this._input, 56, this._ctx);
 
     if (la_ === 1) {
-      this.state = 501;
+      this.state = 525;
       this.match(SolidityParser.T__28);
-      this.state = 502;
+      this.state = 526;
       this.functionTypeParameterList();
     }
   } catch (re) {
@@ -55668,7 +55623,7 @@ SolidityParser.prototype.storageLocation = function () {
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 505;
+    this.state = 529;
     _la = this._input.LA(1);
 
     if (!((_la - 38 & ~0x1f) == 0 && (1 << _la - 38 & (1 << SolidityParser.T__37 - 38 | 1 << SolidityParser.T__38 - 38 | 1 << SolidityParser.T__39 - 38)) !== 0)) {
@@ -55750,10 +55705,10 @@ SolidityParser.prototype.stateMutability = function () {
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 507;
+    this.state = 531;
     _la = this._input.LA(1);
 
-    if (!((_la - 105 & ~0x1f) == 0 && (1 << _la - 105 & (1 << SolidityParser.ConstantKeyword - 105 | 1 << SolidityParser.PayableKeyword - 105 | 1 << SolidityParser.PureKeyword - 105 | 1 << SolidityParser.ViewKeyword - 105)) !== 0)) {
+    if (!((_la - 107 & ~0x1f) == 0 && (1 << _la - 107 & (1 << SolidityParser.ConstantKeyword - 107 | 1 << SolidityParser.PayableKeyword - 107 | 1 << SolidityParser.PureKeyword - 107 | 1 << SolidityParser.ViewKeyword - 107)) !== 0)) {
       this._errHandler.recoverInline(this);
     } else {
       this._errHandler.reportMatch(this);
@@ -55828,25 +55783,25 @@ SolidityParser.prototype.block = function () {
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 509;
+    this.state = 533;
     this.match(SolidityParser.T__13);
-    this.state = 513;
+    this.state = 537;
 
     this._errHandler.sync(this);
 
     _la = this._input.LA(1);
 
-    while ((_la & ~0x1f) == 0 && (1 << _la & (1 << SolidityParser.T__3 | 1 << SolidityParser.T__12 | 1 << SolidityParser.T__13 | 1 << SolidityParser.T__20 | 1 << SolidityParser.T__23 | 1 << SolidityParser.T__27)) !== 0 || (_la - 32 & ~0x1f) == 0 && (1 << _la - 32 & (1 << SolidityParser.T__31 - 32 | 1 << SolidityParser.T__33 - 32 | 1 << SolidityParser.T__35 - 32 | 1 << SolidityParser.T__39 - 32 | 1 << SolidityParser.T__40 - 32 | 1 << SolidityParser.T__42 - 32 | 1 << SolidityParser.T__43 - 32 | 1 << SolidityParser.T__44 - 32 | 1 << SolidityParser.T__45 - 32 | 1 << SolidityParser.T__46 - 32 | 1 << SolidityParser.T__47 - 32 | 1 << SolidityParser.T__48 - 32 | 1 << SolidityParser.T__49 - 32 | 1 << SolidityParser.T__50 - 32 | 1 << SolidityParser.T__51 - 32 | 1 << SolidityParser.T__52 - 32 | 1 << SolidityParser.T__53 - 32 | 1 << SolidityParser.T__54 - 32 | 1 << SolidityParser.T__55 - 32 | 1 << SolidityParser.T__56 - 32 | 1 << SolidityParser.T__57 - 32 | 1 << SolidityParser.T__58 - 32 | 1 << SolidityParser.T__59 - 32)) !== 0 || (_la - 91 & ~0x1f) == 0 && (1 << _la - 91 & (1 << SolidityParser.Int - 91 | 1 << SolidityParser.Uint - 91 | 1 << SolidityParser.Byte - 91 | 1 << SolidityParser.Fixed - 91 | 1 << SolidityParser.Ufixed - 91 | 1 << SolidityParser.BooleanLiteral - 91 | 1 << SolidityParser.DecimalNumber - 91 | 1 << SolidityParser.HexNumber - 91 | 1 << SolidityParser.HexLiteral - 91 | 1 << SolidityParser.BreakKeyword - 91 | 1 << SolidityParser.ContinueKeyword - 91 | 1 << SolidityParser.TypeKeyword - 91 | 1 << SolidityParser.Identifier - 91 | 1 << SolidityParser.StringLiteral - 91)) !== 0) {
-      this.state = 510;
+    while ((_la & ~0x1f) == 0 && (1 << _la & (1 << SolidityParser.T__3 | 1 << SolidityParser.T__12 | 1 << SolidityParser.T__13 | 1 << SolidityParser.T__21 | 1 << SolidityParser.T__24 | 1 << SolidityParser.T__27)) !== 0 || (_la - 32 & ~0x1f) == 0 && (1 << _la - 32 & (1 << SolidityParser.T__31 - 32 | 1 << SolidityParser.T__33 - 32 | 1 << SolidityParser.T__35 - 32 | 1 << SolidityParser.T__39 - 32 | 1 << SolidityParser.T__40 - 32 | 1 << SolidityParser.T__42 - 32 | 1 << SolidityParser.T__44 - 32 | 1 << SolidityParser.T__45 - 32 | 1 << SolidityParser.T__46 - 32 | 1 << SolidityParser.T__47 - 32 | 1 << SolidityParser.T__48 - 32 | 1 << SolidityParser.T__49 - 32 | 1 << SolidityParser.T__50 - 32 | 1 << SolidityParser.T__51 - 32 | 1 << SolidityParser.T__52 - 32 | 1 << SolidityParser.T__53 - 32 | 1 << SolidityParser.T__54 - 32 | 1 << SolidityParser.T__55 - 32 | 1 << SolidityParser.T__56 - 32 | 1 << SolidityParser.T__58 - 32 | 1 << SolidityParser.T__59 - 32 | 1 << SolidityParser.T__60 - 32 | 1 << SolidityParser.T__61 - 32 | 1 << SolidityParser.T__62 - 32)) !== 0 || (_la - 94 & ~0x1f) == 0 && (1 << _la - 94 & (1 << SolidityParser.Int - 94 | 1 << SolidityParser.Uint - 94 | 1 << SolidityParser.Byte - 94 | 1 << SolidityParser.Fixed - 94 | 1 << SolidityParser.Ufixed - 94 | 1 << SolidityParser.BooleanLiteral - 94 | 1 << SolidityParser.DecimalNumber - 94 | 1 << SolidityParser.HexNumber - 94 | 1 << SolidityParser.HexLiteral - 94 | 1 << SolidityParser.BreakKeyword - 94 | 1 << SolidityParser.ContinueKeyword - 94 | 1 << SolidityParser.PayableKeyword - 94 | 1 << SolidityParser.TypeKeyword - 94 | 1 << SolidityParser.Identifier - 94 | 1 << SolidityParser.StringLiteralFragment - 94)) !== 0) {
+      this.state = 534;
       this.statement();
-      this.state = 515;
+      this.state = 539;
 
       this._errHandler.sync(this);
 
       _la = this._input.LA(1);
     }
 
-    this.state = 516;
+    this.state = 540;
     this.match(SolidityParser.T__15);
   } catch (re) {
     if (re instanceof antlr4.error.RecognitionException) {
@@ -55885,6 +55840,10 @@ StatementContext.prototype.constructor = StatementContext;
 
 StatementContext.prototype.ifStatement = function () {
   return this.getTypedRuleContext(IfStatementContext, 0);
+};
+
+StatementContext.prototype.tryStatement = function () {
+  return this.getTypedRuleContext(TryStatementContext, 0);
 };
 
 StatementContext.prototype.whileStatement = function () {
@@ -55950,87 +55909,91 @@ SolidityParser.prototype.statement = function () {
   this.enterRule(localctx, 76, SolidityParser.RULE_statement);
 
   try {
-    this.state = 530;
+    this.state = 555;
 
     this._errHandler.sync(this);
 
     switch (this._input.LA(1)) {
       case SolidityParser.T__40:
         this.enterOuterAlt(localctx, 1);
-        this.state = 518;
+        this.state = 542;
         this.ifStatement();
         break;
 
       case SolidityParser.T__42:
         this.enterOuterAlt(localctx, 2);
-        this.state = 519;
+        this.state = 543;
+        this.tryStatement();
+        break;
+
+      case SolidityParser.T__44:
+        this.enterOuterAlt(localctx, 3);
+        this.state = 544;
         this.whileStatement();
         break;
 
-      case SolidityParser.T__23:
-        this.enterOuterAlt(localctx, 3);
-        this.state = 520;
+      case SolidityParser.T__24:
+        this.enterOuterAlt(localctx, 4);
+        this.state = 545;
         this.forStatement();
         break;
 
       case SolidityParser.T__13:
-        this.enterOuterAlt(localctx, 4);
-        this.state = 521;
+        this.enterOuterAlt(localctx, 5);
+        this.state = 546;
         this.block();
         break;
 
-      case SolidityParser.T__43:
-        this.enterOuterAlt(localctx, 5);
-        this.state = 522;
+      case SolidityParser.T__45:
+        this.enterOuterAlt(localctx, 6);
+        this.state = 547;
         this.inlineAssemblyStatement();
         break;
 
-      case SolidityParser.T__44:
-        this.enterOuterAlt(localctx, 6);
-        this.state = 523;
+      case SolidityParser.T__46:
+        this.enterOuterAlt(localctx, 7);
+        this.state = 548;
         this.doWhileStatement();
         break;
 
       case SolidityParser.ContinueKeyword:
-        this.enterOuterAlt(localctx, 7);
-        this.state = 524;
+        this.enterOuterAlt(localctx, 8);
+        this.state = 549;
         this.continueStatement();
         break;
 
       case SolidityParser.BreakKeyword:
-        this.enterOuterAlt(localctx, 8);
-        this.state = 525;
+        this.enterOuterAlt(localctx, 9);
+        this.state = 550;
         this.breakStatement();
         break;
 
-      case SolidityParser.T__45:
-        this.enterOuterAlt(localctx, 9);
-        this.state = 526;
+      case SolidityParser.T__47:
+        this.enterOuterAlt(localctx, 10);
+        this.state = 551;
         this.returnStatement();
         break;
 
-      case SolidityParser.T__46:
-        this.enterOuterAlt(localctx, 10);
-        this.state = 527;
+      case SolidityParser.T__48:
+        this.enterOuterAlt(localctx, 11);
+        this.state = 552;
         this.throwStatement();
         break;
 
-      case SolidityParser.T__47:
-        this.enterOuterAlt(localctx, 11);
-        this.state = 528;
+      case SolidityParser.T__49:
+        this.enterOuterAlt(localctx, 12);
+        this.state = 553;
         this.emitStatement();
         break;
 
       case SolidityParser.T__3:
       case SolidityParser.T__12:
-      case SolidityParser.T__20:
+      case SolidityParser.T__21:
       case SolidityParser.T__27:
       case SolidityParser.T__31:
       case SolidityParser.T__33:
       case SolidityParser.T__35:
       case SolidityParser.T__39:
-      case SolidityParser.T__48:
-      case SolidityParser.T__49:
       case SolidityParser.T__50:
       case SolidityParser.T__51:
       case SolidityParser.T__52:
@@ -56038,9 +56001,11 @@ SolidityParser.prototype.statement = function () {
       case SolidityParser.T__54:
       case SolidityParser.T__55:
       case SolidityParser.T__56:
-      case SolidityParser.T__57:
       case SolidityParser.T__58:
       case SolidityParser.T__59:
+      case SolidityParser.T__60:
+      case SolidityParser.T__61:
+      case SolidityParser.T__62:
       case SolidityParser.Int:
       case SolidityParser.Uint:
       case SolidityParser.Byte:
@@ -56050,11 +56015,12 @@ SolidityParser.prototype.statement = function () {
       case SolidityParser.DecimalNumber:
       case SolidityParser.HexNumber:
       case SolidityParser.HexLiteral:
+      case SolidityParser.PayableKeyword:
       case SolidityParser.TypeKeyword:
       case SolidityParser.Identifier:
-      case SolidityParser.StringLiteral:
-        this.enterOuterAlt(localctx, 12);
-        this.state = 529;
+      case SolidityParser.StringLiteralFragment:
+        this.enterOuterAlt(localctx, 13);
+        this.state = 554;
         this.simpleStatement();
         break;
 
@@ -56120,9 +56086,9 @@ SolidityParser.prototype.expressionStatement = function () {
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 532;
+    this.state = 557;
     this.expression(0);
-    this.state = 533;
+    this.state = 558;
     this.match(SolidityParser.T__1);
   } catch (re) {
     if (re instanceof antlr4.error.RecognitionException) {
@@ -56195,28 +56161,234 @@ SolidityParser.prototype.ifStatement = function () {
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 535;
+    this.state = 560;
     this.match(SolidityParser.T__40);
-    this.state = 536;
-    this.match(SolidityParser.T__20);
-    this.state = 537;
-    this.expression(0);
-    this.state = 538;
+    this.state = 561;
     this.match(SolidityParser.T__21);
-    this.state = 539;
+    this.state = 562;
+    this.expression(0);
+    this.state = 563;
+    this.match(SolidityParser.T__22);
+    this.state = 564;
     this.statement();
-    this.state = 542;
+    this.state = 567;
 
     this._errHandler.sync(this);
 
-    var la_ = this._interp.adaptivePredict(this._input, 54, this._ctx);
+    var la_ = this._interp.adaptivePredict(this._input, 59, this._ctx);
 
     if (la_ === 1) {
-      this.state = 540;
+      this.state = 565;
       this.match(SolidityParser.T__41);
-      this.state = 541;
+      this.state = 566;
       this.statement();
     }
+  } catch (re) {
+    if (re instanceof antlr4.error.RecognitionException) {
+      localctx.exception = re;
+
+      this._errHandler.reportError(this, re);
+
+      this._errHandler.recover(this, re);
+    } else {
+      throw re;
+    }
+  } finally {
+    this.exitRule();
+  }
+
+  return localctx;
+};
+
+function TryStatementContext(parser, parent, invokingState) {
+  if (parent === undefined) {
+    parent = null;
+  }
+
+  if (invokingState === undefined || invokingState === null) {
+    invokingState = -1;
+  }
+
+  antlr4.ParserRuleContext.call(this, parent, invokingState);
+  this.parser = parser;
+  this.ruleIndex = SolidityParser.RULE_tryStatement;
+  return this;
+}
+
+TryStatementContext.prototype = Object.create(antlr4.ParserRuleContext.prototype);
+TryStatementContext.prototype.constructor = TryStatementContext;
+
+TryStatementContext.prototype.expression = function () {
+  return this.getTypedRuleContext(ExpressionContext, 0);
+};
+
+TryStatementContext.prototype.block = function () {
+  return this.getTypedRuleContext(BlockContext, 0);
+};
+
+TryStatementContext.prototype.returnParameters = function () {
+  return this.getTypedRuleContext(ReturnParametersContext, 0);
+};
+
+TryStatementContext.prototype.catchClause = function (i) {
+  if (i === undefined) {
+    i = null;
+  }
+
+  if (i === null) {
+    return this.getTypedRuleContexts(CatchClauseContext);
+  } else {
+    return this.getTypedRuleContext(CatchClauseContext, i);
+  }
+};
+
+TryStatementContext.prototype.enterRule = function (listener) {
+  if (listener instanceof SolidityListener) {
+    listener.enterTryStatement(this);
+  }
+};
+
+TryStatementContext.prototype.exitRule = function (listener) {
+  if (listener instanceof SolidityListener) {
+    listener.exitTryStatement(this);
+  }
+};
+
+SolidityParser.TryStatementContext = TryStatementContext;
+
+SolidityParser.prototype.tryStatement = function () {
+  var localctx = new TryStatementContext(this, this._ctx, this.state);
+  this.enterRule(localctx, 82, SolidityParser.RULE_tryStatement);
+  var _la = 0; // Token type
+
+  try {
+    this.enterOuterAlt(localctx, 1);
+    this.state = 569;
+    this.match(SolidityParser.T__42);
+    this.state = 570;
+    this.expression(0);
+    this.state = 572;
+
+    this._errHandler.sync(this);
+
+    _la = this._input.LA(1);
+
+    if (_la === SolidityParser.T__28) {
+      this.state = 571;
+      this.returnParameters();
+    }
+
+    this.state = 574;
+    this.block();
+    this.state = 576;
+
+    this._errHandler.sync(this);
+
+    _la = this._input.LA(1);
+
+    do {
+      this.state = 575;
+      this.catchClause();
+      this.state = 578;
+
+      this._errHandler.sync(this);
+
+      _la = this._input.LA(1);
+    } while (_la === SolidityParser.T__43);
+  } catch (re) {
+    if (re instanceof antlr4.error.RecognitionException) {
+      localctx.exception = re;
+
+      this._errHandler.reportError(this, re);
+
+      this._errHandler.recover(this, re);
+    } else {
+      throw re;
+    }
+  } finally {
+    this.exitRule();
+  }
+
+  return localctx;
+};
+
+function CatchClauseContext(parser, parent, invokingState) {
+  if (parent === undefined) {
+    parent = null;
+  }
+
+  if (invokingState === undefined || invokingState === null) {
+    invokingState = -1;
+  }
+
+  antlr4.ParserRuleContext.call(this, parent, invokingState);
+  this.parser = parser;
+  this.ruleIndex = SolidityParser.RULE_catchClause;
+  return this;
+}
+
+CatchClauseContext.prototype = Object.create(antlr4.ParserRuleContext.prototype);
+CatchClauseContext.prototype.constructor = CatchClauseContext;
+
+CatchClauseContext.prototype.block = function () {
+  return this.getTypedRuleContext(BlockContext, 0);
+};
+
+CatchClauseContext.prototype.parameterList = function () {
+  return this.getTypedRuleContext(ParameterListContext, 0);
+};
+
+CatchClauseContext.prototype.identifier = function () {
+  return this.getTypedRuleContext(IdentifierContext, 0);
+};
+
+CatchClauseContext.prototype.enterRule = function (listener) {
+  if (listener instanceof SolidityListener) {
+    listener.enterCatchClause(this);
+  }
+};
+
+CatchClauseContext.prototype.exitRule = function (listener) {
+  if (listener instanceof SolidityListener) {
+    listener.exitCatchClause(this);
+  }
+};
+
+SolidityParser.CatchClauseContext = CatchClauseContext;
+
+SolidityParser.prototype.catchClause = function () {
+  var localctx = new CatchClauseContext(this, this._ctx, this.state);
+  this.enterRule(localctx, 84, SolidityParser.RULE_catchClause);
+  var _la = 0; // Token type
+
+  try {
+    this.enterOuterAlt(localctx, 1);
+    this.state = 580;
+    this.match(SolidityParser.T__43);
+    this.state = 585;
+
+    this._errHandler.sync(this);
+
+    _la = this._input.LA(1);
+
+    if ((_la - 13 & ~0x1f) == 0 && (1 << _la - 13 & (1 << SolidityParser.T__12 - 13 | 1 << SolidityParser.T__21 - 13 | 1 << SolidityParser.T__39 - 13)) !== 0 || _la === SolidityParser.Identifier) {
+      this.state = 582;
+
+      this._errHandler.sync(this);
+
+      _la = this._input.LA(1);
+
+      if (_la === SolidityParser.T__12 || _la === SolidityParser.T__39 || _la === SolidityParser.Identifier) {
+        this.state = 581;
+        this.identifier();
+      }
+
+      this.state = 584;
+      this.parameterList();
+    }
+
+    this.state = 587;
+    this.block();
   } catch (re) {
     if (re instanceof antlr4.error.RecognitionException) {
       localctx.exception = re;
@@ -56276,19 +56448,19 @@ SolidityParser.WhileStatementContext = WhileStatementContext;
 
 SolidityParser.prototype.whileStatement = function () {
   var localctx = new WhileStatementContext(this, this._ctx, this.state);
-  this.enterRule(localctx, 82, SolidityParser.RULE_whileStatement);
+  this.enterRule(localctx, 86, SolidityParser.RULE_whileStatement);
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 544;
-    this.match(SolidityParser.T__42);
-    this.state = 545;
-    this.match(SolidityParser.T__20);
-    this.state = 546;
-    this.expression(0);
-    this.state = 547;
+    this.state = 589;
+    this.match(SolidityParser.T__44);
+    this.state = 590;
     this.match(SolidityParser.T__21);
-    this.state = 548;
+    this.state = 591;
+    this.expression(0);
+    this.state = 592;
+    this.match(SolidityParser.T__22);
+    this.state = 593;
     this.statement();
   } catch (re) {
     if (re instanceof antlr4.error.RecognitionException) {
@@ -56349,24 +56521,24 @@ SolidityParser.SimpleStatementContext = SimpleStatementContext;
 
 SolidityParser.prototype.simpleStatement = function () {
   var localctx = new SimpleStatementContext(this, this._ctx, this.state);
-  this.enterRule(localctx, 84, SolidityParser.RULE_simpleStatement);
+  this.enterRule(localctx, 88, SolidityParser.RULE_simpleStatement);
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 552;
+    this.state = 597;
 
     this._errHandler.sync(this);
 
-    var la_ = this._interp.adaptivePredict(this._input, 55, this._ctx);
+    var la_ = this._interp.adaptivePredict(this._input, 64, this._ctx);
 
     switch (la_) {
       case 1:
-        this.state = 550;
+        this.state = 595;
         this.variableDeclarationStatement();
         break;
 
       case 2:
-        this.state = 551;
+        this.state = 596;
         this.expressionStatement();
         break;
     }
@@ -56437,30 +56609,28 @@ SolidityParser.ForStatementContext = ForStatementContext;
 
 SolidityParser.prototype.forStatement = function () {
   var localctx = new ForStatementContext(this, this._ctx, this.state);
-  this.enterRule(localctx, 86, SolidityParser.RULE_forStatement);
+  this.enterRule(localctx, 90, SolidityParser.RULE_forStatement);
   var _la = 0; // Token type
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 554;
-    this.match(SolidityParser.T__23);
-    this.state = 555;
-    this.match(SolidityParser.T__20);
-    this.state = 558;
+    this.state = 599;
+    this.match(SolidityParser.T__24);
+    this.state = 600;
+    this.match(SolidityParser.T__21);
+    this.state = 603;
 
     this._errHandler.sync(this);
 
     switch (this._input.LA(1)) {
       case SolidityParser.T__3:
       case SolidityParser.T__12:
-      case SolidityParser.T__20:
+      case SolidityParser.T__21:
       case SolidityParser.T__27:
       case SolidityParser.T__31:
       case SolidityParser.T__33:
       case SolidityParser.T__35:
       case SolidityParser.T__39:
-      case SolidityParser.T__48:
-      case SolidityParser.T__49:
       case SolidityParser.T__50:
       case SolidityParser.T__51:
       case SolidityParser.T__52:
@@ -56468,9 +56638,11 @@ SolidityParser.prototype.forStatement = function () {
       case SolidityParser.T__54:
       case SolidityParser.T__55:
       case SolidityParser.T__56:
-      case SolidityParser.T__57:
       case SolidityParser.T__58:
       case SolidityParser.T__59:
+      case SolidityParser.T__60:
+      case SolidityParser.T__61:
+      case SolidityParser.T__62:
       case SolidityParser.Int:
       case SolidityParser.Uint:
       case SolidityParser.Byte:
@@ -56480,15 +56652,16 @@ SolidityParser.prototype.forStatement = function () {
       case SolidityParser.DecimalNumber:
       case SolidityParser.HexNumber:
       case SolidityParser.HexLiteral:
+      case SolidityParser.PayableKeyword:
       case SolidityParser.TypeKeyword:
       case SolidityParser.Identifier:
-      case SolidityParser.StringLiteral:
-        this.state = 556;
+      case SolidityParser.StringLiteralFragment:
+        this.state = 601;
         this.simpleStatement();
         break;
 
       case SolidityParser.T__1:
-        this.state = 557;
+        this.state = 602;
         this.match(SolidityParser.T__1);
         break;
 
@@ -56496,19 +56669,17 @@ SolidityParser.prototype.forStatement = function () {
         throw new antlr4.error.NoViableAltException(this);
     }
 
-    this.state = 562;
+    this.state = 607;
 
     this._errHandler.sync(this);
 
     switch (this._input.LA(1)) {
       case SolidityParser.T__3:
       case SolidityParser.T__12:
-      case SolidityParser.T__20:
+      case SolidityParser.T__21:
       case SolidityParser.T__31:
       case SolidityParser.T__33:
       case SolidityParser.T__39:
-      case SolidityParser.T__48:
-      case SolidityParser.T__49:
       case SolidityParser.T__50:
       case SolidityParser.T__51:
       case SolidityParser.T__52:
@@ -56516,9 +56687,11 @@ SolidityParser.prototype.forStatement = function () {
       case SolidityParser.T__54:
       case SolidityParser.T__55:
       case SolidityParser.T__56:
-      case SolidityParser.T__57:
       case SolidityParser.T__58:
       case SolidityParser.T__59:
+      case SolidityParser.T__60:
+      case SolidityParser.T__61:
+      case SolidityParser.T__62:
       case SolidityParser.Int:
       case SolidityParser.Uint:
       case SolidityParser.Byte:
@@ -56528,15 +56701,16 @@ SolidityParser.prototype.forStatement = function () {
       case SolidityParser.DecimalNumber:
       case SolidityParser.HexNumber:
       case SolidityParser.HexLiteral:
+      case SolidityParser.PayableKeyword:
       case SolidityParser.TypeKeyword:
       case SolidityParser.Identifier:
-      case SolidityParser.StringLiteral:
-        this.state = 560;
+      case SolidityParser.StringLiteralFragment:
+        this.state = 605;
         this.expressionStatement();
         break;
 
       case SolidityParser.T__1:
-        this.state = 561;
+        this.state = 606;
         this.match(SolidityParser.T__1);
         break;
 
@@ -56544,20 +56718,20 @@ SolidityParser.prototype.forStatement = function () {
         throw new antlr4.error.NoViableAltException(this);
     }
 
-    this.state = 565;
+    this.state = 610;
 
     this._errHandler.sync(this);
 
     _la = this._input.LA(1);
 
-    if ((_la & ~0x1f) == 0 && (1 << _la & (1 << SolidityParser.T__3 | 1 << SolidityParser.T__12 | 1 << SolidityParser.T__20)) !== 0 || (_la - 32 & ~0x1f) == 0 && (1 << _la - 32 & (1 << SolidityParser.T__31 - 32 | 1 << SolidityParser.T__33 - 32 | 1 << SolidityParser.T__39 - 32 | 1 << SolidityParser.T__48 - 32 | 1 << SolidityParser.T__49 - 32 | 1 << SolidityParser.T__50 - 32 | 1 << SolidityParser.T__51 - 32 | 1 << SolidityParser.T__52 - 32 | 1 << SolidityParser.T__53 - 32 | 1 << SolidityParser.T__54 - 32 | 1 << SolidityParser.T__55 - 32 | 1 << SolidityParser.T__56 - 32 | 1 << SolidityParser.T__57 - 32 | 1 << SolidityParser.T__58 - 32 | 1 << SolidityParser.T__59 - 32)) !== 0 || (_la - 91 & ~0x1f) == 0 && (1 << _la - 91 & (1 << SolidityParser.Int - 91 | 1 << SolidityParser.Uint - 91 | 1 << SolidityParser.Byte - 91 | 1 << SolidityParser.Fixed - 91 | 1 << SolidityParser.Ufixed - 91 | 1 << SolidityParser.BooleanLiteral - 91 | 1 << SolidityParser.DecimalNumber - 91 | 1 << SolidityParser.HexNumber - 91 | 1 << SolidityParser.HexLiteral - 91 | 1 << SolidityParser.TypeKeyword - 91 | 1 << SolidityParser.Identifier - 91 | 1 << SolidityParser.StringLiteral - 91)) !== 0) {
-      this.state = 564;
+    if ((_la & ~0x1f) == 0 && (1 << _la & (1 << SolidityParser.T__3 | 1 << SolidityParser.T__12 | 1 << SolidityParser.T__21)) !== 0 || (_la - 32 & ~0x1f) == 0 && (1 << _la - 32 & (1 << SolidityParser.T__31 - 32 | 1 << SolidityParser.T__33 - 32 | 1 << SolidityParser.T__39 - 32 | 1 << SolidityParser.T__50 - 32 | 1 << SolidityParser.T__51 - 32 | 1 << SolidityParser.T__52 - 32 | 1 << SolidityParser.T__53 - 32 | 1 << SolidityParser.T__54 - 32 | 1 << SolidityParser.T__55 - 32 | 1 << SolidityParser.T__56 - 32 | 1 << SolidityParser.T__58 - 32 | 1 << SolidityParser.T__59 - 32 | 1 << SolidityParser.T__60 - 32 | 1 << SolidityParser.T__61 - 32 | 1 << SolidityParser.T__62 - 32)) !== 0 || (_la - 94 & ~0x1f) == 0 && (1 << _la - 94 & (1 << SolidityParser.Int - 94 | 1 << SolidityParser.Uint - 94 | 1 << SolidityParser.Byte - 94 | 1 << SolidityParser.Fixed - 94 | 1 << SolidityParser.Ufixed - 94 | 1 << SolidityParser.BooleanLiteral - 94 | 1 << SolidityParser.DecimalNumber - 94 | 1 << SolidityParser.HexNumber - 94 | 1 << SolidityParser.HexLiteral - 94 | 1 << SolidityParser.PayableKeyword - 94 | 1 << SolidityParser.TypeKeyword - 94 | 1 << SolidityParser.Identifier - 94 | 1 << SolidityParser.StringLiteralFragment - 94)) !== 0) {
+      this.state = 609;
       this.expression(0);
     }
 
-    this.state = 567;
-    this.match(SolidityParser.T__21);
-    this.state = 568;
+    this.state = 612;
+    this.match(SolidityParser.T__22);
+    this.state = 613;
     this.statement();
   } catch (re) {
     if (re instanceof antlr4.error.RecognitionException) {
@@ -56598,8 +56772,8 @@ InlineAssemblyStatementContext.prototype.assemblyBlock = function () {
   return this.getTypedRuleContext(AssemblyBlockContext, 0);
 };
 
-InlineAssemblyStatementContext.prototype.StringLiteral = function () {
-  return this.getToken(SolidityParser.StringLiteral, 0);
+InlineAssemblyStatementContext.prototype.StringLiteralFragment = function () {
+  return this.getToken(SolidityParser.StringLiteralFragment, 0);
 };
 
 InlineAssemblyStatementContext.prototype.enterRule = function (listener) {
@@ -56618,25 +56792,25 @@ SolidityParser.InlineAssemblyStatementContext = InlineAssemblyStatementContext;
 
 SolidityParser.prototype.inlineAssemblyStatement = function () {
   var localctx = new InlineAssemblyStatementContext(this, this._ctx, this.state);
-  this.enterRule(localctx, 88, SolidityParser.RULE_inlineAssemblyStatement);
+  this.enterRule(localctx, 92, SolidityParser.RULE_inlineAssemblyStatement);
   var _la = 0; // Token type
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 570;
-    this.match(SolidityParser.T__43);
-    this.state = 572;
+    this.state = 615;
+    this.match(SolidityParser.T__45);
+    this.state = 617;
 
     this._errHandler.sync(this);
 
     _la = this._input.LA(1);
 
-    if (_la === SolidityParser.StringLiteral) {
-      this.state = 571;
-      this.match(SolidityParser.StringLiteral);
+    if (_la === SolidityParser.StringLiteralFragment) {
+      this.state = 616;
+      this.match(SolidityParser.StringLiteralFragment);
     }
 
-    this.state = 574;
+    this.state = 619;
     this.assemblyBlock();
   } catch (re) {
     if (re instanceof antlr4.error.RecognitionException) {
@@ -56697,23 +56871,23 @@ SolidityParser.DoWhileStatementContext = DoWhileStatementContext;
 
 SolidityParser.prototype.doWhileStatement = function () {
   var localctx = new DoWhileStatementContext(this, this._ctx, this.state);
-  this.enterRule(localctx, 90, SolidityParser.RULE_doWhileStatement);
+  this.enterRule(localctx, 94, SolidityParser.RULE_doWhileStatement);
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 576;
-    this.match(SolidityParser.T__44);
-    this.state = 577;
+    this.state = 621;
+    this.match(SolidityParser.T__46);
+    this.state = 622;
     this.statement();
-    this.state = 578;
-    this.match(SolidityParser.T__42);
-    this.state = 579;
-    this.match(SolidityParser.T__20);
-    this.state = 580;
-    this.expression(0);
-    this.state = 581;
+    this.state = 623;
+    this.match(SolidityParser.T__44);
+    this.state = 624;
     this.match(SolidityParser.T__21);
-    this.state = 582;
+    this.state = 625;
+    this.expression(0);
+    this.state = 626;
+    this.match(SolidityParser.T__22);
+    this.state = 627;
     this.match(SolidityParser.T__1);
   } catch (re) {
     if (re instanceof antlr4.error.RecognitionException) {
@@ -56770,13 +56944,13 @@ SolidityParser.ContinueStatementContext = ContinueStatementContext;
 
 SolidityParser.prototype.continueStatement = function () {
   var localctx = new ContinueStatementContext(this, this._ctx, this.state);
-  this.enterRule(localctx, 92, SolidityParser.RULE_continueStatement);
+  this.enterRule(localctx, 96, SolidityParser.RULE_continueStatement);
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 584;
+    this.state = 629;
     this.match(SolidityParser.ContinueKeyword);
-    this.state = 585;
+    this.state = 630;
     this.match(SolidityParser.T__1);
   } catch (re) {
     if (re instanceof antlr4.error.RecognitionException) {
@@ -56833,13 +57007,13 @@ SolidityParser.BreakStatementContext = BreakStatementContext;
 
 SolidityParser.prototype.breakStatement = function () {
   var localctx = new BreakStatementContext(this, this._ctx, this.state);
-  this.enterRule(localctx, 94, SolidityParser.RULE_breakStatement);
+  this.enterRule(localctx, 98, SolidityParser.RULE_breakStatement);
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 587;
+    this.state = 632;
     this.match(SolidityParser.BreakKeyword);
-    this.state = 588;
+    this.state = 633;
     this.match(SolidityParser.T__1);
   } catch (re) {
     if (re instanceof antlr4.error.RecognitionException) {
@@ -56896,25 +57070,25 @@ SolidityParser.ReturnStatementContext = ReturnStatementContext;
 
 SolidityParser.prototype.returnStatement = function () {
   var localctx = new ReturnStatementContext(this, this._ctx, this.state);
-  this.enterRule(localctx, 96, SolidityParser.RULE_returnStatement);
+  this.enterRule(localctx, 100, SolidityParser.RULE_returnStatement);
   var _la = 0; // Token type
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 590;
-    this.match(SolidityParser.T__45);
-    this.state = 592;
+    this.state = 635;
+    this.match(SolidityParser.T__47);
+    this.state = 637;
 
     this._errHandler.sync(this);
 
     _la = this._input.LA(1);
 
-    if ((_la & ~0x1f) == 0 && (1 << _la & (1 << SolidityParser.T__3 | 1 << SolidityParser.T__12 | 1 << SolidityParser.T__20)) !== 0 || (_la - 32 & ~0x1f) == 0 && (1 << _la - 32 & (1 << SolidityParser.T__31 - 32 | 1 << SolidityParser.T__33 - 32 | 1 << SolidityParser.T__39 - 32 | 1 << SolidityParser.T__48 - 32 | 1 << SolidityParser.T__49 - 32 | 1 << SolidityParser.T__50 - 32 | 1 << SolidityParser.T__51 - 32 | 1 << SolidityParser.T__52 - 32 | 1 << SolidityParser.T__53 - 32 | 1 << SolidityParser.T__54 - 32 | 1 << SolidityParser.T__55 - 32 | 1 << SolidityParser.T__56 - 32 | 1 << SolidityParser.T__57 - 32 | 1 << SolidityParser.T__58 - 32 | 1 << SolidityParser.T__59 - 32)) !== 0 || (_la - 91 & ~0x1f) == 0 && (1 << _la - 91 & (1 << SolidityParser.Int - 91 | 1 << SolidityParser.Uint - 91 | 1 << SolidityParser.Byte - 91 | 1 << SolidityParser.Fixed - 91 | 1 << SolidityParser.Ufixed - 91 | 1 << SolidityParser.BooleanLiteral - 91 | 1 << SolidityParser.DecimalNumber - 91 | 1 << SolidityParser.HexNumber - 91 | 1 << SolidityParser.HexLiteral - 91 | 1 << SolidityParser.TypeKeyword - 91 | 1 << SolidityParser.Identifier - 91 | 1 << SolidityParser.StringLiteral - 91)) !== 0) {
-      this.state = 591;
+    if ((_la & ~0x1f) == 0 && (1 << _la & (1 << SolidityParser.T__3 | 1 << SolidityParser.T__12 | 1 << SolidityParser.T__21)) !== 0 || (_la - 32 & ~0x1f) == 0 && (1 << _la - 32 & (1 << SolidityParser.T__31 - 32 | 1 << SolidityParser.T__33 - 32 | 1 << SolidityParser.T__39 - 32 | 1 << SolidityParser.T__50 - 32 | 1 << SolidityParser.T__51 - 32 | 1 << SolidityParser.T__52 - 32 | 1 << SolidityParser.T__53 - 32 | 1 << SolidityParser.T__54 - 32 | 1 << SolidityParser.T__55 - 32 | 1 << SolidityParser.T__56 - 32 | 1 << SolidityParser.T__58 - 32 | 1 << SolidityParser.T__59 - 32 | 1 << SolidityParser.T__60 - 32 | 1 << SolidityParser.T__61 - 32 | 1 << SolidityParser.T__62 - 32)) !== 0 || (_la - 94 & ~0x1f) == 0 && (1 << _la - 94 & (1 << SolidityParser.Int - 94 | 1 << SolidityParser.Uint - 94 | 1 << SolidityParser.Byte - 94 | 1 << SolidityParser.Fixed - 94 | 1 << SolidityParser.Ufixed - 94 | 1 << SolidityParser.BooleanLiteral - 94 | 1 << SolidityParser.DecimalNumber - 94 | 1 << SolidityParser.HexNumber - 94 | 1 << SolidityParser.HexLiteral - 94 | 1 << SolidityParser.PayableKeyword - 94 | 1 << SolidityParser.TypeKeyword - 94 | 1 << SolidityParser.Identifier - 94 | 1 << SolidityParser.StringLiteralFragment - 94)) !== 0) {
+      this.state = 636;
       this.expression(0);
     }
 
-    this.state = 594;
+    this.state = 639;
     this.match(SolidityParser.T__1);
   } catch (re) {
     if (re instanceof antlr4.error.RecognitionException) {
@@ -56967,13 +57141,13 @@ SolidityParser.ThrowStatementContext = ThrowStatementContext;
 
 SolidityParser.prototype.throwStatement = function () {
   var localctx = new ThrowStatementContext(this, this._ctx, this.state);
-  this.enterRule(localctx, 98, SolidityParser.RULE_throwStatement);
+  this.enterRule(localctx, 102, SolidityParser.RULE_throwStatement);
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 596;
-    this.match(SolidityParser.T__46);
-    this.state = 597;
+    this.state = 641;
+    this.match(SolidityParser.T__48);
+    this.state = 642;
     this.match(SolidityParser.T__1);
   } catch (re) {
     if (re instanceof antlr4.error.RecognitionException) {
@@ -57030,15 +57204,15 @@ SolidityParser.EmitStatementContext = EmitStatementContext;
 
 SolidityParser.prototype.emitStatement = function () {
   var localctx = new EmitStatementContext(this, this._ctx, this.state);
-  this.enterRule(localctx, 100, SolidityParser.RULE_emitStatement);
+  this.enterRule(localctx, 104, SolidityParser.RULE_emitStatement);
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 599;
-    this.match(SolidityParser.T__47);
-    this.state = 600;
+    this.state = 644;
+    this.match(SolidityParser.T__49);
+    this.state = 645;
     this.functionCall();
-    this.state = 601;
+    this.state = 646;
     this.match(SolidityParser.T__1);
   } catch (re) {
     if (re instanceof antlr4.error.RecognitionException) {
@@ -57107,54 +57281,54 @@ SolidityParser.VariableDeclarationStatementContext = VariableDeclarationStatemen
 
 SolidityParser.prototype.variableDeclarationStatement = function () {
   var localctx = new VariableDeclarationStatementContext(this, this._ctx, this.state);
-  this.enterRule(localctx, 102, SolidityParser.RULE_variableDeclarationStatement);
+  this.enterRule(localctx, 106, SolidityParser.RULE_variableDeclarationStatement);
   var _la = 0; // Token type
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 610;
+    this.state = 655;
 
     this._errHandler.sync(this);
 
-    var la_ = this._interp.adaptivePredict(this._input, 61, this._ctx);
+    var la_ = this._interp.adaptivePredict(this._input, 70, this._ctx);
 
     switch (la_) {
       case 1:
-        this.state = 603;
-        this.match(SolidityParser.T__48);
-        this.state = 604;
+        this.state = 648;
+        this.match(SolidityParser.T__50);
+        this.state = 649;
         this.identifierList();
         break;
 
       case 2:
-        this.state = 605;
+        this.state = 650;
         this.variableDeclaration();
         break;
 
       case 3:
-        this.state = 606;
-        this.match(SolidityParser.T__20);
-        this.state = 607;
-        this.variableDeclarationList();
-        this.state = 608;
+        this.state = 651;
         this.match(SolidityParser.T__21);
+        this.state = 652;
+        this.variableDeclarationList();
+        this.state = 653;
+        this.match(SolidityParser.T__22);
         break;
     }
 
-    this.state = 614;
+    this.state = 659;
 
     this._errHandler.sync(this);
 
     _la = this._input.LA(1);
 
     if (_la === SolidityParser.T__8) {
-      this.state = 612;
+      this.state = 657;
       this.match(SolidityParser.T__8);
-      this.state = 613;
+      this.state = 658;
       this.expression(0);
     }
 
-    this.state = 616;
+    this.state = 661;
     this.match(SolidityParser.T__1);
   } catch (re) {
     if (re instanceof antlr4.error.RecognitionException) {
@@ -57219,43 +57393,43 @@ SolidityParser.VariableDeclarationListContext = VariableDeclarationListContext;
 
 SolidityParser.prototype.variableDeclarationList = function () {
   var localctx = new VariableDeclarationListContext(this, this._ctx, this.state);
-  this.enterRule(localctx, 104, SolidityParser.RULE_variableDeclarationList);
+  this.enterRule(localctx, 108, SolidityParser.RULE_variableDeclarationList);
   var _la = 0; // Token type
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 619;
+    this.state = 664;
 
     this._errHandler.sync(this);
 
     _la = this._input.LA(1);
 
-    if (_la === SolidityParser.T__12 || _la === SolidityParser.T__27 || (_la - 34 & ~0x1f) == 0 && (1 << _la - 34 & (1 << SolidityParser.T__33 - 34 | 1 << SolidityParser.T__35 - 34 | 1 << SolidityParser.T__39 - 34 | 1 << SolidityParser.T__48 - 34 | 1 << SolidityParser.T__49 - 34 | 1 << SolidityParser.T__50 - 34 | 1 << SolidityParser.T__51 - 34)) !== 0 || (_la - 91 & ~0x1f) == 0 && (1 << _la - 91 & (1 << SolidityParser.Int - 91 | 1 << SolidityParser.Uint - 91 | 1 << SolidityParser.Byte - 91 | 1 << SolidityParser.Fixed - 91 | 1 << SolidityParser.Ufixed - 91 | 1 << SolidityParser.Identifier - 91)) !== 0) {
-      this.state = 618;
+    if (_la === SolidityParser.T__12 || _la === SolidityParser.T__27 || (_la - 34 & ~0x1f) == 0 && (1 << _la - 34 & (1 << SolidityParser.T__33 - 34 | 1 << SolidityParser.T__35 - 34 | 1 << SolidityParser.T__39 - 34 | 1 << SolidityParser.T__50 - 34 | 1 << SolidityParser.T__51 - 34 | 1 << SolidityParser.T__52 - 34 | 1 << SolidityParser.T__53 - 34)) !== 0 || (_la - 94 & ~0x1f) == 0 && (1 << _la - 94 & (1 << SolidityParser.Int - 94 | 1 << SolidityParser.Uint - 94 | 1 << SolidityParser.Byte - 94 | 1 << SolidityParser.Fixed - 94 | 1 << SolidityParser.Ufixed - 94 | 1 << SolidityParser.Identifier - 94)) !== 0) {
+      this.state = 663;
       this.variableDeclaration();
     }
 
-    this.state = 627;
+    this.state = 672;
 
     this._errHandler.sync(this);
 
     _la = this._input.LA(1);
 
     while (_la === SolidityParser.T__14) {
-      this.state = 621;
+      this.state = 666;
       this.match(SolidityParser.T__14);
-      this.state = 623;
+      this.state = 668;
 
       this._errHandler.sync(this);
 
       _la = this._input.LA(1);
 
-      if (_la === SolidityParser.T__12 || _la === SolidityParser.T__27 || (_la - 34 & ~0x1f) == 0 && (1 << _la - 34 & (1 << SolidityParser.T__33 - 34 | 1 << SolidityParser.T__35 - 34 | 1 << SolidityParser.T__39 - 34 | 1 << SolidityParser.T__48 - 34 | 1 << SolidityParser.T__49 - 34 | 1 << SolidityParser.T__50 - 34 | 1 << SolidityParser.T__51 - 34)) !== 0 || (_la - 91 & ~0x1f) == 0 && (1 << _la - 91 & (1 << SolidityParser.Int - 91 | 1 << SolidityParser.Uint - 91 | 1 << SolidityParser.Byte - 91 | 1 << SolidityParser.Fixed - 91 | 1 << SolidityParser.Ufixed - 91 | 1 << SolidityParser.Identifier - 91)) !== 0) {
-        this.state = 622;
+      if (_la === SolidityParser.T__12 || _la === SolidityParser.T__27 || (_la - 34 & ~0x1f) == 0 && (1 << _la - 34 & (1 << SolidityParser.T__33 - 34 | 1 << SolidityParser.T__35 - 34 | 1 << SolidityParser.T__39 - 34 | 1 << SolidityParser.T__50 - 34 | 1 << SolidityParser.T__51 - 34 | 1 << SolidityParser.T__52 - 34 | 1 << SolidityParser.T__53 - 34)) !== 0 || (_la - 94 & ~0x1f) == 0 && (1 << _la - 94 & (1 << SolidityParser.Int - 94 | 1 << SolidityParser.Uint - 94 | 1 << SolidityParser.Byte - 94 | 1 << SolidityParser.Fixed - 94 | 1 << SolidityParser.Ufixed - 94 | 1 << SolidityParser.Identifier - 94)) !== 0) {
+        this.state = 667;
         this.variableDeclaration();
       }
 
-      this.state = 629;
+      this.state = 674;
 
       this._errHandler.sync(this);
 
@@ -57324,56 +57498,56 @@ SolidityParser.IdentifierListContext = IdentifierListContext;
 
 SolidityParser.prototype.identifierList = function () {
   var localctx = new IdentifierListContext(this, this._ctx, this.state);
-  this.enterRule(localctx, 106, SolidityParser.RULE_identifierList);
+  this.enterRule(localctx, 110, SolidityParser.RULE_identifierList);
   var _la = 0; // Token type
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 630;
-    this.match(SolidityParser.T__20);
-    this.state = 637;
+    this.state = 675;
+    this.match(SolidityParser.T__21);
+    this.state = 682;
 
     this._errHandler.sync(this);
 
-    var _alt = this._interp.adaptivePredict(this._input, 67, this._ctx);
+    var _alt = this._interp.adaptivePredict(this._input, 76, this._ctx);
 
     while (_alt != 2 && _alt != antlr4.atn.ATN.INVALID_ALT_NUMBER) {
       if (_alt === 1) {
-        this.state = 632;
+        this.state = 677;
 
         this._errHandler.sync(this);
 
         _la = this._input.LA(1);
 
         if (_la === SolidityParser.T__12 || _la === SolidityParser.T__39 || _la === SolidityParser.Identifier) {
-          this.state = 631;
+          this.state = 676;
           this.identifier();
         }
 
-        this.state = 634;
+        this.state = 679;
         this.match(SolidityParser.T__14);
       }
 
-      this.state = 639;
+      this.state = 684;
 
       this._errHandler.sync(this);
 
-      _alt = this._interp.adaptivePredict(this._input, 67, this._ctx);
+      _alt = this._interp.adaptivePredict(this._input, 76, this._ctx);
     }
 
-    this.state = 641;
+    this.state = 686;
 
     this._errHandler.sync(this);
 
     _la = this._input.LA(1);
 
     if (_la === SolidityParser.T__12 || _la === SolidityParser.T__39 || _la === SolidityParser.Identifier) {
-      this.state = 640;
+      this.state = 685;
       this.identifier();
     }
 
-    this.state = 643;
-    this.match(SolidityParser.T__21);
+    this.state = 688;
+    this.match(SolidityParser.T__22);
   } catch (re) {
     if (re instanceof antlr4.error.RecognitionException) {
       localctx.exception = re;
@@ -57445,15 +57619,15 @@ SolidityParser.ElementaryTypeNameContext = ElementaryTypeNameContext;
 
 SolidityParser.prototype.elementaryTypeName = function () {
   var localctx = new ElementaryTypeNameContext(this, this._ctx, this.state);
-  this.enterRule(localctx, 108, SolidityParser.RULE_elementaryTypeName);
+  this.enterRule(localctx, 112, SolidityParser.RULE_elementaryTypeName);
   var _la = 0; // Token type
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 645;
+    this.state = 690;
     _la = this._input.LA(1);
 
-    if (!((_la - 34 & ~0x1f) == 0 && (1 << _la - 34 & (1 << SolidityParser.T__33 - 34 | 1 << SolidityParser.T__48 - 34 | 1 << SolidityParser.T__49 - 34 | 1 << SolidityParser.T__50 - 34 | 1 << SolidityParser.T__51 - 34)) !== 0 || (_la - 91 & ~0x1f) == 0 && (1 << _la - 91 & (1 << SolidityParser.Int - 91 | 1 << SolidityParser.Uint - 91 | 1 << SolidityParser.Byte - 91 | 1 << SolidityParser.Fixed - 91 | 1 << SolidityParser.Ufixed - 91)) !== 0)) {
+    if (!((_la - 34 & ~0x1f) == 0 && (1 << _la - 34 & (1 << SolidityParser.T__33 - 34 | 1 << SolidityParser.T__50 - 34 | 1 << SolidityParser.T__51 - 34 | 1 << SolidityParser.T__52 - 34 | 1 << SolidityParser.T__53 - 34)) !== 0 || (_la - 94 & ~0x1f) == 0 && (1 << _la - 94 & (1 << SolidityParser.Int - 94 | 1 << SolidityParser.Uint - 94 | 1 << SolidityParser.Byte - 94 | 1 << SolidityParser.Fixed - 94 | 1 << SolidityParser.Ufixed - 94)) !== 0)) {
       this._errHandler.recoverInline(this);
     } else {
       this._errHandler.reportMatch(this);
@@ -57515,12 +57689,16 @@ ExpressionContext.prototype.primaryExpression = function () {
   return this.getTypedRuleContext(PrimaryExpressionContext, 0);
 };
 
-ExpressionContext.prototype.functionCallArguments = function () {
-  return this.getTypedRuleContext(FunctionCallArgumentsContext, 0);
-};
-
 ExpressionContext.prototype.identifier = function () {
   return this.getTypedRuleContext(IdentifierContext, 0);
+};
+
+ExpressionContext.prototype.nameValueList = function () {
+  return this.getTypedRuleContext(NameValueListContext, 0);
+};
+
+ExpressionContext.prototype.functionCallArguments = function () {
+  return this.getTypedRuleContext(FunctionCallArgumentsContext, 0);
 };
 
 ExpressionContext.prototype.enterRule = function (listener) {
@@ -57544,40 +57722,40 @@ SolidityParser.prototype.expression = function (_p) {
   var _parentState = this.state;
   var localctx = new ExpressionContext(this, this._ctx, _parentState);
   var _prevctx = localctx;
-  var _startState = 110;
-  this.enterRecursionRule(localctx, 110, SolidityParser.RULE_expression, _p);
+  var _startState = 114;
+  this.enterRecursionRule(localctx, 114, SolidityParser.RULE_expression, _p);
   var _la = 0; // Token type
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 665;
+    this.state = 710;
 
     this._errHandler.sync(this);
 
-    var la_ = this._interp.adaptivePredict(this._input, 69, this._ctx);
+    var la_ = this._interp.adaptivePredict(this._input, 78, this._ctx);
 
     switch (la_) {
       case 1:
-        this.state = 648;
-        this.match(SolidityParser.T__54);
-        this.state = 649;
+        this.state = 693;
+        this.match(SolidityParser.T__56);
+        this.state = 694;
         this.typeName(0);
         break;
 
       case 2:
-        this.state = 650;
-        this.match(SolidityParser.T__20);
-        this.state = 651;
-        this.expression(0);
-        this.state = 652;
+        this.state = 695;
         this.match(SolidityParser.T__21);
+        this.state = 696;
+        this.expression(0);
+        this.state = 697;
+        this.match(SolidityParser.T__22);
         break;
 
       case 3:
-        this.state = 654;
+        this.state = 699;
         _la = this._input.LA(1);
 
-        if (!(_la === SolidityParser.T__52 || _la === SolidityParser.T__53)) {
+        if (!(_la === SolidityParser.T__54 || _la === SolidityParser.T__55)) {
           this._errHandler.recoverInline(this);
         } else {
           this._errHandler.reportMatch(this);
@@ -57585,15 +57763,15 @@ SolidityParser.prototype.expression = function (_p) {
           this.consume();
         }
 
-        this.state = 655;
+        this.state = 700;
         this.expression(19);
         break;
 
       case 4:
-        this.state = 656;
+        this.state = 701;
         _la = this._input.LA(1);
 
-        if (!(_la === SolidityParser.T__55 || _la === SolidityParser.T__56)) {
+        if (!(_la === SolidityParser.T__58 || _la === SolidityParser.T__59)) {
           this._errHandler.recoverInline(this);
         } else {
           this._errHandler.reportMatch(this);
@@ -57601,15 +57779,15 @@ SolidityParser.prototype.expression = function (_p) {
           this.consume();
         }
 
-        this.state = 657;
+        this.state = 702;
         this.expression(18);
         break;
 
       case 5:
-        this.state = 658;
+        this.state = 703;
         _la = this._input.LA(1);
 
-        if (!(_la === SolidityParser.T__57 || _la === SolidityParser.T__58)) {
+        if (!(_la === SolidityParser.T__60 || _la === SolidityParser.T__61)) {
           this._errHandler.recoverInline(this);
         } else {
           this._errHandler.reportMatch(this);
@@ -57617,36 +57795,36 @@ SolidityParser.prototype.expression = function (_p) {
           this.consume();
         }
 
-        this.state = 659;
+        this.state = 704;
         this.expression(17);
         break;
 
       case 6:
-        this.state = 660;
-        this.match(SolidityParser.T__59);
-        this.state = 661;
+        this.state = 705;
+        this.match(SolidityParser.T__62);
+        this.state = 706;
         this.expression(16);
         break;
 
       case 7:
-        this.state = 662;
+        this.state = 707;
         this.match(SolidityParser.T__3);
-        this.state = 663;
+        this.state = 708;
         this.expression(15);
         break;
 
       case 8:
-        this.state = 664;
+        this.state = 709;
         this.primaryExpression();
         break;
     }
 
     this._ctx.stop = this._input.LT(-1);
-    this.state = 726;
+    this.state = 787;
 
     this._errHandler.sync(this);
 
-    var _alt = this._interp.adaptivePredict(this._input, 71, this._ctx);
+    var _alt = this._interp.adaptivePredict(this._input, 83, this._ctx);
 
     while (_alt != 2 && _alt != antlr4.atn.ATN.INVALID_ALT_NUMBER) {
       if (_alt === 1) {
@@ -57655,41 +57833,41 @@ SolidityParser.prototype.expression = function (_p) {
         }
 
         _prevctx = localctx;
-        this.state = 724;
+        this.state = 785;
 
         this._errHandler.sync(this);
 
-        var la_ = this._interp.adaptivePredict(this._input, 70, this._ctx);
+        var la_ = this._interp.adaptivePredict(this._input, 82, this._ctx);
 
         switch (la_) {
           case 1:
             localctx = new ExpressionContext(this, _parentctx, _parentState);
             this.pushNewRecursionContext(localctx, _startState, SolidityParser.RULE_expression);
-            this.state = 667;
+            this.state = 712;
 
             if (!this.precpred(this._ctx, 14)) {
               throw new antlr4.error.FailedPredicateException(this, "this.precpred(this._ctx, 14)");
             }
 
-            this.state = 668;
-            this.match(SolidityParser.T__60);
-            this.state = 669;
+            this.state = 713;
+            this.match(SolidityParser.T__63);
+            this.state = 714;
             this.expression(15);
             break;
 
           case 2:
             localctx = new ExpressionContext(this, _parentctx, _parentState);
             this.pushNewRecursionContext(localctx, _startState, SolidityParser.RULE_expression);
-            this.state = 670;
+            this.state = 715;
 
             if (!this.precpred(this._ctx, 13)) {
               throw new antlr4.error.FailedPredicateException(this, "this.precpred(this._ctx, 13)");
             }
 
-            this.state = 671;
+            this.state = 716;
             _la = this._input.LA(1);
 
-            if (!(_la === SolidityParser.T__11 || _la === SolidityParser.T__61 || _la === SolidityParser.T__62)) {
+            if (!(_la === SolidityParser.T__11 || _la === SolidityParser.T__64 || _la === SolidityParser.T__65)) {
               this._errHandler.recoverInline(this);
             } else {
               this._errHandler.reportMatch(this);
@@ -57697,23 +57875,23 @@ SolidityParser.prototype.expression = function (_p) {
               this.consume();
             }
 
-            this.state = 672;
+            this.state = 717;
             this.expression(14);
             break;
 
           case 3:
             localctx = new ExpressionContext(this, _parentctx, _parentState);
             this.pushNewRecursionContext(localctx, _startState, SolidityParser.RULE_expression);
-            this.state = 673;
+            this.state = 718;
 
             if (!this.precpred(this._ctx, 12)) {
               throw new antlr4.error.FailedPredicateException(this, "this.precpred(this._ctx, 12)");
             }
 
-            this.state = 674;
+            this.state = 719;
             _la = this._input.LA(1);
 
-            if (!(_la === SolidityParser.T__55 || _la === SolidityParser.T__56)) {
+            if (!(_la === SolidityParser.T__58 || _la === SolidityParser.T__59)) {
               this._errHandler.recoverInline(this);
             } else {
               this._errHandler.reportMatch(this);
@@ -57721,23 +57899,23 @@ SolidityParser.prototype.expression = function (_p) {
               this.consume();
             }
 
-            this.state = 675;
+            this.state = 720;
             this.expression(13);
             break;
 
           case 4:
             localctx = new ExpressionContext(this, _parentctx, _parentState);
             this.pushNewRecursionContext(localctx, _startState, SolidityParser.RULE_expression);
-            this.state = 676;
+            this.state = 721;
 
             if (!this.precpred(this._ctx, 11)) {
               throw new antlr4.error.FailedPredicateException(this, "this.precpred(this._ctx, 11)");
             }
 
-            this.state = 677;
+            this.state = 722;
             _la = this._input.LA(1);
 
-            if (!(_la === SolidityParser.T__63 || _la === SolidityParser.T__64)) {
+            if (!(_la === SolidityParser.T__66 || _la === SolidityParser.T__67)) {
               this._errHandler.recoverInline(this);
             } else {
               this._errHandler.reportMatch(this);
@@ -57745,65 +57923,65 @@ SolidityParser.prototype.expression = function (_p) {
               this.consume();
             }
 
-            this.state = 678;
+            this.state = 723;
             this.expression(12);
             break;
 
           case 5:
             localctx = new ExpressionContext(this, _parentctx, _parentState);
             this.pushNewRecursionContext(localctx, _startState, SolidityParser.RULE_expression);
-            this.state = 679;
+            this.state = 724;
 
             if (!this.precpred(this._ctx, 10)) {
               throw new antlr4.error.FailedPredicateException(this, "this.precpred(this._ctx, 10)");
             }
 
-            this.state = 680;
-            this.match(SolidityParser.T__65);
-            this.state = 681;
+            this.state = 725;
+            this.match(SolidityParser.T__68);
+            this.state = 726;
             this.expression(11);
             break;
 
           case 6:
             localctx = new ExpressionContext(this, _parentctx, _parentState);
             this.pushNewRecursionContext(localctx, _startState, SolidityParser.RULE_expression);
-            this.state = 682;
+            this.state = 727;
 
             if (!this.precpred(this._ctx, 9)) {
               throw new antlr4.error.FailedPredicateException(this, "this.precpred(this._ctx, 9)");
             }
 
-            this.state = 683;
+            this.state = 728;
             this.match(SolidityParser.T__2);
-            this.state = 684;
+            this.state = 729;
             this.expression(10);
             break;
 
           case 7:
             localctx = new ExpressionContext(this, _parentctx, _parentState);
             this.pushNewRecursionContext(localctx, _startState, SolidityParser.RULE_expression);
-            this.state = 685;
+            this.state = 730;
 
             if (!this.precpred(this._ctx, 8)) {
               throw new antlr4.error.FailedPredicateException(this, "this.precpred(this._ctx, 8)");
             }
 
-            this.state = 686;
-            this.match(SolidityParser.T__66);
-            this.state = 687;
+            this.state = 731;
+            this.match(SolidityParser.T__69);
+            this.state = 732;
             this.expression(9);
             break;
 
           case 8:
             localctx = new ExpressionContext(this, _parentctx, _parentState);
             this.pushNewRecursionContext(localctx, _startState, SolidityParser.RULE_expression);
-            this.state = 688;
+            this.state = 733;
 
             if (!this.precpred(this._ctx, 7)) {
               throw new antlr4.error.FailedPredicateException(this, "this.precpred(this._ctx, 7)");
             }
 
-            this.state = 689;
+            this.state = 734;
             _la = this._input.LA(1);
 
             if (!((_la & ~0x1f) == 0 && (1 << _la & (1 << SolidityParser.T__4 | 1 << SolidityParser.T__5 | 1 << SolidityParser.T__6 | 1 << SolidityParser.T__7)) !== 0)) {
@@ -57814,23 +57992,23 @@ SolidityParser.prototype.expression = function (_p) {
               this.consume();
             }
 
-            this.state = 690;
+            this.state = 735;
             this.expression(8);
             break;
 
           case 9:
             localctx = new ExpressionContext(this, _parentctx, _parentState);
             this.pushNewRecursionContext(localctx, _startState, SolidityParser.RULE_expression);
-            this.state = 691;
+            this.state = 736;
 
             if (!this.precpred(this._ctx, 6)) {
               throw new antlr4.error.FailedPredicateException(this, "this.precpred(this._ctx, 6)");
             }
 
-            this.state = 692;
+            this.state = 737;
             _la = this._input.LA(1);
 
-            if (!(_la === SolidityParser.T__67 || _la === SolidityParser.T__68)) {
+            if (!(_la === SolidityParser.T__70 || _la === SolidityParser.T__71)) {
               this._errHandler.recoverInline(this);
             } else {
               this._errHandler.reportMatch(this);
@@ -57838,72 +58016,72 @@ SolidityParser.prototype.expression = function (_p) {
               this.consume();
             }
 
-            this.state = 693;
+            this.state = 738;
             this.expression(7);
             break;
 
           case 10:
             localctx = new ExpressionContext(this, _parentctx, _parentState);
             this.pushNewRecursionContext(localctx, _startState, SolidityParser.RULE_expression);
-            this.state = 694;
+            this.state = 739;
 
             if (!this.precpred(this._ctx, 5)) {
               throw new antlr4.error.FailedPredicateException(this, "this.precpred(this._ctx, 5)");
             }
 
-            this.state = 695;
-            this.match(SolidityParser.T__69);
-            this.state = 696;
+            this.state = 740;
+            this.match(SolidityParser.T__72);
+            this.state = 741;
             this.expression(6);
             break;
 
           case 11:
             localctx = new ExpressionContext(this, _parentctx, _parentState);
             this.pushNewRecursionContext(localctx, _startState, SolidityParser.RULE_expression);
-            this.state = 697;
+            this.state = 742;
 
             if (!this.precpred(this._ctx, 4)) {
               throw new antlr4.error.FailedPredicateException(this, "this.precpred(this._ctx, 4)");
             }
 
-            this.state = 698;
-            this.match(SolidityParser.T__70);
-            this.state = 699;
+            this.state = 743;
+            this.match(SolidityParser.T__73);
+            this.state = 744;
             this.expression(5);
             break;
 
           case 12:
             localctx = new ExpressionContext(this, _parentctx, _parentState);
             this.pushNewRecursionContext(localctx, _startState, SolidityParser.RULE_expression);
-            this.state = 700;
+            this.state = 745;
 
             if (!this.precpred(this._ctx, 3)) {
               throw new antlr4.error.FailedPredicateException(this, "this.precpred(this._ctx, 3)");
             }
 
-            this.state = 701;
-            this.match(SolidityParser.T__71);
-            this.state = 702;
+            this.state = 746;
+            this.match(SolidityParser.T__74);
+            this.state = 747;
             this.expression(0);
-            this.state = 703;
-            this.match(SolidityParser.T__72);
-            this.state = 704;
+            this.state = 748;
+            this.match(SolidityParser.T__57);
+            this.state = 749;
             this.expression(4);
             break;
 
           case 13:
             localctx = new ExpressionContext(this, _parentctx, _parentState);
             this.pushNewRecursionContext(localctx, _startState, SolidityParser.RULE_expression);
-            this.state = 706;
+            this.state = 751;
 
             if (!this.precpred(this._ctx, 2)) {
               throw new antlr4.error.FailedPredicateException(this, "this.precpred(this._ctx, 2)");
             }
 
-            this.state = 707;
+            this.state = 752;
             _la = this._input.LA(1);
 
-            if (!(_la === SolidityParser.T__8 || (_la - 74 & ~0x1f) == 0 && (1 << _la - 74 & (1 << SolidityParser.T__73 - 74 | 1 << SolidityParser.T__74 - 74 | 1 << SolidityParser.T__75 - 74 | 1 << SolidityParser.T__76 - 74 | 1 << SolidityParser.T__77 - 74 | 1 << SolidityParser.T__78 - 74 | 1 << SolidityParser.T__79 - 74 | 1 << SolidityParser.T__80 - 74 | 1 << SolidityParser.T__81 - 74 | 1 << SolidityParser.T__82 - 74)) !== 0)) {
+            if (!(_la === SolidityParser.T__8 || (_la - 76 & ~0x1f) == 0 && (1 << _la - 76 & (1 << SolidityParser.T__75 - 76 | 1 << SolidityParser.T__76 - 76 | 1 << SolidityParser.T__77 - 76 | 1 << SolidityParser.T__78 - 76 | 1 << SolidityParser.T__79 - 76 | 1 << SolidityParser.T__80 - 76 | 1 << SolidityParser.T__81 - 76 | 1 << SolidityParser.T__82 - 76 | 1 << SolidityParser.T__83 - 76 | 1 << SolidityParser.T__84 - 76)) !== 0)) {
               this._errHandler.recoverInline(this);
             } else {
               this._errHandler.reportMatch(this);
@@ -57911,23 +58089,23 @@ SolidityParser.prototype.expression = function (_p) {
               this.consume();
             }
 
-            this.state = 708;
+            this.state = 753;
             this.expression(3);
             break;
 
           case 14:
             localctx = new ExpressionContext(this, _parentctx, _parentState);
             this.pushNewRecursionContext(localctx, _startState, SolidityParser.RULE_expression);
-            this.state = 709;
+            this.state = 754;
 
-            if (!this.precpred(this._ctx, 25)) {
-              throw new antlr4.error.FailedPredicateException(this, "this.precpred(this._ctx, 25)");
+            if (!this.precpred(this._ctx, 27)) {
+              throw new antlr4.error.FailedPredicateException(this, "this.precpred(this._ctx, 27)");
             }
 
-            this.state = 710;
+            this.state = 755;
             _la = this._input.LA(1);
 
-            if (!(_la === SolidityParser.T__52 || _la === SolidityParser.T__53)) {
+            if (!(_la === SolidityParser.T__54 || _la === SolidityParser.T__55)) {
               this._errHandler.recoverInline(this);
             } else {
               this._errHandler.reportMatch(this);
@@ -57940,59 +58118,124 @@ SolidityParser.prototype.expression = function (_p) {
           case 15:
             localctx = new ExpressionContext(this, _parentctx, _parentState);
             this.pushNewRecursionContext(localctx, _startState, SolidityParser.RULE_expression);
-            this.state = 711;
+            this.state = 756;
 
-            if (!this.precpred(this._ctx, 23)) {
-              throw new antlr4.error.FailedPredicateException(this, "this.precpred(this._ctx, 23)");
+            if (!this.precpred(this._ctx, 25)) {
+              throw new antlr4.error.FailedPredicateException(this, "this.precpred(this._ctx, 25)");
             }
 
-            this.state = 712;
+            this.state = 757;
             this.match(SolidityParser.T__31);
-            this.state = 713;
-            this.expression(0);
-            this.state = 714;
+            this.state = 759;
+
+            this._errHandler.sync(this);
+
+            _la = this._input.LA(1);
+
+            if ((_la & ~0x1f) == 0 && (1 << _la & (1 << SolidityParser.T__3 | 1 << SolidityParser.T__12 | 1 << SolidityParser.T__21)) !== 0 || (_la - 32 & ~0x1f) == 0 && (1 << _la - 32 & (1 << SolidityParser.T__31 - 32 | 1 << SolidityParser.T__33 - 32 | 1 << SolidityParser.T__39 - 32 | 1 << SolidityParser.T__50 - 32 | 1 << SolidityParser.T__51 - 32 | 1 << SolidityParser.T__52 - 32 | 1 << SolidityParser.T__53 - 32 | 1 << SolidityParser.T__54 - 32 | 1 << SolidityParser.T__55 - 32 | 1 << SolidityParser.T__56 - 32 | 1 << SolidityParser.T__58 - 32 | 1 << SolidityParser.T__59 - 32 | 1 << SolidityParser.T__60 - 32 | 1 << SolidityParser.T__61 - 32 | 1 << SolidityParser.T__62 - 32)) !== 0 || (_la - 94 & ~0x1f) == 0 && (1 << _la - 94 & (1 << SolidityParser.Int - 94 | 1 << SolidityParser.Uint - 94 | 1 << SolidityParser.Byte - 94 | 1 << SolidityParser.Fixed - 94 | 1 << SolidityParser.Ufixed - 94 | 1 << SolidityParser.BooleanLiteral - 94 | 1 << SolidityParser.DecimalNumber - 94 | 1 << SolidityParser.HexNumber - 94 | 1 << SolidityParser.HexLiteral - 94 | 1 << SolidityParser.PayableKeyword - 94 | 1 << SolidityParser.TypeKeyword - 94 | 1 << SolidityParser.Identifier - 94 | 1 << SolidityParser.StringLiteralFragment - 94)) !== 0) {
+              this.state = 758;
+              this.expression(0);
+            }
+
+            this.state = 761;
             this.match(SolidityParser.T__32);
             break;
 
           case 16:
             localctx = new ExpressionContext(this, _parentctx, _parentState);
             this.pushNewRecursionContext(localctx, _startState, SolidityParser.RULE_expression);
-            this.state = 716;
+            this.state = 762;
 
-            if (!this.precpred(this._ctx, 22)) {
-              throw new antlr4.error.FailedPredicateException(this, "this.precpred(this._ctx, 22)");
+            if (!this.precpred(this._ctx, 24)) {
+              throw new antlr4.error.FailedPredicateException(this, "this.precpred(this._ctx, 24)");
             }
 
-            this.state = 717;
-            this.match(SolidityParser.T__20);
-            this.state = 718;
-            this.functionCallArguments();
-            this.state = 719;
-            this.match(SolidityParser.T__21);
+            this.state = 763;
+            this.match(SolidityParser.T__31);
+            this.state = 765;
+
+            this._errHandler.sync(this);
+
+            _la = this._input.LA(1);
+
+            if ((_la & ~0x1f) == 0 && (1 << _la & (1 << SolidityParser.T__3 | 1 << SolidityParser.T__12 | 1 << SolidityParser.T__21)) !== 0 || (_la - 32 & ~0x1f) == 0 && (1 << _la - 32 & (1 << SolidityParser.T__31 - 32 | 1 << SolidityParser.T__33 - 32 | 1 << SolidityParser.T__39 - 32 | 1 << SolidityParser.T__50 - 32 | 1 << SolidityParser.T__51 - 32 | 1 << SolidityParser.T__52 - 32 | 1 << SolidityParser.T__53 - 32 | 1 << SolidityParser.T__54 - 32 | 1 << SolidityParser.T__55 - 32 | 1 << SolidityParser.T__56 - 32 | 1 << SolidityParser.T__58 - 32 | 1 << SolidityParser.T__59 - 32 | 1 << SolidityParser.T__60 - 32 | 1 << SolidityParser.T__61 - 32 | 1 << SolidityParser.T__62 - 32)) !== 0 || (_la - 94 & ~0x1f) == 0 && (1 << _la - 94 & (1 << SolidityParser.Int - 94 | 1 << SolidityParser.Uint - 94 | 1 << SolidityParser.Byte - 94 | 1 << SolidityParser.Fixed - 94 | 1 << SolidityParser.Ufixed - 94 | 1 << SolidityParser.BooleanLiteral - 94 | 1 << SolidityParser.DecimalNumber - 94 | 1 << SolidityParser.HexNumber - 94 | 1 << SolidityParser.HexLiteral - 94 | 1 << SolidityParser.PayableKeyword - 94 | 1 << SolidityParser.TypeKeyword - 94 | 1 << SolidityParser.Identifier - 94 | 1 << SolidityParser.StringLiteralFragment - 94)) !== 0) {
+              this.state = 764;
+              this.expression(0);
+            }
+
+            this.state = 767;
+            this.match(SolidityParser.T__57);
+            this.state = 769;
+
+            this._errHandler.sync(this);
+
+            _la = this._input.LA(1);
+
+            if ((_la & ~0x1f) == 0 && (1 << _la & (1 << SolidityParser.T__3 | 1 << SolidityParser.T__12 | 1 << SolidityParser.T__21)) !== 0 || (_la - 32 & ~0x1f) == 0 && (1 << _la - 32 & (1 << SolidityParser.T__31 - 32 | 1 << SolidityParser.T__33 - 32 | 1 << SolidityParser.T__39 - 32 | 1 << SolidityParser.T__50 - 32 | 1 << SolidityParser.T__51 - 32 | 1 << SolidityParser.T__52 - 32 | 1 << SolidityParser.T__53 - 32 | 1 << SolidityParser.T__54 - 32 | 1 << SolidityParser.T__55 - 32 | 1 << SolidityParser.T__56 - 32 | 1 << SolidityParser.T__58 - 32 | 1 << SolidityParser.T__59 - 32 | 1 << SolidityParser.T__60 - 32 | 1 << SolidityParser.T__61 - 32 | 1 << SolidityParser.T__62 - 32)) !== 0 || (_la - 94 & ~0x1f) == 0 && (1 << _la - 94 & (1 << SolidityParser.Int - 94 | 1 << SolidityParser.Uint - 94 | 1 << SolidityParser.Byte - 94 | 1 << SolidityParser.Fixed - 94 | 1 << SolidityParser.Ufixed - 94 | 1 << SolidityParser.BooleanLiteral - 94 | 1 << SolidityParser.DecimalNumber - 94 | 1 << SolidityParser.HexNumber - 94 | 1 << SolidityParser.HexLiteral - 94 | 1 << SolidityParser.PayableKeyword - 94 | 1 << SolidityParser.TypeKeyword - 94 | 1 << SolidityParser.Identifier - 94 | 1 << SolidityParser.StringLiteralFragment - 94)) !== 0) {
+              this.state = 768;
+              this.expression(0);
+            }
+
+            this.state = 771;
+            this.match(SolidityParser.T__32);
             break;
 
           case 17:
             localctx = new ExpressionContext(this, _parentctx, _parentState);
             this.pushNewRecursionContext(localctx, _startState, SolidityParser.RULE_expression);
-            this.state = 721;
+            this.state = 772;
+
+            if (!this.precpred(this._ctx, 23)) {
+              throw new antlr4.error.FailedPredicateException(this, "this.precpred(this._ctx, 23)");
+            }
+
+            this.state = 773;
+            this.match(SolidityParser.T__34);
+            this.state = 774;
+            this.identifier();
+            break;
+
+          case 18:
+            localctx = new ExpressionContext(this, _parentctx, _parentState);
+            this.pushNewRecursionContext(localctx, _startState, SolidityParser.RULE_expression);
+            this.state = 775;
+
+            if (!this.precpred(this._ctx, 22)) {
+              throw new antlr4.error.FailedPredicateException(this, "this.precpred(this._ctx, 22)");
+            }
+
+            this.state = 776;
+            this.match(SolidityParser.T__13);
+            this.state = 777;
+            this.nameValueList();
+            this.state = 778;
+            this.match(SolidityParser.T__15);
+            break;
+
+          case 19:
+            localctx = new ExpressionContext(this, _parentctx, _parentState);
+            this.pushNewRecursionContext(localctx, _startState, SolidityParser.RULE_expression);
+            this.state = 780;
 
             if (!this.precpred(this._ctx, 21)) {
               throw new antlr4.error.FailedPredicateException(this, "this.precpred(this._ctx, 21)");
             }
 
-            this.state = 722;
-            this.match(SolidityParser.T__34);
-            this.state = 723;
-            this.identifier();
+            this.state = 781;
+            this.match(SolidityParser.T__21);
+            this.state = 782;
+            this.functionCallArguments();
+            this.state = 783;
+            this.match(SolidityParser.T__22);
             break;
         }
       }
 
-      this.state = 728;
+      this.state = 789;
 
       this._errHandler.sync(this);
 
-      _alt = this._interp.adaptivePredict(this._input, 71, this._ctx);
+      _alt = this._interp.adaptivePredict(this._input, 83, this._ctx);
     }
   } catch (error) {
     if (error instanceof antlr4.error.RecognitionException) {
@@ -58041,8 +58284,8 @@ PrimaryExpressionContext.prototype.HexLiteral = function () {
   return this.getToken(SolidityParser.HexLiteral, 0);
 };
 
-PrimaryExpressionContext.prototype.StringLiteral = function () {
-  return this.getToken(SolidityParser.StringLiteral, 0);
+PrimaryExpressionContext.prototype.stringLiteral = function () {
+  return this.getTypedRuleContext(StringLiteralContext, 0);
 };
 
 PrimaryExpressionContext.prototype.identifier = function () {
@@ -58053,12 +58296,16 @@ PrimaryExpressionContext.prototype.TypeKeyword = function () {
   return this.getToken(SolidityParser.TypeKeyword, 0);
 };
 
+PrimaryExpressionContext.prototype.PayableKeyword = function () {
+  return this.getToken(SolidityParser.PayableKeyword, 0);
+};
+
 PrimaryExpressionContext.prototype.tupleExpression = function () {
   return this.getTypedRuleContext(TupleExpressionContext, 0);
 };
 
-PrimaryExpressionContext.prototype.elementaryTypeNameExpression = function () {
-  return this.getTypedRuleContext(ElementaryTypeNameExpressionContext, 0);
+PrimaryExpressionContext.prototype.typeNameExpression = function () {
+  return this.getTypedRuleContext(TypeNameExpressionContext, 0);
 };
 
 PrimaryExpressionContext.prototype.enterRule = function (listener) {
@@ -58077,103 +58324,95 @@ SolidityParser.PrimaryExpressionContext = PrimaryExpressionContext;
 
 SolidityParser.prototype.primaryExpression = function () {
   var localctx = new PrimaryExpressionContext(this, this._ctx, this.state);
-  this.enterRule(localctx, 112, SolidityParser.RULE_primaryExpression);
+  this.enterRule(localctx, 116, SolidityParser.RULE_primaryExpression);
 
   try {
-    this.state = 745;
+    this.state = 807;
 
     this._errHandler.sync(this);
 
-    switch (this._input.LA(1)) {
-      case SolidityParser.BooleanLiteral:
+    var la_ = this._interp.adaptivePredict(this._input, 86, this._ctx);
+
+    switch (la_) {
+      case 1:
         this.enterOuterAlt(localctx, 1);
-        this.state = 729;
+        this.state = 790;
         this.match(SolidityParser.BooleanLiteral);
         break;
 
-      case SolidityParser.DecimalNumber:
-      case SolidityParser.HexNumber:
+      case 2:
         this.enterOuterAlt(localctx, 2);
-        this.state = 730;
+        this.state = 791;
         this.numberLiteral();
         break;
 
-      case SolidityParser.HexLiteral:
+      case 3:
         this.enterOuterAlt(localctx, 3);
-        this.state = 731;
+        this.state = 792;
         this.match(SolidityParser.HexLiteral);
         break;
 
-      case SolidityParser.StringLiteral:
+      case 4:
         this.enterOuterAlt(localctx, 4);
-        this.state = 732;
-        this.match(SolidityParser.StringLiteral);
+        this.state = 793;
+        this.stringLiteral();
         break;
 
-      case SolidityParser.T__12:
-      case SolidityParser.T__39:
-      case SolidityParser.Identifier:
+      case 5:
         this.enterOuterAlt(localctx, 5);
-        this.state = 733;
+        this.state = 794;
         this.identifier();
-        this.state = 736;
+        this.state = 797;
 
         this._errHandler.sync(this);
 
-        var la_ = this._interp.adaptivePredict(this._input, 72, this._ctx);
+        var la_ = this._interp.adaptivePredict(this._input, 84, this._ctx);
 
         if (la_ === 1) {
-          this.state = 734;
+          this.state = 795;
           this.match(SolidityParser.T__31);
-          this.state = 735;
+          this.state = 796;
           this.match(SolidityParser.T__32);
         }
 
         break;
 
-      case SolidityParser.TypeKeyword:
+      case 6:
         this.enterOuterAlt(localctx, 6);
-        this.state = 738;
+        this.state = 799;
         this.match(SolidityParser.TypeKeyword);
         break;
 
-      case SolidityParser.T__20:
-      case SolidityParser.T__31:
+      case 7:
         this.enterOuterAlt(localctx, 7);
-        this.state = 739;
+        this.state = 800;
+        this.match(SolidityParser.PayableKeyword);
+        break;
+
+      case 8:
+        this.enterOuterAlt(localctx, 8);
+        this.state = 801;
         this.tupleExpression();
         break;
 
-      case SolidityParser.T__33:
-      case SolidityParser.T__48:
-      case SolidityParser.T__49:
-      case SolidityParser.T__50:
-      case SolidityParser.T__51:
-      case SolidityParser.Int:
-      case SolidityParser.Uint:
-      case SolidityParser.Byte:
-      case SolidityParser.Fixed:
-      case SolidityParser.Ufixed:
-        this.enterOuterAlt(localctx, 8);
-        this.state = 740;
-        this.elementaryTypeNameExpression();
-        this.state = 743;
+      case 9:
+        this.enterOuterAlt(localctx, 9);
+        this.state = 802;
+        this.typeNameExpression();
+        this.state = 805;
 
         this._errHandler.sync(this);
 
-        var la_ = this._interp.adaptivePredict(this._input, 73, this._ctx);
+        var la_ = this._interp.adaptivePredict(this._input, 85, this._ctx);
 
         if (la_ === 1) {
-          this.state = 741;
+          this.state = 803;
           this.match(SolidityParser.T__31);
-          this.state = 742;
+          this.state = 804;
           this.match(SolidityParser.T__32);
         }
 
         break;
-
-      default:
-        throw new antlr4.error.NoViableAltException(this);
     }
   } catch (re) {
     if (re instanceof antlr4.error.RecognitionException) {
@@ -58238,25 +58477,25 @@ SolidityParser.ExpressionListContext = ExpressionListContext;
 
 SolidityParser.prototype.expressionList = function () {
   var localctx = new ExpressionListContext(this, this._ctx, this.state);
-  this.enterRule(localctx, 114, SolidityParser.RULE_expressionList);
+  this.enterRule(localctx, 118, SolidityParser.RULE_expressionList);
   var _la = 0; // Token type
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 747;
+    this.state = 809;
     this.expression(0);
-    this.state = 752;
+    this.state = 814;
 
     this._errHandler.sync(this);
 
     _la = this._input.LA(1);
 
     while (_la === SolidityParser.T__14) {
-      this.state = 748;
+      this.state = 810;
       this.match(SolidityParser.T__14);
-      this.state = 749;
+      this.state = 811;
       this.expression(0);
-      this.state = 754;
+      this.state = 816;
 
       this._errHandler.sync(this);
 
@@ -58325,42 +58564,42 @@ SolidityParser.NameValueListContext = NameValueListContext;
 
 SolidityParser.prototype.nameValueList = function () {
   var localctx = new NameValueListContext(this, this._ctx, this.state);
-  this.enterRule(localctx, 116, SolidityParser.RULE_nameValueList);
+  this.enterRule(localctx, 120, SolidityParser.RULE_nameValueList);
   var _la = 0; // Token type
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 755;
+    this.state = 817;
     this.nameValue();
-    this.state = 760;
+    this.state = 822;
 
     this._errHandler.sync(this);
 
-    var _alt = this._interp.adaptivePredict(this._input, 76, this._ctx);
+    var _alt = this._interp.adaptivePredict(this._input, 88, this._ctx);
 
     while (_alt != 2 && _alt != antlr4.atn.ATN.INVALID_ALT_NUMBER) {
       if (_alt === 1) {
-        this.state = 756;
+        this.state = 818;
         this.match(SolidityParser.T__14);
-        this.state = 757;
+        this.state = 819;
         this.nameValue();
       }
 
-      this.state = 762;
+      this.state = 824;
 
       this._errHandler.sync(this);
 
-      _alt = this._interp.adaptivePredict(this._input, 76, this._ctx);
+      _alt = this._interp.adaptivePredict(this._input, 88, this._ctx);
     }
 
-    this.state = 764;
+    this.state = 826;
 
     this._errHandler.sync(this);
 
     _la = this._input.LA(1);
 
     if (_la === SolidityParser.T__14) {
-      this.state = 763;
+      this.state = 825;
       this.match(SolidityParser.T__14);
     }
   } catch (re) {
@@ -58422,15 +58661,15 @@ SolidityParser.NameValueContext = NameValueContext;
 
 SolidityParser.prototype.nameValue = function () {
   var localctx = new NameValueContext(this, this._ctx, this.state);
-  this.enterRule(localctx, 118, SolidityParser.RULE_nameValue);
+  this.enterRule(localctx, 122, SolidityParser.RULE_nameValue);
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 766;
+    this.state = 828;
     this.identifier();
-    this.state = 767;
-    this.match(SolidityParser.T__72);
-    this.state = 768;
+    this.state = 829;
+    this.match(SolidityParser.T__57);
+    this.state = 830;
     this.expression(0);
   } catch (re) {
     if (re instanceof antlr4.error.RecognitionException) {
@@ -58491,43 +58730,41 @@ SolidityParser.FunctionCallArgumentsContext = FunctionCallArgumentsContext;
 
 SolidityParser.prototype.functionCallArguments = function () {
   var localctx = new FunctionCallArgumentsContext(this, this._ctx, this.state);
-  this.enterRule(localctx, 120, SolidityParser.RULE_functionCallArguments);
+  this.enterRule(localctx, 124, SolidityParser.RULE_functionCallArguments);
   var _la = 0; // Token type
 
   try {
-    this.state = 778;
+    this.state = 840;
 
     this._errHandler.sync(this);
 
     switch (this._input.LA(1)) {
       case SolidityParser.T__13:
         this.enterOuterAlt(localctx, 1);
-        this.state = 770;
+        this.state = 832;
         this.match(SolidityParser.T__13);
-        this.state = 772;
+        this.state = 834;
 
         this._errHandler.sync(this);
 
         _la = this._input.LA(1);
 
         if (_la === SolidityParser.T__12 || _la === SolidityParser.T__39 || _la === SolidityParser.Identifier) {
-          this.state = 771;
+          this.state = 833;
           this.nameValueList();
         }
 
-        this.state = 774;
+        this.state = 836;
         this.match(SolidityParser.T__15);
         break;
 
       case SolidityParser.T__3:
       case SolidityParser.T__12:
-      case SolidityParser.T__20:
       case SolidityParser.T__21:
+      case SolidityParser.T__22:
       case SolidityParser.T__31:
       case SolidityParser.T__33:
       case SolidityParser.T__39:
-      case SolidityParser.T__48:
-      case SolidityParser.T__49:
       case SolidityParser.T__50:
       case SolidityParser.T__51:
       case SolidityParser.T__52:
@@ -58535,9 +58772,11 @@ SolidityParser.prototype.functionCallArguments = function () {
       case SolidityParser.T__54:
       case SolidityParser.T__55:
       case SolidityParser.T__56:
-      case SolidityParser.T__57:
       case SolidityParser.T__58:
       case SolidityParser.T__59:
+      case SolidityParser.T__60:
+      case SolidityParser.T__61:
+      case SolidityParser.T__62:
       case SolidityParser.Int:
       case SolidityParser.Uint:
       case SolidityParser.Byte:
@@ -58547,18 +58786,19 @@ SolidityParser.prototype.functionCallArguments = function () {
       case SolidityParser.DecimalNumber:
       case SolidityParser.HexNumber:
       case SolidityParser.HexLiteral:
+      case SolidityParser.PayableKeyword:
       case SolidityParser.TypeKeyword:
       case SolidityParser.Identifier:
-      case SolidityParser.StringLiteral:
+      case SolidityParser.StringLiteralFragment:
         this.enterOuterAlt(localctx, 2);
-        this.state = 776;
+        this.state = 838;
 
         this._errHandler.sync(this);
 
         _la = this._input.LA(1);
 
-        if ((_la & ~0x1f) == 0 && (1 << _la & (1 << SolidityParser.T__3 | 1 << SolidityParser.T__12 | 1 << SolidityParser.T__20)) !== 0 || (_la - 32 & ~0x1f) == 0 && (1 << _la - 32 & (1 << SolidityParser.T__31 - 32 | 1 << SolidityParser.T__33 - 32 | 1 << SolidityParser.T__39 - 32 | 1 << SolidityParser.T__48 - 32 | 1 << SolidityParser.T__49 - 32 | 1 << SolidityParser.T__50 - 32 | 1 << SolidityParser.T__51 - 32 | 1 << SolidityParser.T__52 - 32 | 1 << SolidityParser.T__53 - 32 | 1 << SolidityParser.T__54 - 32 | 1 << SolidityParser.T__55 - 32 | 1 << SolidityParser.T__56 - 32 | 1 << SolidityParser.T__57 - 32 | 1 << SolidityParser.T__58 - 32 | 1 << SolidityParser.T__59 - 32)) !== 0 || (_la - 91 & ~0x1f) == 0 && (1 << _la - 91 & (1 << SolidityParser.Int - 91 | 1 << SolidityParser.Uint - 91 | 1 << SolidityParser.Byte - 91 | 1 << SolidityParser.Fixed - 91 | 1 << SolidityParser.Ufixed - 91 | 1 << SolidityParser.BooleanLiteral - 91 | 1 << SolidityParser.DecimalNumber - 91 | 1 << SolidityParser.HexNumber - 91 | 1 << SolidityParser.HexLiteral - 91 | 1 << SolidityParser.TypeKeyword - 91 | 1 << SolidityParser.Identifier - 91 | 1 << SolidityParser.StringLiteral - 91)) !== 0) {
-          this.state = 775;
+        if ((_la & ~0x1f) == 0 && (1 << _la & (1 << SolidityParser.T__3 | 1 << SolidityParser.T__12 | 1 << SolidityParser.T__21)) !== 0 || (_la - 32 & ~0x1f) == 0 && (1 << _la - 32 & (1 << SolidityParser.T__31 - 32 | 1 << SolidityParser.T__33 - 32 | 1 << SolidityParser.T__39 - 32 | 1 << SolidityParser.T__50 - 32 | 1 << SolidityParser.T__51 - 32 | 1 << SolidityParser.T__52 - 32 | 1 << SolidityParser.T__53 - 32 | 1 << SolidityParser.T__54 - 32 | 1 << SolidityParser.T__55 - 32 | 1 << SolidityParser.T__56 - 32 | 1 << SolidityParser.T__58 - 32 | 1 << SolidityParser.T__59 - 32 | 1 << SolidityParser.T__60 - 32 | 1 << SolidityParser.T__61 - 32 | 1 << SolidityParser.T__62 - 32)) !== 0 || (_la - 94 & ~0x1f) == 0 && (1 << _la - 94 & (1 << SolidityParser.Int - 94 | 1 << SolidityParser.Uint - 94 | 1 << SolidityParser.Byte - 94 | 1 << SolidityParser.Fixed - 94 | 1 << SolidityParser.Ufixed - 94 | 1 << SolidityParser.BooleanLiteral - 94 | 1 << SolidityParser.DecimalNumber - 94 | 1 << SolidityParser.HexNumber - 94 | 1 << SolidityParser.HexLiteral - 94 | 1 << SolidityParser.PayableKeyword - 94 | 1 << SolidityParser.TypeKeyword - 94 | 1 << SolidityParser.Identifier - 94 | 1 << SolidityParser.StringLiteralFragment - 94)) !== 0) {
+          this.state = 837;
           this.expressionList();
         }
 
@@ -58626,18 +58866,18 @@ SolidityParser.FunctionCallContext = FunctionCallContext;
 
 SolidityParser.prototype.functionCall = function () {
   var localctx = new FunctionCallContext(this, this._ctx, this.state);
-  this.enterRule(localctx, 122, SolidityParser.RULE_functionCall);
+  this.enterRule(localctx, 126, SolidityParser.RULE_functionCall);
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 780;
+    this.state = 842;
     this.expression(0);
-    this.state = 781;
-    this.match(SolidityParser.T__20);
-    this.state = 782;
-    this.functionCallArguments();
-    this.state = 783;
+    this.state = 843;
     this.match(SolidityParser.T__21);
+    this.state = 844;
+    this.functionCallArguments();
+    this.state = 845;
+    this.match(SolidityParser.T__22);
   } catch (re) {
     if (re instanceof antlr4.error.RecognitionException) {
       localctx.exception = re;
@@ -58701,30 +58941,30 @@ SolidityParser.AssemblyBlockContext = AssemblyBlockContext;
 
 SolidityParser.prototype.assemblyBlock = function () {
   var localctx = new AssemblyBlockContext(this, this._ctx, this.state);
-  this.enterRule(localctx, 124, SolidityParser.RULE_assemblyBlock);
+  this.enterRule(localctx, 128, SolidityParser.RULE_assemblyBlock);
   var _la = 0; // Token type
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 785;
+    this.state = 847;
     this.match(SolidityParser.T__13);
-    this.state = 789;
+    this.state = 851;
 
     this._errHandler.sync(this);
 
     _la = this._input.LA(1);
 
-    while ((_la & ~0x1f) == 0 && (1 << _la & (1 << SolidityParser.T__12 | 1 << SolidityParser.T__13 | 1 << SolidityParser.T__20 | 1 << SolidityParser.T__23 | 1 << SolidityParser.T__27)) !== 0 || (_la - 34 & ~0x1f) == 0 && (1 << _la - 34 & (1 << SolidityParser.T__33 - 34 | 1 << SolidityParser.T__39 - 34 | 1 << SolidityParser.T__40 - 34 | 1 << SolidityParser.T__43 - 34 | 1 << SolidityParser.T__45 - 34 | 1 << SolidityParser.T__51 - 34)) !== 0 || (_la - 84 & ~0x1f) == 0 && (1 << _la - 84 & (1 << SolidityParser.T__83 - 84 | 1 << SolidityParser.T__85 - 84 | 1 << SolidityParser.T__86 - 84 | 1 << SolidityParser.DecimalNumber - 84 | 1 << SolidityParser.HexNumber - 84 | 1 << SolidityParser.HexLiteral - 84 | 1 << SolidityParser.BreakKeyword - 84 | 1 << SolidityParser.ContinueKeyword - 84)) !== 0 || _la === SolidityParser.Identifier || _la === SolidityParser.StringLiteral) {
-      this.state = 786;
+    while ((_la & ~0x1f) == 0 && (1 << _la & (1 << SolidityParser.T__12 | 1 << SolidityParser.T__13 | 1 << SolidityParser.T__21 | 1 << SolidityParser.T__24 | 1 << SolidityParser.T__27)) !== 0 || (_la - 34 & ~0x1f) == 0 && (1 << _la - 34 & (1 << SolidityParser.T__33 - 34 | 1 << SolidityParser.T__39 - 34 | 1 << SolidityParser.T__40 - 34 | 1 << SolidityParser.T__45 - 34 | 1 << SolidityParser.T__47 - 34 | 1 << SolidityParser.T__53 - 34)) !== 0 || (_la - 86 & ~0x1f) == 0 && (1 << _la - 86 & (1 << SolidityParser.T__85 - 86 | 1 << SolidityParser.T__87 - 86 | 1 << SolidityParser.T__88 - 86 | 1 << SolidityParser.DecimalNumber - 86 | 1 << SolidityParser.HexNumber - 86 | 1 << SolidityParser.HexLiteral - 86 | 1 << SolidityParser.BreakKeyword - 86 | 1 << SolidityParser.ContinueKeyword - 86 | 1 << SolidityParser.LeaveKeyword - 86)) !== 0 || _la === SolidityParser.Identifier || _la === SolidityParser.StringLiteralFragment) {
+      this.state = 848;
       this.assemblyItem();
-      this.state = 791;
+      this.state = 853;
 
       this._errHandler.sync(this);
 
       _la = this._input.LA(1);
     }
 
-    this.state = 792;
+    this.state = 854;
     this.match(SolidityParser.T__15);
   } catch (re) {
     if (re instanceof antlr4.error.RecognitionException) {
@@ -58813,6 +59053,10 @@ AssemblyItemContext.prototype.ContinueKeyword = function () {
   return this.getToken(SolidityParser.ContinueKeyword, 0);
 };
 
+AssemblyItemContext.prototype.LeaveKeyword = function () {
+  return this.getToken(SolidityParser.LeaveKeyword, 0);
+};
+
 AssemblyItemContext.prototype.subAssembly = function () {
   return this.getTypedRuleContext(SubAssemblyContext, 0);
 };
@@ -58821,8 +59065,8 @@ AssemblyItemContext.prototype.numberLiteral = function () {
   return this.getTypedRuleContext(NumberLiteralContext, 0);
 };
 
-AssemblyItemContext.prototype.StringLiteral = function () {
-  return this.getToken(SolidityParser.StringLiteral, 0);
+AssemblyItemContext.prototype.stringLiteral = function () {
+  return this.getTypedRuleContext(StringLiteralContext, 0);
 };
 
 AssemblyItemContext.prototype.HexLiteral = function () {
@@ -58845,115 +59089,121 @@ SolidityParser.AssemblyItemContext = AssemblyItemContext;
 
 SolidityParser.prototype.assemblyItem = function () {
   var localctx = new AssemblyItemContext(this, this._ctx, this.state);
-  this.enterRule(localctx, 126, SolidityParser.RULE_assemblyItem);
+  this.enterRule(localctx, 130, SolidityParser.RULE_assemblyItem);
 
   try {
-    this.state = 811;
+    this.state = 874;
 
     this._errHandler.sync(this);
 
-    var la_ = this._interp.adaptivePredict(this._input, 82, this._ctx);
+    var la_ = this._interp.adaptivePredict(this._input, 94, this._ctx);
 
     switch (la_) {
       case 1:
         this.enterOuterAlt(localctx, 1);
-        this.state = 794;
+        this.state = 856;
         this.identifier();
         break;
 
       case 2:
         this.enterOuterAlt(localctx, 2);
-        this.state = 795;
+        this.state = 857;
         this.assemblyBlock();
         break;
 
       case 3:
         this.enterOuterAlt(localctx, 3);
-        this.state = 796;
+        this.state = 858;
         this.assemblyExpression();
         break;
 
       case 4:
         this.enterOuterAlt(localctx, 4);
-        this.state = 797;
+        this.state = 859;
         this.assemblyLocalDefinition();
         break;
 
       case 5:
         this.enterOuterAlt(localctx, 5);
-        this.state = 798;
+        this.state = 860;
         this.assemblyAssignment();
         break;
 
       case 6:
         this.enterOuterAlt(localctx, 6);
-        this.state = 799;
+        this.state = 861;
         this.assemblyStackAssignment();
         break;
 
       case 7:
         this.enterOuterAlt(localctx, 7);
-        this.state = 800;
+        this.state = 862;
         this.labelDefinition();
         break;
 
       case 8:
         this.enterOuterAlt(localctx, 8);
-        this.state = 801;
+        this.state = 863;
         this.assemblySwitch();
         break;
 
       case 9:
         this.enterOuterAlt(localctx, 9);
-        this.state = 802;
+        this.state = 864;
         this.assemblyFunctionDefinition();
         break;
 
       case 10:
         this.enterOuterAlt(localctx, 10);
-        this.state = 803;
+        this.state = 865;
         this.assemblyFor();
         break;
 
       case 11:
         this.enterOuterAlt(localctx, 11);
-        this.state = 804;
+        this.state = 866;
         this.assemblyIf();
         break;
 
       case 12:
         this.enterOuterAlt(localctx, 12);
-        this.state = 805;
+        this.state = 867;
         this.match(SolidityParser.BreakKeyword);
         break;
 
       case 13:
         this.enterOuterAlt(localctx, 13);
-        this.state = 806;
+        this.state = 868;
         this.match(SolidityParser.ContinueKeyword);
         break;
 
       case 14:
         this.enterOuterAlt(localctx, 14);
-        this.state = 807;
-        this.subAssembly();
+        this.state = 869;
+        this.match(SolidityParser.LeaveKeyword);
         break;
 
       case 15:
         this.enterOuterAlt(localctx, 15);
-        this.state = 808;
-        this.numberLiteral();
+        this.state = 870;
+        this.subAssembly();
         break;
 
       case 16:
         this.enterOuterAlt(localctx, 16);
-        this.state = 809;
-        this.match(SolidityParser.StringLiteral);
+        this.state = 871;
+        this.numberLiteral();
         break;
 
       case 17:
         this.enterOuterAlt(localctx, 17);
-        this.state = 810;
+        this.state = 872;
+        this.stringLiteral();
+        break;
+
+      case 18:
+        this.enterOuterAlt(localctx, 18);
+        this.state = 873;
         this.match(SolidityParser.HexLiteral);
         break;
     }
@@ -59016,10 +59266,10 @@ SolidityParser.AssemblyExpressionContext = AssemblyExpressionContext;
 
 SolidityParser.prototype.assemblyExpression = function () {
   var localctx = new AssemblyExpressionContext(this, this._ctx, this.state);
-  this.enterRule(localctx, 128, SolidityParser.RULE_assemblyExpression);
+  this.enterRule(localctx, 132, SolidityParser.RULE_assemblyExpression);
 
   try {
-    this.state = 815;
+    this.state = 878;
 
     this._errHandler.sync(this);
 
@@ -59027,20 +59277,20 @@ SolidityParser.prototype.assemblyExpression = function () {
       case SolidityParser.T__12:
       case SolidityParser.T__33:
       case SolidityParser.T__39:
-      case SolidityParser.T__45:
-      case SolidityParser.T__51:
+      case SolidityParser.T__47:
+      case SolidityParser.T__53:
       case SolidityParser.Identifier:
         this.enterOuterAlt(localctx, 1);
-        this.state = 813;
+        this.state = 876;
         this.assemblyCall();
         break;
 
       case SolidityParser.DecimalNumber:
       case SolidityParser.HexNumber:
       case SolidityParser.HexLiteral:
-      case SolidityParser.StringLiteral:
+      case SolidityParser.StringLiteralFragment:
         this.enterOuterAlt(localctx, 2);
-        this.state = 814;
+        this.state = 877;
         this.assemblyLiteral();
         break;
 
@@ -59114,35 +59364,35 @@ SolidityParser.AssemblyCallContext = AssemblyCallContext;
 
 SolidityParser.prototype.assemblyCall = function () {
   var localctx = new AssemblyCallContext(this, this._ctx, this.state);
-  this.enterRule(localctx, 130, SolidityParser.RULE_assemblyCall);
+  this.enterRule(localctx, 134, SolidityParser.RULE_assemblyCall);
   var _la = 0; // Token type
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 821;
+    this.state = 884;
 
     this._errHandler.sync(this);
 
     switch (this._input.LA(1)) {
-      case SolidityParser.T__45:
-        this.state = 817;
-        this.match(SolidityParser.T__45);
+      case SolidityParser.T__47:
+        this.state = 880;
+        this.match(SolidityParser.T__47);
         break;
 
       case SolidityParser.T__33:
-        this.state = 818;
+        this.state = 881;
         this.match(SolidityParser.T__33);
         break;
 
-      case SolidityParser.T__51:
-        this.state = 819;
-        this.match(SolidityParser.T__51);
+      case SolidityParser.T__53:
+        this.state = 882;
+        this.match(SolidityParser.T__53);
         break;
 
       case SolidityParser.T__12:
       case SolidityParser.T__39:
       case SolidityParser.Identifier:
-        this.state = 820;
+        this.state = 883;
         this.identifier();
         break;
 
@@ -59150,46 +59400,46 @@ SolidityParser.prototype.assemblyCall = function () {
         throw new antlr4.error.NoViableAltException(this);
     }
 
-    this.state = 835;
+    this.state = 898;
 
     this._errHandler.sync(this);
 
-    var la_ = this._interp.adaptivePredict(this._input, 87, this._ctx);
+    var la_ = this._interp.adaptivePredict(this._input, 99, this._ctx);
 
     if (la_ === 1) {
-      this.state = 823;
-      this.match(SolidityParser.T__20);
-      this.state = 825;
+      this.state = 886;
+      this.match(SolidityParser.T__21);
+      this.state = 888;
 
       this._errHandler.sync(this);
 
       _la = this._input.LA(1);
 
-      if (_la === SolidityParser.T__12 || (_la - 34 & ~0x1f) == 0 && (1 << _la - 34 & (1 << SolidityParser.T__33 - 34 | 1 << SolidityParser.T__39 - 34 | 1 << SolidityParser.T__45 - 34 | 1 << SolidityParser.T__51 - 34)) !== 0 || (_la - 98 & ~0x1f) == 0 && (1 << _la - 98 & (1 << SolidityParser.DecimalNumber - 98 | 1 << SolidityParser.HexNumber - 98 | 1 << SolidityParser.HexLiteral - 98 | 1 << SolidityParser.Identifier - 98 | 1 << SolidityParser.StringLiteral - 98)) !== 0) {
-        this.state = 824;
+      if (_la === SolidityParser.T__12 || (_la - 34 & ~0x1f) == 0 && (1 << _la - 34 & (1 << SolidityParser.T__33 - 34 | 1 << SolidityParser.T__39 - 34 | 1 << SolidityParser.T__47 - 34 | 1 << SolidityParser.T__53 - 34)) !== 0 || (_la - 100 & ~0x1f) == 0 && (1 << _la - 100 & (1 << SolidityParser.DecimalNumber - 100 | 1 << SolidityParser.HexNumber - 100 | 1 << SolidityParser.HexLiteral - 100 | 1 << SolidityParser.Identifier - 100 | 1 << SolidityParser.StringLiteralFragment - 100)) !== 0) {
+        this.state = 887;
         this.assemblyExpression();
       }
 
-      this.state = 831;
+      this.state = 894;
 
       this._errHandler.sync(this);
 
       _la = this._input.LA(1);
 
       while (_la === SolidityParser.T__14) {
-        this.state = 827;
+        this.state = 890;
         this.match(SolidityParser.T__14);
-        this.state = 828;
+        this.state = 891;
         this.assemblyExpression();
-        this.state = 833;
+        this.state = 896;
 
         this._errHandler.sync(this);
 
         _la = this._input.LA(1);
       }
 
-      this.state = 834;
-      this.match(SolidityParser.T__21);
+      this.state = 897;
+      this.match(SolidityParser.T__22);
     }
   } catch (re) {
     if (re instanceof antlr4.error.RecognitionException) {
@@ -59250,25 +59500,25 @@ SolidityParser.AssemblyLocalDefinitionContext = AssemblyLocalDefinitionContext;
 
 SolidityParser.prototype.assemblyLocalDefinition = function () {
   var localctx = new AssemblyLocalDefinitionContext(this, this._ctx, this.state);
-  this.enterRule(localctx, 132, SolidityParser.RULE_assemblyLocalDefinition);
+  this.enterRule(localctx, 136, SolidityParser.RULE_assemblyLocalDefinition);
   var _la = 0; // Token type
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 837;
-    this.match(SolidityParser.T__83);
-    this.state = 838;
+    this.state = 900;
+    this.match(SolidityParser.T__85);
+    this.state = 901;
     this.assemblyIdentifierOrList();
-    this.state = 841;
+    this.state = 904;
 
     this._errHandler.sync(this);
 
     _la = this._input.LA(1);
 
-    if (_la === SolidityParser.T__84) {
-      this.state = 839;
-      this.match(SolidityParser.T__84);
-      this.state = 840;
+    if (_la === SolidityParser.T__86) {
+      this.state = 902;
+      this.match(SolidityParser.T__86);
+      this.state = 903;
       this.assemblyExpression();
     }
   } catch (re) {
@@ -59330,15 +59580,15 @@ SolidityParser.AssemblyAssignmentContext = AssemblyAssignmentContext;
 
 SolidityParser.prototype.assemblyAssignment = function () {
   var localctx = new AssemblyAssignmentContext(this, this._ctx, this.state);
-  this.enterRule(localctx, 134, SolidityParser.RULE_assemblyAssignment);
+  this.enterRule(localctx, 138, SolidityParser.RULE_assemblyAssignment);
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 843;
+    this.state = 906;
     this.assemblyIdentifierOrList();
-    this.state = 844;
-    this.match(SolidityParser.T__84);
-    this.state = 845;
+    this.state = 907;
+    this.match(SolidityParser.T__86);
+    this.state = 908;
     this.assemblyExpression();
   } catch (re) {
     if (re instanceof antlr4.error.RecognitionException) {
@@ -59399,10 +59649,10 @@ SolidityParser.AssemblyIdentifierOrListContext = AssemblyIdentifierOrListContext
 
 SolidityParser.prototype.assemblyIdentifierOrList = function () {
   var localctx = new AssemblyIdentifierOrListContext(this, this._ctx, this.state);
-  this.enterRule(localctx, 136, SolidityParser.RULE_assemblyIdentifierOrList);
+  this.enterRule(localctx, 140, SolidityParser.RULE_assemblyIdentifierOrList);
 
   try {
-    this.state = 852;
+    this.state = 915;
 
     this._errHandler.sync(this);
 
@@ -59411,18 +59661,18 @@ SolidityParser.prototype.assemblyIdentifierOrList = function () {
       case SolidityParser.T__39:
       case SolidityParser.Identifier:
         this.enterOuterAlt(localctx, 1);
-        this.state = 847;
+        this.state = 910;
         this.identifier();
         break;
 
-      case SolidityParser.T__20:
+      case SolidityParser.T__21:
         this.enterOuterAlt(localctx, 2);
-        this.state = 848;
-        this.match(SolidityParser.T__20);
-        this.state = 849;
-        this.assemblyIdentifierList();
-        this.state = 850;
+        this.state = 911;
         this.match(SolidityParser.T__21);
+        this.state = 912;
+        this.assemblyIdentifierList();
+        this.state = 913;
+        this.match(SolidityParser.T__22);
         break;
 
       default:
@@ -59491,25 +59741,25 @@ SolidityParser.AssemblyIdentifierListContext = AssemblyIdentifierListContext;
 
 SolidityParser.prototype.assemblyIdentifierList = function () {
   var localctx = new AssemblyIdentifierListContext(this, this._ctx, this.state);
-  this.enterRule(localctx, 138, SolidityParser.RULE_assemblyIdentifierList);
+  this.enterRule(localctx, 142, SolidityParser.RULE_assemblyIdentifierList);
   var _la = 0; // Token type
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 854;
+    this.state = 917;
     this.identifier();
-    this.state = 859;
+    this.state = 922;
 
     this._errHandler.sync(this);
 
     _la = this._input.LA(1);
 
     while (_la === SolidityParser.T__14) {
-      this.state = 855;
+      this.state = 918;
       this.match(SolidityParser.T__14);
-      this.state = 856;
+      this.state = 919;
       this.identifier();
-      this.state = 861;
+      this.state = 924;
 
       this._errHandler.sync(this);
 
@@ -59570,13 +59820,13 @@ SolidityParser.AssemblyStackAssignmentContext = AssemblyStackAssignmentContext;
 
 SolidityParser.prototype.assemblyStackAssignment = function () {
   var localctx = new AssemblyStackAssignmentContext(this, this._ctx, this.state);
-  this.enterRule(localctx, 140, SolidityParser.RULE_assemblyStackAssignment);
+  this.enterRule(localctx, 144, SolidityParser.RULE_assemblyStackAssignment);
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 862;
-    this.match(SolidityParser.T__85);
-    this.state = 863;
+    this.state = 925;
+    this.match(SolidityParser.T__87);
+    this.state = 926;
     this.identifier();
   } catch (re) {
     if (re instanceof antlr4.error.RecognitionException) {
@@ -59633,14 +59883,14 @@ SolidityParser.LabelDefinitionContext = LabelDefinitionContext;
 
 SolidityParser.prototype.labelDefinition = function () {
   var localctx = new LabelDefinitionContext(this, this._ctx, this.state);
-  this.enterRule(localctx, 142, SolidityParser.RULE_labelDefinition);
+  this.enterRule(localctx, 146, SolidityParser.RULE_labelDefinition);
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 865;
+    this.state = 928;
     this.identifier();
-    this.state = 866;
-    this.match(SolidityParser.T__72);
+    this.state = 929;
+    this.match(SolidityParser.T__57);
   } catch (re) {
     if (re instanceof antlr4.error.RecognitionException) {
       localctx.exception = re;
@@ -59708,25 +59958,25 @@ SolidityParser.AssemblySwitchContext = AssemblySwitchContext;
 
 SolidityParser.prototype.assemblySwitch = function () {
   var localctx = new AssemblySwitchContext(this, this._ctx, this.state);
-  this.enterRule(localctx, 144, SolidityParser.RULE_assemblySwitch);
+  this.enterRule(localctx, 148, SolidityParser.RULE_assemblySwitch);
   var _la = 0; // Token type
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 868;
-    this.match(SolidityParser.T__86);
-    this.state = 869;
+    this.state = 931;
+    this.match(SolidityParser.T__88);
+    this.state = 932;
     this.assemblyExpression();
-    this.state = 873;
+    this.state = 936;
 
     this._errHandler.sync(this);
 
     _la = this._input.LA(1);
 
-    while (_la === SolidityParser.T__87 || _la === SolidityParser.T__88) {
-      this.state = 870;
+    while (_la === SolidityParser.T__89 || _la === SolidityParser.T__90) {
+      this.state = 933;
       this.assemblyCase();
-      this.state = 875;
+      this.state = 938;
 
       this._errHandler.sync(this);
 
@@ -59791,29 +60041,29 @@ SolidityParser.AssemblyCaseContext = AssemblyCaseContext;
 
 SolidityParser.prototype.assemblyCase = function () {
   var localctx = new AssemblyCaseContext(this, this._ctx, this.state);
-  this.enterRule(localctx, 146, SolidityParser.RULE_assemblyCase);
+  this.enterRule(localctx, 150, SolidityParser.RULE_assemblyCase);
 
   try {
-    this.state = 882;
+    this.state = 945;
 
     this._errHandler.sync(this);
 
     switch (this._input.LA(1)) {
-      case SolidityParser.T__87:
+      case SolidityParser.T__89:
         this.enterOuterAlt(localctx, 1);
-        this.state = 876;
-        this.match(SolidityParser.T__87);
-        this.state = 877;
+        this.state = 939;
+        this.match(SolidityParser.T__89);
+        this.state = 940;
         this.assemblyLiteral();
-        this.state = 878;
+        this.state = 941;
         this.assemblyBlock();
         break;
 
-      case SolidityParser.T__88:
+      case SolidityParser.T__90:
         this.enterOuterAlt(localctx, 2);
-        this.state = 880;
-        this.match(SolidityParser.T__88);
-        this.state = 881;
+        this.state = 943;
+        this.match(SolidityParser.T__90);
+        this.state = 944;
         this.assemblyBlock();
         break;
 
@@ -59887,42 +60137,42 @@ SolidityParser.AssemblyFunctionDefinitionContext = AssemblyFunctionDefinitionCon
 
 SolidityParser.prototype.assemblyFunctionDefinition = function () {
   var localctx = new AssemblyFunctionDefinitionContext(this, this._ctx, this.state);
-  this.enterRule(localctx, 148, SolidityParser.RULE_assemblyFunctionDefinition);
+  this.enterRule(localctx, 152, SolidityParser.RULE_assemblyFunctionDefinition);
   var _la = 0; // Token type
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 884;
+    this.state = 947;
     this.match(SolidityParser.T__27);
-    this.state = 885;
+    this.state = 948;
     this.identifier();
-    this.state = 886;
-    this.match(SolidityParser.T__20);
-    this.state = 888;
+    this.state = 949;
+    this.match(SolidityParser.T__21);
+    this.state = 951;
 
     this._errHandler.sync(this);
 
     _la = this._input.LA(1);
 
     if (_la === SolidityParser.T__12 || _la === SolidityParser.T__39 || _la === SolidityParser.Identifier) {
-      this.state = 887;
+      this.state = 950;
       this.assemblyIdentifierList();
     }
 
-    this.state = 890;
-    this.match(SolidityParser.T__21);
-    this.state = 892;
+    this.state = 953;
+    this.match(SolidityParser.T__22);
+    this.state = 955;
 
     this._errHandler.sync(this);
 
     _la = this._input.LA(1);
 
-    if (_la === SolidityParser.T__89) {
-      this.state = 891;
+    if (_la === SolidityParser.T__91) {
+      this.state = 954;
       this.assemblyFunctionReturns();
     }
 
-    this.state = 894;
+    this.state = 957;
     this.assemblyBlock();
   } catch (re) {
     if (re instanceof antlr4.error.RecognitionException) {
@@ -59979,13 +60229,13 @@ SolidityParser.AssemblyFunctionReturnsContext = AssemblyFunctionReturnsContext;
 
 SolidityParser.prototype.assemblyFunctionReturns = function () {
   var localctx = new AssemblyFunctionReturnsContext(this, this._ctx, this.state);
-  this.enterRule(localctx, 150, SolidityParser.RULE_assemblyFunctionReturns);
+  this.enterRule(localctx, 154, SolidityParser.RULE_assemblyFunctionReturns);
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 896;
-    this.match(SolidityParser.T__89);
-    this.state = 897;
+    this.state = 959;
+    this.match(SolidityParser.T__91);
+    this.state = 960;
     this.assemblyIdentifierList();
   } catch (re) {
     if (re instanceof antlr4.error.RecognitionException) {
@@ -60062,33 +60312,33 @@ SolidityParser.AssemblyForContext = AssemblyForContext;
 
 SolidityParser.prototype.assemblyFor = function () {
   var localctx = new AssemblyForContext(this, this._ctx, this.state);
-  this.enterRule(localctx, 152, SolidityParser.RULE_assemblyFor);
+  this.enterRule(localctx, 156, SolidityParser.RULE_assemblyFor);
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 899;
-    this.match(SolidityParser.T__23);
-    this.state = 902;
+    this.state = 962;
+    this.match(SolidityParser.T__24);
+    this.state = 965;
 
     this._errHandler.sync(this);
 
     switch (this._input.LA(1)) {
       case SolidityParser.T__13:
-        this.state = 900;
+        this.state = 963;
         this.assemblyBlock();
         break;
 
       case SolidityParser.T__12:
       case SolidityParser.T__33:
       case SolidityParser.T__39:
-      case SolidityParser.T__45:
-      case SolidityParser.T__51:
+      case SolidityParser.T__47:
+      case SolidityParser.T__53:
       case SolidityParser.DecimalNumber:
       case SolidityParser.HexNumber:
       case SolidityParser.HexLiteral:
       case SolidityParser.Identifier:
-      case SolidityParser.StringLiteral:
-        this.state = 901;
+      case SolidityParser.StringLiteralFragment:
+        this.state = 964;
         this.assemblyExpression();
         break;
 
@@ -60096,29 +60346,29 @@ SolidityParser.prototype.assemblyFor = function () {
         throw new antlr4.error.NoViableAltException(this);
     }
 
-    this.state = 904;
+    this.state = 967;
     this.assemblyExpression();
-    this.state = 907;
+    this.state = 970;
 
     this._errHandler.sync(this);
 
     switch (this._input.LA(1)) {
       case SolidityParser.T__13:
-        this.state = 905;
+        this.state = 968;
         this.assemblyBlock();
         break;
 
       case SolidityParser.T__12:
       case SolidityParser.T__33:
       case SolidityParser.T__39:
-      case SolidityParser.T__45:
-      case SolidityParser.T__51:
+      case SolidityParser.T__47:
+      case SolidityParser.T__53:
       case SolidityParser.DecimalNumber:
       case SolidityParser.HexNumber:
       case SolidityParser.HexLiteral:
       case SolidityParser.Identifier:
-      case SolidityParser.StringLiteral:
-        this.state = 906;
+      case SolidityParser.StringLiteralFragment:
+        this.state = 969;
         this.assemblyExpression();
         break;
 
@@ -60126,7 +60376,7 @@ SolidityParser.prototype.assemblyFor = function () {
         throw new antlr4.error.NoViableAltException(this);
     }
 
-    this.state = 909;
+    this.state = 972;
     this.assemblyBlock();
   } catch (re) {
     if (re instanceof antlr4.error.RecognitionException) {
@@ -60187,15 +60437,15 @@ SolidityParser.AssemblyIfContext = AssemblyIfContext;
 
 SolidityParser.prototype.assemblyIf = function () {
   var localctx = new AssemblyIfContext(this, this._ctx, this.state);
-  this.enterRule(localctx, 154, SolidityParser.RULE_assemblyIf);
+  this.enterRule(localctx, 158, SolidityParser.RULE_assemblyIf);
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 911;
+    this.state = 974;
     this.match(SolidityParser.T__40);
-    this.state = 912;
+    this.state = 975;
     this.assemblyExpression();
-    this.state = 913;
+    this.state = 976;
     this.assemblyBlock();
   } catch (re) {
     if (re instanceof antlr4.error.RecognitionException) {
@@ -60232,8 +60482,8 @@ function AssemblyLiteralContext(parser, parent, invokingState) {
 AssemblyLiteralContext.prototype = Object.create(antlr4.ParserRuleContext.prototype);
 AssemblyLiteralContext.prototype.constructor = AssemblyLiteralContext;
 
-AssemblyLiteralContext.prototype.StringLiteral = function () {
-  return this.getToken(SolidityParser.StringLiteral, 0);
+AssemblyLiteralContext.prototype.stringLiteral = function () {
+  return this.getTypedRuleContext(StringLiteralContext, 0);
 };
 
 AssemblyLiteralContext.prototype.DecimalNumber = function () {
@@ -60264,20 +60514,40 @@ SolidityParser.AssemblyLiteralContext = AssemblyLiteralContext;
 
 SolidityParser.prototype.assemblyLiteral = function () {
   var localctx = new AssemblyLiteralContext(this, this._ctx, this.state);
-  this.enterRule(localctx, 156, SolidityParser.RULE_assemblyLiteral);
-  var _la = 0; // Token type
+  this.enterRule(localctx, 160, SolidityParser.RULE_assemblyLiteral);
 
   try {
-    this.enterOuterAlt(localctx, 1);
-    this.state = 915;
-    _la = this._input.LA(1);
+    this.state = 982;
 
-    if (!((_la - 98 & ~0x1f) == 0 && (1 << _la - 98 & (1 << SolidityParser.DecimalNumber - 98 | 1 << SolidityParser.HexNumber - 98 | 1 << SolidityParser.HexLiteral - 98 | 1 << SolidityParser.StringLiteral - 98)) !== 0)) {
-      this._errHandler.recoverInline(this);
-    } else {
-      this._errHandler.reportMatch(this);
+    this._errHandler.sync(this);
 
-      this.consume();
+    switch (this._input.LA(1)) {
+      case SolidityParser.StringLiteralFragment:
+        this.enterOuterAlt(localctx, 1);
+        this.state = 978;
+        this.stringLiteral();
+        break;
+
+      case SolidityParser.DecimalNumber:
+        this.enterOuterAlt(localctx, 2);
+        this.state = 979;
+        this.match(SolidityParser.DecimalNumber);
+        break;
+
+      case SolidityParser.HexNumber:
+        this.enterOuterAlt(localctx, 3);
+        this.state = 980;
+        this.match(SolidityParser.HexNumber);
+        break;
+
+      case SolidityParser.HexLiteral:
+        this.enterOuterAlt(localctx, 4);
+        this.state = 981;
+        this.match(SolidityParser.HexLiteral);
+        break;
+
+      default:
+        throw new antlr4.error.NoViableAltException(this);
     }
   } catch (re) {
     if (re instanceof antlr4.error.RecognitionException) {
@@ -60338,15 +60608,15 @@ SolidityParser.SubAssemblyContext = SubAssemblyContext;
 
 SolidityParser.prototype.subAssembly = function () {
   var localctx = new SubAssemblyContext(this, this._ctx, this.state);
-  this.enterRule(localctx, 158, SolidityParser.RULE_subAssembly);
+  this.enterRule(localctx, 162, SolidityParser.RULE_subAssembly);
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 917;
-    this.match(SolidityParser.T__43);
-    this.state = 918;
+    this.state = 984;
+    this.match(SolidityParser.T__45);
+    this.state = 985;
     this.identifier();
-    this.state = 919;
+    this.state = 986;
     this.assemblyBlock();
   } catch (re) {
     if (re instanceof antlr4.error.RecognitionException) {
@@ -60411,86 +60681,86 @@ SolidityParser.TupleExpressionContext = TupleExpressionContext;
 
 SolidityParser.prototype.tupleExpression = function () {
   var localctx = new TupleExpressionContext(this, this._ctx, this.state);
-  this.enterRule(localctx, 160, SolidityParser.RULE_tupleExpression);
+  this.enterRule(localctx, 164, SolidityParser.RULE_tupleExpression);
   var _la = 0; // Token type
 
   try {
-    this.state = 947;
+    this.state = 1014;
 
     this._errHandler.sync(this);
 
     switch (this._input.LA(1)) {
-      case SolidityParser.T__20:
+      case SolidityParser.T__21:
         this.enterOuterAlt(localctx, 1);
-        this.state = 921;
-        this.match(SolidityParser.T__20);
-        this.state = 923;
+        this.state = 988;
+        this.match(SolidityParser.T__21);
+        this.state = 990;
 
         this._errHandler.sync(this);
 
         _la = this._input.LA(1);
 
-        if ((_la & ~0x1f) == 0 && (1 << _la & (1 << SolidityParser.T__3 | 1 << SolidityParser.T__12 | 1 << SolidityParser.T__20)) !== 0 || (_la - 32 & ~0x1f) == 0 && (1 << _la - 32 & (1 << SolidityParser.T__31 - 32 | 1 << SolidityParser.T__33 - 32 | 1 << SolidityParser.T__39 - 32 | 1 << SolidityParser.T__48 - 32 | 1 << SolidityParser.T__49 - 32 | 1 << SolidityParser.T__50 - 32 | 1 << SolidityParser.T__51 - 32 | 1 << SolidityParser.T__52 - 32 | 1 << SolidityParser.T__53 - 32 | 1 << SolidityParser.T__54 - 32 | 1 << SolidityParser.T__55 - 32 | 1 << SolidityParser.T__56 - 32 | 1 << SolidityParser.T__57 - 32 | 1 << SolidityParser.T__58 - 32 | 1 << SolidityParser.T__59 - 32)) !== 0 || (_la - 91 & ~0x1f) == 0 && (1 << _la - 91 & (1 << SolidityParser.Int - 91 | 1 << SolidityParser.Uint - 91 | 1 << SolidityParser.Byte - 91 | 1 << SolidityParser.Fixed - 91 | 1 << SolidityParser.Ufixed - 91 | 1 << SolidityParser.BooleanLiteral - 91 | 1 << SolidityParser.DecimalNumber - 91 | 1 << SolidityParser.HexNumber - 91 | 1 << SolidityParser.HexLiteral - 91 | 1 << SolidityParser.TypeKeyword - 91 | 1 << SolidityParser.Identifier - 91 | 1 << SolidityParser.StringLiteral - 91)) !== 0) {
-          this.state = 922;
+        if ((_la & ~0x1f) == 0 && (1 << _la & (1 << SolidityParser.T__3 | 1 << SolidityParser.T__12 | 1 << SolidityParser.T__21)) !== 0 || (_la - 32 & ~0x1f) == 0 && (1 << _la - 32 & (1 << SolidityParser.T__31 - 32 | 1 << SolidityParser.T__33 - 32 | 1 << SolidityParser.T__39 - 32 | 1 << SolidityParser.T__50 - 32 | 1 << SolidityParser.T__51 - 32 | 1 << SolidityParser.T__52 - 32 | 1 << SolidityParser.T__53 - 32 | 1 << SolidityParser.T__54 - 32 | 1 << SolidityParser.T__55 - 32 | 1 << SolidityParser.T__56 - 32 | 1 << SolidityParser.T__58 - 32 | 1 << SolidityParser.T__59 - 32 | 1 << SolidityParser.T__60 - 32 | 1 << SolidityParser.T__61 - 32 | 1 << SolidityParser.T__62 - 32)) !== 0 || (_la - 94 & ~0x1f) == 0 && (1 << _la - 94 & (1 << SolidityParser.Int - 94 | 1 << SolidityParser.Uint - 94 | 1 << SolidityParser.Byte - 94 | 1 << SolidityParser.Fixed - 94 | 1 << SolidityParser.Ufixed - 94 | 1 << SolidityParser.BooleanLiteral - 94 | 1 << SolidityParser.DecimalNumber - 94 | 1 << SolidityParser.HexNumber - 94 | 1 << SolidityParser.HexLiteral - 94 | 1 << SolidityParser.PayableKeyword - 94 | 1 << SolidityParser.TypeKeyword - 94 | 1 << SolidityParser.Identifier - 94 | 1 << SolidityParser.StringLiteralFragment - 94)) !== 0) {
+          this.state = 989;
           this.expression(0);
         }
 
-        this.state = 931;
+        this.state = 998;
 
         this._errHandler.sync(this);
 
         _la = this._input.LA(1);
 
         while (_la === SolidityParser.T__14) {
-          this.state = 925;
+          this.state = 992;
           this.match(SolidityParser.T__14);
-          this.state = 927;
+          this.state = 994;
 
           this._errHandler.sync(this);
 
           _la = this._input.LA(1);
 
-          if ((_la & ~0x1f) == 0 && (1 << _la & (1 << SolidityParser.T__3 | 1 << SolidityParser.T__12 | 1 << SolidityParser.T__20)) !== 0 || (_la - 32 & ~0x1f) == 0 && (1 << _la - 32 & (1 << SolidityParser.T__31 - 32 | 1 << SolidityParser.T__33 - 32 | 1 << SolidityParser.T__39 - 32 | 1 << SolidityParser.T__48 - 32 | 1 << SolidityParser.T__49 - 32 | 1 << SolidityParser.T__50 - 32 | 1 << SolidityParser.T__51 - 32 | 1 << SolidityParser.T__52 - 32 | 1 << SolidityParser.T__53 - 32 | 1 << SolidityParser.T__54 - 32 | 1 << SolidityParser.T__55 - 32 | 1 << SolidityParser.T__56 - 32 | 1 << SolidityParser.T__57 - 32 | 1 << SolidityParser.T__58 - 32 | 1 << SolidityParser.T__59 - 32)) !== 0 || (_la - 91 & ~0x1f) == 0 && (1 << _la - 91 & (1 << SolidityParser.Int - 91 | 1 << SolidityParser.Uint - 91 | 1 << SolidityParser.Byte - 91 | 1 << SolidityParser.Fixed - 91 | 1 << SolidityParser.Ufixed - 91 | 1 << SolidityParser.BooleanLiteral - 91 | 1 << SolidityParser.DecimalNumber - 91 | 1 << SolidityParser.HexNumber - 91 | 1 << SolidityParser.HexLiteral - 91 | 1 << SolidityParser.TypeKeyword - 91 | 1 << SolidityParser.Identifier - 91 | 1 << SolidityParser.StringLiteral - 91)) !== 0) {
-            this.state = 926;
+          if ((_la & ~0x1f) == 0 && (1 << _la & (1 << SolidityParser.T__3 | 1 << SolidityParser.T__12 | 1 << SolidityParser.T__21)) !== 0 || (_la - 32 & ~0x1f) == 0 && (1 << _la - 32 & (1 << SolidityParser.T__31 - 32 | 1 << SolidityParser.T__33 - 32 | 1 << SolidityParser.T__39 - 32 | 1 << SolidityParser.T__50 - 32 | 1 << SolidityParser.T__51 - 32 | 1 << SolidityParser.T__52 - 32 | 1 << SolidityParser.T__53 - 32 | 1 << SolidityParser.T__54 - 32 | 1 << SolidityParser.T__55 - 32 | 1 << SolidityParser.T__56 - 32 | 1 << SolidityParser.T__58 - 32 | 1 << SolidityParser.T__59 - 32 | 1 << SolidityParser.T__60 - 32 | 1 << SolidityParser.T__61 - 32 | 1 << SolidityParser.T__62 - 32)) !== 0 || (_la - 94 & ~0x1f) == 0 && (1 << _la - 94 & (1 << SolidityParser.Int - 94 | 1 << SolidityParser.Uint - 94 | 1 << SolidityParser.Byte - 94 | 1 << SolidityParser.Fixed - 94 | 1 << SolidityParser.Ufixed - 94 | 1 << SolidityParser.BooleanLiteral - 94 | 1 << SolidityParser.DecimalNumber - 94 | 1 << SolidityParser.HexNumber - 94 | 1 << SolidityParser.HexLiteral - 94 | 1 << SolidityParser.PayableKeyword - 94 | 1 << SolidityParser.TypeKeyword - 94 | 1 << SolidityParser.Identifier - 94 | 1 << SolidityParser.StringLiteralFragment - 94)) !== 0) {
+            this.state = 993;
             this.expression(0);
           }
 
-          this.state = 933;
+          this.state = 1000;
 
           this._errHandler.sync(this);
 
           _la = this._input.LA(1);
         }
 
-        this.state = 934;
-        this.match(SolidityParser.T__21);
+        this.state = 1001;
+        this.match(SolidityParser.T__22);
         break;
 
       case SolidityParser.T__31:
         this.enterOuterAlt(localctx, 2);
-        this.state = 935;
+        this.state = 1002;
         this.match(SolidityParser.T__31);
-        this.state = 944;
+        this.state = 1011;
 
         this._errHandler.sync(this);
 
         _la = this._input.LA(1);
 
-        if ((_la & ~0x1f) == 0 && (1 << _la & (1 << SolidityParser.T__3 | 1 << SolidityParser.T__12 | 1 << SolidityParser.T__20)) !== 0 || (_la - 32 & ~0x1f) == 0 && (1 << _la - 32 & (1 << SolidityParser.T__31 - 32 | 1 << SolidityParser.T__33 - 32 | 1 << SolidityParser.T__39 - 32 | 1 << SolidityParser.T__48 - 32 | 1 << SolidityParser.T__49 - 32 | 1 << SolidityParser.T__50 - 32 | 1 << SolidityParser.T__51 - 32 | 1 << SolidityParser.T__52 - 32 | 1 << SolidityParser.T__53 - 32 | 1 << SolidityParser.T__54 - 32 | 1 << SolidityParser.T__55 - 32 | 1 << SolidityParser.T__56 - 32 | 1 << SolidityParser.T__57 - 32 | 1 << SolidityParser.T__58 - 32 | 1 << SolidityParser.T__59 - 32)) !== 0 || (_la - 91 & ~0x1f) == 0 && (1 << _la - 91 & (1 << SolidityParser.Int - 91 | 1 << SolidityParser.Uint - 91 | 1 << SolidityParser.Byte - 91 | 1 << SolidityParser.Fixed - 91 | 1 << SolidityParser.Ufixed - 91 | 1 << SolidityParser.BooleanLiteral - 91 | 1 << SolidityParser.DecimalNumber - 91 | 1 << SolidityParser.HexNumber - 91 | 1 << SolidityParser.HexLiteral - 91 | 1 << SolidityParser.TypeKeyword - 91 | 1 << SolidityParser.Identifier - 91 | 1 << SolidityParser.StringLiteral - 91)) !== 0) {
-          this.state = 936;
+        if ((_la & ~0x1f) == 0 && (1 << _la & (1 << SolidityParser.T__3 | 1 << SolidityParser.T__12 | 1 << SolidityParser.T__21)) !== 0 || (_la - 32 & ~0x1f) == 0 && (1 << _la - 32 & (1 << SolidityParser.T__31 - 32 | 1 << SolidityParser.T__33 - 32 | 1 << SolidityParser.T__39 - 32 | 1 << SolidityParser.T__50 - 32 | 1 << SolidityParser.T__51 - 32 | 1 << SolidityParser.T__52 - 32 | 1 << SolidityParser.T__53 - 32 | 1 << SolidityParser.T__54 - 32 | 1 << SolidityParser.T__55 - 32 | 1 << SolidityParser.T__56 - 32 | 1 << SolidityParser.T__58 - 32 | 1 << SolidityParser.T__59 - 32 | 1 << SolidityParser.T__60 - 32 | 1 << SolidityParser.T__61 - 32 | 1 << SolidityParser.T__62 - 32)) !== 0 || (_la - 94 & ~0x1f) == 0 && (1 << _la - 94 & (1 << SolidityParser.Int - 94 | 1 << SolidityParser.Uint - 94 | 1 << SolidityParser.Byte - 94 | 1 << SolidityParser.Fixed - 94 | 1 << SolidityParser.Ufixed - 94 | 1 << SolidityParser.BooleanLiteral - 94 | 1 << SolidityParser.DecimalNumber - 94 | 1 << SolidityParser.HexNumber - 94 | 1 << SolidityParser.HexLiteral - 94 | 1 << SolidityParser.PayableKeyword - 94 | 1 << SolidityParser.TypeKeyword - 94 | 1 << SolidityParser.Identifier - 94 | 1 << SolidityParser.StringLiteralFragment - 94)) !== 0) {
+          this.state = 1003;
           this.expression(0);
-          this.state = 941;
+          this.state = 1008;
 
           this._errHandler.sync(this);
 
           _la = this._input.LA(1);
 
           while (_la === SolidityParser.T__14) {
-            this.state = 937;
+            this.state = 1004;
             this.match(SolidityParser.T__14);
-            this.state = 938;
+            this.state = 1005;
             this.expression(0);
-            this.state = 943;
+            this.state = 1010;
 
             this._errHandler.sync(this);
 
@@ -60498,7 +60768,7 @@ SolidityParser.prototype.tupleExpression = function () {
           }
         }
 
-        this.state = 946;
+        this.state = 1013;
         this.match(SolidityParser.T__32);
         break;
 
@@ -60522,7 +60792,7 @@ SolidityParser.prototype.tupleExpression = function () {
   return localctx;
 };
 
-function ElementaryTypeNameExpressionContext(parser, parent, invokingState) {
+function TypeNameExpressionContext(parser, parent, invokingState) {
   if (parent === undefined) {
     parent = null;
   }
@@ -60533,39 +60803,71 @@ function ElementaryTypeNameExpressionContext(parser, parent, invokingState) {
 
   antlr4.ParserRuleContext.call(this, parent, invokingState);
   this.parser = parser;
-  this.ruleIndex = SolidityParser.RULE_elementaryTypeNameExpression;
+  this.ruleIndex = SolidityParser.RULE_typeNameExpression;
   return this;
 }
 
-ElementaryTypeNameExpressionContext.prototype = Object.create(antlr4.ParserRuleContext.prototype);
-ElementaryTypeNameExpressionContext.prototype.constructor = ElementaryTypeNameExpressionContext;
+TypeNameExpressionContext.prototype = Object.create(antlr4.ParserRuleContext.prototype);
+TypeNameExpressionContext.prototype.constructor = TypeNameExpressionContext;
 
-ElementaryTypeNameExpressionContext.prototype.elementaryTypeName = function () {
+TypeNameExpressionContext.prototype.elementaryTypeName = function () {
   return this.getTypedRuleContext(ElementaryTypeNameContext, 0);
 };
 
-ElementaryTypeNameExpressionContext.prototype.enterRule = function (listener) {
+TypeNameExpressionContext.prototype.userDefinedTypeName = function () {
+  return this.getTypedRuleContext(UserDefinedTypeNameContext, 0);
+};
+
+TypeNameExpressionContext.prototype.enterRule = function (listener) {
   if (listener instanceof SolidityListener) {
-    listener.enterElementaryTypeNameExpression(this);
+    listener.enterTypeNameExpression(this);
   }
 };
 
-ElementaryTypeNameExpressionContext.prototype.exitRule = function (listener) {
+TypeNameExpressionContext.prototype.exitRule = function (listener) {
   if (listener instanceof SolidityListener) {
-    listener.exitElementaryTypeNameExpression(this);
+    listener.exitTypeNameExpression(this);
   }
 };
 
-SolidityParser.ElementaryTypeNameExpressionContext = ElementaryTypeNameExpressionContext;
+SolidityParser.TypeNameExpressionContext = TypeNameExpressionContext;
 
-SolidityParser.prototype.elementaryTypeNameExpression = function () {
-  var localctx = new ElementaryTypeNameExpressionContext(this, this._ctx, this.state);
-  this.enterRule(localctx, 162, SolidityParser.RULE_elementaryTypeNameExpression);
+SolidityParser.prototype.typeNameExpression = function () {
+  var localctx = new TypeNameExpressionContext(this, this._ctx, this.state);
+  this.enterRule(localctx, 166, SolidityParser.RULE_typeNameExpression);
 
   try {
-    this.enterOuterAlt(localctx, 1);
-    this.state = 949;
-    this.elementaryTypeName();
+    this.state = 1018;
+
+    this._errHandler.sync(this);
+
+    switch (this._input.LA(1)) {
+      case SolidityParser.T__33:
+      case SolidityParser.T__50:
+      case SolidityParser.T__51:
+      case SolidityParser.T__52:
+      case SolidityParser.T__53:
+      case SolidityParser.Int:
+      case SolidityParser.Uint:
+      case SolidityParser.Byte:
+      case SolidityParser.Fixed:
+      case SolidityParser.Ufixed:
+        this.enterOuterAlt(localctx, 1);
+        this.state = 1016;
+        this.elementaryTypeName();
+        break;
+
+      case SolidityParser.T__12:
+      case SolidityParser.T__39:
+      case SolidityParser.Identifier:
+        this.enterOuterAlt(localctx, 2);
+        this.state = 1017;
+        this.userDefinedTypeName();
+        break;
+
+      default:
+        throw new antlr4.error.NoViableAltException(this);
+    }
   } catch (re) {
     if (re instanceof antlr4.error.RecognitionException) {
       localctx.exception = re;
@@ -60629,12 +60931,12 @@ SolidityParser.NumberLiteralContext = NumberLiteralContext;
 
 SolidityParser.prototype.numberLiteral = function () {
   var localctx = new NumberLiteralContext(this, this._ctx, this.state);
-  this.enterRule(localctx, 164, SolidityParser.RULE_numberLiteral);
+  this.enterRule(localctx, 168, SolidityParser.RULE_numberLiteral);
   var _la = 0; // Token type
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 951;
+    this.state = 1020;
     _la = this._input.LA(1);
 
     if (!(_la === SolidityParser.DecimalNumber || _la === SolidityParser.HexNumber)) {
@@ -60645,14 +60947,14 @@ SolidityParser.prototype.numberLiteral = function () {
       this.consume();
     }
 
-    this.state = 953;
+    this.state = 1022;
 
     this._errHandler.sync(this);
 
-    var la_ = this._interp.adaptivePredict(this._input, 103, this._ctx);
+    var la_ = this._interp.adaptivePredict(this._input, 117, this._ctx);
 
     if (la_ === 1) {
-      this.state = 952;
+      this.state = 1021;
       this.match(SolidityParser.NumberUnit);
     }
   } catch (re) {
@@ -60710,12 +61012,12 @@ SolidityParser.IdentifierContext = IdentifierContext;
 
 SolidityParser.prototype.identifier = function () {
   var localctx = new IdentifierContext(this, this._ctx, this.state);
-  this.enterRule(localctx, 166, SolidityParser.RULE_identifier);
+  this.enterRule(localctx, 170, SolidityParser.RULE_identifier);
   var _la = 0; // Token type
 
   try {
     this.enterOuterAlt(localctx, 1);
-    this.state = 955;
+    this.state = 1024;
     _la = this._input.LA(1);
 
     if (!(_la === SolidityParser.T__12 || _la === SolidityParser.T__39 || _la === SolidityParser.Identifier)) {
@@ -60742,12 +61044,204 @@ SolidityParser.prototype.identifier = function () {
   return localctx;
 };
 
+function OverrideSpecifierContext(parser, parent, invokingState) {
+  if (parent === undefined) {
+    parent = null;
+  }
+
+  if (invokingState === undefined || invokingState === null) {
+    invokingState = -1;
+  }
+
+  antlr4.ParserRuleContext.call(this, parent, invokingState);
+  this.parser = parser;
+  this.ruleIndex = SolidityParser.RULE_overrideSpecifier;
+  return this;
+}
+
+OverrideSpecifierContext.prototype = Object.create(antlr4.ParserRuleContext.prototype);
+OverrideSpecifierContext.prototype.constructor = OverrideSpecifierContext;
+
+OverrideSpecifierContext.prototype.userDefinedTypeName = function (i) {
+  if (i === undefined) {
+    i = null;
+  }
+
+  if (i === null) {
+    return this.getTypedRuleContexts(UserDefinedTypeNameContext);
+  } else {
+    return this.getTypedRuleContext(UserDefinedTypeNameContext, i);
+  }
+};
+
+OverrideSpecifierContext.prototype.enterRule = function (listener) {
+  if (listener instanceof SolidityListener) {
+    listener.enterOverrideSpecifier(this);
+  }
+};
+
+OverrideSpecifierContext.prototype.exitRule = function (listener) {
+  if (listener instanceof SolidityListener) {
+    listener.exitOverrideSpecifier(this);
+  }
+};
+
+SolidityParser.OverrideSpecifierContext = OverrideSpecifierContext;
+
+SolidityParser.prototype.overrideSpecifier = function () {
+  var localctx = new OverrideSpecifierContext(this, this._ctx, this.state);
+  this.enterRule(localctx, 172, SolidityParser.RULE_overrideSpecifier);
+  var _la = 0; // Token type
+
+  try {
+    this.enterOuterAlt(localctx, 1);
+    this.state = 1026;
+    this.match(SolidityParser.T__92);
+    this.state = 1038;
+
+    this._errHandler.sync(this);
+
+    _la = this._input.LA(1);
+
+    if (_la === SolidityParser.T__21) {
+      this.state = 1027;
+      this.match(SolidityParser.T__21);
+      this.state = 1028;
+      this.userDefinedTypeName();
+      this.state = 1033;
+
+      this._errHandler.sync(this);
+
+      _la = this._input.LA(1);
+
+      while (_la === SolidityParser.T__14) {
+        this.state = 1029;
+        this.match(SolidityParser.T__14);
+        this.state = 1030;
+        this.userDefinedTypeName();
+        this.state = 1035;
+
+        this._errHandler.sync(this);
+
+        _la = this._input.LA(1);
+      }
+
+      this.state = 1036;
+      this.match(SolidityParser.T__22);
+    }
+  } catch (re) {
+    if (re instanceof antlr4.error.RecognitionException) {
+      localctx.exception = re;
+
+      this._errHandler.reportError(this, re);
+
+      this._errHandler.recover(this, re);
+    } else {
+      throw re;
+    }
+  } finally {
+    this.exitRule();
+  }
+
+  return localctx;
+};
+
+function StringLiteralContext(parser, parent, invokingState) {
+  if (parent === undefined) {
+    parent = null;
+  }
+
+  if (invokingState === undefined || invokingState === null) {
+    invokingState = -1;
+  }
+
+  antlr4.ParserRuleContext.call(this, parent, invokingState);
+  this.parser = parser;
+  this.ruleIndex = SolidityParser.RULE_stringLiteral;
+  return this;
+}
+
+StringLiteralContext.prototype = Object.create(antlr4.ParserRuleContext.prototype);
+StringLiteralContext.prototype.constructor = StringLiteralContext;
+
+StringLiteralContext.prototype.StringLiteralFragment = function (i) {
+  if (i === undefined) {
+    i = null;
+  }
+
+  if (i === null) {
+    return this.getTokens(SolidityParser.StringLiteralFragment);
+  } else {
+    return this.getToken(SolidityParser.StringLiteralFragment, i);
+  }
+};
+
+StringLiteralContext.prototype.enterRule = function (listener) {
+  if (listener instanceof SolidityListener) {
+    listener.enterStringLiteral(this);
+  }
+};
+
+StringLiteralContext.prototype.exitRule = function (listener) {
+  if (listener instanceof SolidityListener) {
+    listener.exitStringLiteral(this);
+  }
+};
+
+SolidityParser.StringLiteralContext = StringLiteralContext;
+
+SolidityParser.prototype.stringLiteral = function () {
+  var localctx = new StringLiteralContext(this, this._ctx, this.state);
+  this.enterRule(localctx, 174, SolidityParser.RULE_stringLiteral);
+
+  try {
+    this.enterOuterAlt(localctx, 1);
+    this.state = 1041;
+
+    this._errHandler.sync(this);
+
+    var _alt = 1;
+
+    do {
+      switch (_alt) {
+        case 1:
+          this.state = 1040;
+          this.match(SolidityParser.StringLiteralFragment);
+          break;
+
+        default:
+          throw new antlr4.error.NoViableAltException(this);
+      }
+
+      this.state = 1043;
+
+      this._errHandler.sync(this);
+
+      _alt = this._interp.adaptivePredict(this._input, 120, this._ctx);
+    } while (_alt != 2 && _alt != antlr4.atn.ATN.INVALID_ALT_NUMBER);
+  } catch (re) {
+    if (re instanceof antlr4.error.RecognitionException) {
+      localctx.exception = re;
+
+      this._errHandler.reportError(this, re);
+
+      this._errHandler.recover(this, re);
+    } else {
+      throw re;
+    }
+  } finally {
+    this.exitRule();
+  }
+
+  return localctx;
+};
+
 SolidityParser.prototype.sempred = function (localctx, ruleIndex, predIndex) {
   switch (ruleIndex) {
     case 31:
       return this.typeName_sempred(localctx, predIndex);
 
-    case 55:
+    case 57:
       return this.expression_sempred(localctx, predIndex);
 
     default:
@@ -60807,15 +61301,21 @@ SolidityParser.prototype.expression_sempred = function (localctx, predIndex) {
       return this.precpred(this._ctx, 2);
 
     case 14:
-      return this.precpred(this._ctx, 25);
+      return this.precpred(this._ctx, 27);
 
     case 15:
-      return this.precpred(this._ctx, 23);
+      return this.precpred(this._ctx, 25);
 
     case 16:
-      return this.precpred(this._ctx, 22);
+      return this.precpred(this._ctx, 24);
 
     case 17:
+      return this.precpred(this._ctx, 23);
+
+    case 18:
+      return this.precpred(this._ctx, 22);
+
+    case 19:
       return this.precpred(this._ctx, 21);
 
     default:
@@ -60827,15 +61327,15 @@ exports.SolidityParser = SolidityParser;
 
 /***/ }),
 
-/***/ "./node_modules/solidity-parser-antlr/dist/tokens.js":
-/*!***********************************************************!*\
-  !*** ./node_modules/solidity-parser-antlr/dist/tokens.js ***!
-  \***********************************************************/
+/***/ "./node_modules/solidity-parser-diligence/dist/tokens.js":
+/*!***************************************************************!*\
+  !*** ./node_modules/solidity-parser-diligence/dist/tokens.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-/* WEBPACK VAR INJECTION */(function(__dirname) {
+
 
 var _slicedToArray = function () {
   function sliceIterator(arr, i) {
@@ -60874,11 +61374,10 @@ var _slicedToArray = function () {
     }
   };
 }();
+/* babel-plugin-inline-import './lib/Solidity.tokens' */
 
-var fs = __webpack_require__(/*! fs */ "./node_modules/node-libs-browser/mock/empty.js");
 
-var path = __webpack_require__(/*! path */ "./node_modules/path-browserify/index.js");
-
+var tokens = 'T__0=1\nT__1=2\nT__2=3\nT__3=4\nT__4=5\nT__5=6\nT__6=7\nT__7=8\nT__8=9\nT__9=10\nT__10=11\nT__11=12\nT__12=13\nT__13=14\nT__14=15\nT__15=16\nT__16=17\nT__17=18\nT__18=19\nT__19=20\nT__20=21\nT__21=22\nT__22=23\nT__23=24\nT__24=25\nT__25=26\nT__26=27\nT__27=28\nT__28=29\nT__29=30\nT__30=31\nT__31=32\nT__32=33\nT__33=34\nT__34=35\nT__35=36\nT__36=37\nT__37=38\nT__38=39\nT__39=40\nT__40=41\nT__41=42\nT__42=43\nT__43=44\nT__44=45\nT__45=46\nT__46=47\nT__47=48\nT__48=49\nT__49=50\nT__50=51\nT__51=52\nT__52=53\nT__53=54\nT__54=55\nT__55=56\nT__56=57\nT__57=58\nT__58=59\nT__59=60\nT__60=61\nT__61=62\nT__62=63\nT__63=64\nT__64=65\nT__65=66\nT__66=67\nT__67=68\nT__68=69\nT__69=70\nT__70=71\nT__71=72\nT__72=73\nT__73=74\nT__74=75\nT__75=76\nT__76=77\nT__77=78\nT__78=79\nT__79=80\nT__80=81\nT__81=82\nT__82=83\nT__83=84\nT__84=85\nT__85=86\nT__86=87\nT__87=88\nT__88=89\nT__89=90\nT__90=91\nT__91=92\nT__92=93\nInt=94\nUint=95\nByte=96\nFixed=97\nUfixed=98\nBooleanLiteral=99\nDecimalNumber=100\nHexNumber=101\nNumberUnit=102\nHexLiteral=103\nReservedKeyword=104\nAnonymousKeyword=105\nBreakKeyword=106\nConstantKeyword=107\nContinueKeyword=108\nLeaveKeyword=109\nExternalKeyword=110\nIndexedKeyword=111\nInternalKeyword=112\nPayableKeyword=113\nPrivateKeyword=114\nPublicKeyword=115\nVirtualKeyword=116\nPureKeyword=117\nTypeKeyword=118\nViewKeyword=119\nConstructorKeyword=120\nFallbackKeyword=121\nReceiveKeyword=122\nIdentifier=123\nStringLiteralFragment=124\nVersionLiteral=125\nWS=126\nCOMMENT=127\nLINE_COMMENT=128\n\'pragma\'=1\n\';\'=2\n\'^\'=3\n\'~\'=4\n\'>=\'=5\n\'>\'=6\n\'<\'=7\n\'<=\'=8\n\'=\'=9\n\'as\'=10\n\'import\'=11\n\'*\'=12\n\'from\'=13\n\'{\'=14\n\',\'=15\n\'}\'=16\n\'abstract\'=17\n\'contract\'=18\n\'interface\'=19\n\'library\'=20\n\'is\'=21\n\'(\'=22\n\')\'=23\n\'using\'=24\n\'for\'=25\n\'struct\'=26\n\'modifier\'=27\n\'function\'=28\n\'returns\'=29\n\'event\'=30\n\'enum\'=31\n\'[\'=32\n\']\'=33\n\'address\'=34\n\'.\'=35\n\'mapping\'=36\n\'=>\'=37\n\'memory\'=38\n\'storage\'=39\n\'calldata\'=40\n\'if\'=41\n\'else\'=42\n\'try\'=43\n\'catch\'=44\n\'while\'=45\n\'assembly\'=46\n\'do\'=47\n\'return\'=48\n\'throw\'=49\n\'emit\'=50\n\'var\'=51\n\'bool\'=52\n\'string\'=53\n\'byte\'=54\n\'++\'=55\n\'--\'=56\n\'new\'=57\n\':\'=58\n\'+\'=59\n\'-\'=60\n\'after\'=61\n\'delete\'=62\n\'!\'=63\n\'**\'=64\n\'/\'=65\n\'%\'=66\n\'<<\'=67\n\'>>\'=68\n\'&\'=69\n\'|\'=70\n\'==\'=71\n\'!=\'=72\n\'&&\'=73\n\'||\'=74\n\'?\'=75\n\'|=\'=76\n\'^=\'=77\n\'&=\'=78\n\'<<=\'=79\n\'>>=\'=80\n\'+=\'=81\n\'-=\'=82\n\'*=\'=83\n\'/=\'=84\n\'%=\'=85\n\'let\'=86\n\':=\'=87\n\'=:\'=88\n\'switch\'=89\n\'case\'=90\n\'default\'=91\n\'->\'=92\n\'override\'=93\n\'anonymous\'=105\n\'break\'=106\n\'constant\'=107\n\'continue\'=108\n\'leave\'=109\n\'external\'=110\n\'indexed\'=111\n\'internal\'=112\n\'payable\'=113\n\'private\'=114\n\'public\'=115\n\'virtual\'=116\n\'pure\'=117\n\'type\'=118\n\'view\'=119\n\'constructor\'=120\n\'fallback\'=121\n\'receive\'=122\n';
 var TYPE_TOKENS = ['var', 'bool', 'address', 'string', 'Int', 'Uint', 'Byte', 'Fixed', 'UFixed'];
 
 function rsplit(str, value) {
@@ -60925,8 +61424,7 @@ function getTokenType(value) {
 }
 
 function getTokenTypeMap() {
-  var filePath = path.join(__dirname, '../lib/Solidity.tokens');
-  return fs.readFileSync(filePath).toString('utf-8').split('\n').map(function (line) {
+  return tokens.split('\n').map(function (line) {
     return rsplit(line, '=');
   }).reduce(function (acum, _ref) {
     var _ref2 = _slicedToArray(_ref, 2),
@@ -60969,7 +61467,6 @@ function buildTokenList(tokens, options) {
 }
 
 exports.buildTokenList = buildTokenList;
-/* WEBPACK VAR INJECTION */}.call(this, "/"))
 
 /***/ }),
 
@@ -62499,4 +62996,4 @@ module.exports.formatError = function (err) {
 /***/ })
 
 }]);
-//# sourceMappingURL=0.chunk.js.map
+//# sourceMappingURL=1.chunk.js.map

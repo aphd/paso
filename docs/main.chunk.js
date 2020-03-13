@@ -148,7 +148,7 @@ class Error extends react__WEBPACK_IMPORTED_MODULE_0__["Component"] {
           },
           __self: this
         }, Object(_utils_json2html__WEBPACK_IMPORTED_MODULE_1__["json2html"])(this.props.errors[0])));
-      } catch {
+      } catch (err){
         return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, {
           __source: {
             fileName: _jsxFileName,
@@ -477,23 +477,22 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "code", function() { return code; });
 const code = `/***** [You can write, edit or copy and paste a smart contract code here] *******/
 
-pragma solidity ^0.4.10;
+pragma solidity ^0.6.1;
 
-contract SimpleAuction {
-    event HighestBidIncreased(address bidder, uint amount); // Event
-    address public minter;
-    mapping (address => uint) public balances;
-    modifier onlySeller() { }
-      function bid() public payable {
-        emit HighestBidIncreased(msg.sender, msg.value); // Triggering event
+contract CharitySplitterFactory {
+    mapping (address => CharitySplitter) public charitySplitters;
+    uint public errorCount;
+    event ErrorHandled(string reason);
+    event ErrorNotHandled(bytes reason);
+    function createCharitySplitter(address charityOwner) public {
+        try new CharitySplitter(charityOwner)
+            returns (CharitySplitter newCharitySplitter) 
+        {
+            charitySplitters[msg.sender] = newCharitySplitter;
+        } catch {
+            errorCount++;
+        }
     }
-}
-
-interface Token {
-  function transfer(address recipient, uint amount) public;
-}
-
-library Set {
 }`;
 
 /***/ }),
@@ -759,17 +758,17 @@ function json2html(types) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "solParse", function() { return solParse; });
-/* harmony import */ var solidity_parser_antlr_dist__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! solidity-parser-antlr/dist */ "./node_modules/solidity-parser-antlr/dist/index.js");
+/* harmony import */ var solidity_parser_diligence_dist__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! solidity-parser-diligence/dist */ "./node_modules/solidity-parser-diligence/dist/index.js");
 
 function solParse(code) {
-  const ast_j = solidity_parser_antlr_dist__WEBPACK_IMPORTED_MODULE_0__.parse(code, {
+  const ast_j = solidity_parser_diligence_dist__WEBPACK_IMPORTED_MODULE_0__.parse(code, {
     loc: true
   });
   const ast_s = JSON.stringify(ast_j);
 
   try {
     window.ast_j = ast_j;
-  } catch {}
+  } catch (err) {}
 
   const metrics = {
     mapping: '"type":"Mapping"',
@@ -824,5 +823,5 @@ module.exports = __webpack_require__(/*! /Users/antonio/github/aphd/paso/src/ind
 
 /***/ })
 
-},[[1,"runtime-main",0]]]);
+},[[1,"runtime-main",1]]]);
 //# sourceMappingURL=main.chunk.js.map

@@ -1,10 +1,12 @@
-import parse from "solidity-parser-antlr/dist";
+import parse from "solidity-parser-diligence/dist";
 
 export function solParse(code) {
     const ast_j = parse.parse(code, { loc: true });
     const ast_s = JSON.stringify(ast_j);
-    try {window.ast_j = ast_j;} catch {}
-    
+    try {
+        window.ast_j = ast_j;
+    } catch {}
+
     const metrics = {
         mapping: '"type":"Mapping"',
         functions: '"type":"FunctionDefinition"',
@@ -32,9 +34,11 @@ export function solParse(code) {
 }
 
 const get_comments = code => {
-    const match = code.match(/(\/\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*+\/)|(\/\/.*)/g);
-    return match ? match.length : 0
-}
+    const match = code.match(
+        /(\/\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*+\/)|(\/\/.*)/g
+    );
+    return match ? match.length : 0;
+};
 
 const get_version = ast_s => {
     let version = ast_s.match(
