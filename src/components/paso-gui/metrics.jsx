@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { json2html } from "../utils/json2html";
+import { json2html } from "../../utils/json2html";
 
 class Metrics extends Component {
     render = () => {

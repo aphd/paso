@@ -1,6 +1,6 @@
 import React, { Component } from "react";
-import { code } from "../fixtures/simple.sol.jsx";
-import { getContractFromAddress } from "../utils/getContract";
+import { code } from "../../fixtures/simple.sol.jsx";
+import { getContractFromAddress } from "../../utils/getContract";
 
 export default class LoadContractForm extends Component {
     componentDidMount() {
