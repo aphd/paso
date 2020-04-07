@@ -9,7 +9,7 @@ class Error extends Component {
                     <tbody>{json2html(this.props.errors[0])}</tbody>
                 </table>
             );
-        } catch {
+        } catch (e) {
             return <React.Fragment></React.Fragment>;
         }
     };
