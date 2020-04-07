@@ -3,7 +3,6 @@ import parse from "solidity-parser-diligence/dist";
 export function solParse(code) {
     const ast_j = parse.parse(code, { loc: true });
     const ast_s = JSON.stringify(ast_j);
-
     const metrics = {
         mapping: '"type":"Mapping"',
         functions: '"type":"FunctionDefinition"',
@@ -26,7 +25,6 @@ export function solParse(code) {
         let reg = metrics[metric];
         result[metric] = (ast_s.match(new RegExp(reg, "g")) || []).length;
     }
-
     return result;
 }
 
