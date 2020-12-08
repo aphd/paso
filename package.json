@@ -7,6 +7,7 @@
         "@babel/runtime": "^7.8.7",
         "awesomplete": "^1.1.5",
         "bootstrap": "^4.3.1",
+        "d3": "3",
         "json2csv": "^4.5.3",
         "react": "^16.9.0",
         "react-dom": "^16.9.0",

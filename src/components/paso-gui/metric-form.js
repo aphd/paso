@@ -23,6 +23,18 @@ export default class MetricForm extends Component {
                     >
                         Compute the Solidity Metrics
                     </button>
+                    <div>
+                        <input
+                            id="go-button"
+                            type="button"
+                            value="Visualize Tree"
+                            onClick={() =>
+                                this.props.onUpdateTree(
+                                    document.getElementById("sc_code").value
+                                )
+                            }
+                        />
+                    </div>
                 </div>
             </div>
         );

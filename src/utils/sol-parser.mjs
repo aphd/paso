@@ -1,8 +1,22 @@
 import parse from "solidity-parser-diligence/dist";
 
+const remove = (data, keys) => {
+    for (let i in data) {
+        if (keys.includes(i)) delete data[i];
+        else if (typeof data[i] === "object") remove(data[i], keys);
+    }
+};
+
+export function getAST(code) {
+    const json = parse.parse(code, { loc: true });
+    remove(json, ["loc"]);
+    return json;
+}
+
 export function solParse(code) {
     const ast_j = parse.parse(code, { loc: true });
     const ast_s = JSON.stringify(ast_j);
+    window.__ast_j = ast_j;
     const metrics = {
         mapping: '"type":"Mapping"',
         functions: '"type":"FunctionDefinition"',
