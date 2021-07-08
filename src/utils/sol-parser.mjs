@@ -1,7 +1,6 @@
-import parse from "solidity-parser-diligence/dist";
-
 export function solParse(code) {
-    const ast_j = parse.parse(code, { loc: true });
+    const ast_j = window.SolidityParser.parse(code, { loc: true });
+
     const ast_s = JSON.stringify(ast_j);
     const metrics = {
         mapping: '"type":"Mapping"',
@@ -39,5 +38,5 @@ const get_version = (ast_s) => {
     let version = ast_s.match(
         /"name":"solidity","value":"\^(\d{1,}.\d{1,}.\d{1,})/
     );
-    return version ? version[1] : "Not defined";
+    return version ? version[1] : "n/a";
 };

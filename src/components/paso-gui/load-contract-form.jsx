@@ -52,7 +52,7 @@ export default class LoadContractForm extends Component {
                     <div className="col pl-10">
                         <div className="invalid-feedback" id="invalid">
                             Please choose a valid contract address such as:
-                            0x7de6783f26e024ef2db774a0fd02742b11891d3f
+                            0x114ef3df5820d55d32045afaa15d8cc7ba2156d7
                         </div>
                     </div>
                 </div>
