@@ -9,7 +9,7 @@ const remove = (data, keys) => {
 
 export function getAST(code) {
     const json = parse.parse(code, { loc: true });
-    remove(json, ["loc"]);
+    remove(json, ["loc", "body", "typeName"]);
     return json;
 }
 
