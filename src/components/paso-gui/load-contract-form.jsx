@@ -1,9 +1,6 @@
 import React, { Component } from "react";
 import { contract, addresses } from "../../fixtures";
 import { HandleContract } from "../../services/handleContract";
-import awesomplete from "awesomplete";
-import "awesomplete/awesomplete.css";
-
 export default class LoadContractForm extends Component {
     constructor(props) {
         super(props);
@@ -30,7 +27,7 @@ export default class LoadContractForm extends Component {
                 <div className="row">
                     <div className="col-6">
                         <input
-                            className="form-control form-control-sm font-weight-light awesomplete"
+                            className="form-control form-control-sm font-weight-light"
                             id="address"
                             data-list={addresses}
                             data-minchars="1"
@@ -44,9 +41,8 @@ export default class LoadContractForm extends Component {
                             disabled={this.state.loading}
                         >
                             <span
-                                className={`spinner-border spinner-border-sm ${
-                                    this.state.loading ? "mr-2" : "d-none"
-                                }`}
+                                className={`spinner-border spinner-border-sm ${this.state.loading ? "mr-2" : "d-none"
+                                    }`}
                             ></span>
                             Upload a Smart Contract from an address
                         </button>
