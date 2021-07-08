@@ -6,7 +6,8 @@ export default class Head extends Component {
         return (
             <HelmetProvider>
                 <Helmet>
-                    <title>PASO</title>
+                    <script src="./index.iife.js" type="text/javascript" />
+                    <title>PASO: SOlidity-</title>
                 </Helmet>
                 <h4 className="text-center font-weight-lighter font-italic pt-2">
                     PASO (PArse SOlidity smart contract code)

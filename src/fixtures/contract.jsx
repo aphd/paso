@@ -1,6 +1,6 @@
 export const contract = `/***** [You can write, edit or copy and paste a smart contract code here] *******/
 
-pragma solidity ^0.6.1;
+pragma solidity ^0.8.7;
 
 contract CharitySplitterFactory {
     mapping (address => CharitySplitter) public charitySplitters;
