@@ -36,7 +36,7 @@ export default class LoadContractForm extends Component {
                     </div>
                     <div className="col-6">
                         <button
-                            className="btn btn-sm btn-secondary btn-block"
+                            className="btn btn-sm btn-outline-info btn-block"
                             onClick={() => this.onSubmit()}
                             disabled={this.state.loading}
                         >

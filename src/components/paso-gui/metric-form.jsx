@@ -14,7 +14,7 @@ export default class MetricForm extends Component {
                     </div>
                     <button
                         type="button"
-                        className="btn btn-info btn-block"
+                        className="btn btn-outline-warning btn-block"
                         onClick={() =>
                             this.props.onFormSubmit(
                                 document.getElementById("sc_code").value
