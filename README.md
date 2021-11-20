@@ -16,7 +16,8 @@ Requires Node >= v11.3.0
 **Web tool**
 
 [https://aphd.github.io/paso/](https://aphd.github.io/paso/)
-[https://github.com/aphd/paso/settings/pages](github pages)
+
+[https://github.com/aphd/paso/settings/pages](https://github.com/aphd/paso/settings/pages)
 
 **Website deployment**
 
