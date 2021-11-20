@@ -3,6 +3,7 @@ import MetricForm from "./metric-form";
 import LoadContractForm from "./load-contract-form";
 import Metrics from "./metrics";
 import Head from "./head";
+import Bibtex from "./bibtex";
 import Error from "./error";
 import { solParse } from "../../utils/sol-parser";
 
@@ -31,6 +32,7 @@ export default class PasoGui extends Component {
                 <MetricForm onFormSubmit={this.handleFormSubmit} />
                 <Metrics metric={this.state.metric} />
                 <Error errors={this.state.errors} />
+                <Bibtex />
             </main>
         );
     };
